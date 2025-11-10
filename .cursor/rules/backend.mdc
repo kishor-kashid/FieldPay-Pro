@@ -1,0 +1,117 @@
+Description: Backend-specific rules and patterns
+Globs: backend/**/*
+
+# Backend Rules - Clean Scapes P4P System
+
+## Architecture Pattern
+Follow service-oriented architecture:
+- **Routes**: Handle HTTP requests/responses, call services
+- **Services**: Contain business logic, call utilities, interact with database
+- **Middleware**: Handle auth, validation, error handling, role checks
+- **Utils**: Pure functions, reusable helpers
+
+## Service Layer Pattern
+```javascript
+// Services should:
+// 1. Accept clean input parameters
+// 2. Perform business logic
+// 3. Interact with database/external APIs
+// 4. Return structured results
+// 5. Throw errors for exceptional cases
+
+async function processPayroll(date) {
+  // Fetch data
+  // Calculate
+  // Store results
+  // Create notifications
+  // Return summary
+}
+```
+
+## Route Handler Pattern
+```javascript
+// Routes should:
+// 1. Extract request data
+// 2. Call service functions
+// 3. Return responses
+// 4. Handle errors
+
+router.post('/process', authMiddleware, roleCheck(['admin']), async (req, res, next) => {
+  try {
+    const result = await payrollService.processPayroll(req.body.date);
+    res.json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+});
+```
+
+## Middleware Stack
+Always apply middleware in this order:
+1. `auth` - Verify JWT token
+2. `roleCheck` - Check user permissions
+3. `validation` - Validate request body/params
+4. Route handler
+5. `errorHandler` - Catch and format errors
+
+## Database Interactions
+- Use Supabase client from `config/database.js`
+- Always use parameterized queries (Supabase handles this)
+- Handle connection errors gracefully
+- Use transactions for multi-step operations
+
+## Error Handling
+- Use try-catch in all async functions
+- Throw descriptive errors with appropriate HTTP status codes
+- Let errorHandler middleware format responses
+- Log errors for debugging
+
+## Calculation Service Rules
+- Efficiency calculation: `budgeted_hours / actual_hours`
+- Handle division by zero (actual_hours = 0)
+- Round efficiency to 2 decimal places
+- Flag anomalies: efficiency < 0.6 or > 1.2
+- Calculate bonuses based on efficiency thresholds
+- Apply penalties for late clock-in and long lunch
+- Never allow negative total pay (minimum = 0)
+
+## API Response Format
+```javascript
+// Success
+{ success: true, data: {...} }
+
+// Error (from errorHandler)
+{ success: false, error: "Error message", code: "ERROR_CODE" }
+```
+
+## Environment Configuration
+- Use `dotenv` for environment variables
+- Check `NODE_ENV` for environment (development/production)
+- Use `USE_MOCK` to switch between mock and real APIs
+- Use `ENABLE_CRON` to enable/disable scheduled jobs
+
+## Payroll Processing
+- **Two-Step Process**: 
+  - POST /api/payroll/analyze - Preview/calculate without saving (no notifications)
+  - POST /api/payroll/process - Save to database (triggers notifications)
+- **Duplicate Prevention**: Check for existing records before processing
+- **Reprocess Support**: Delete existing records and process again (with confirmation)
+- **Optional Testing Cron**: node-cron available for development (ENABLE_CRON=true)
+- Process payroll for specified date (defaults to yesterday)
+- Log execution results in database (including reprocess flag)
+- Handle errors gracefully (don't crash server)
+- No automatic scheduling in production
+- Database constraint: UNIQUE(employee_id, date) prevents duplicates
+
+## Mock APIs
+- Create mock routes in `routes/mock/`
+- Return realistic data structures
+- Use `mockDataGenerator.js` for generating test data
+- Switch to real APIs via `dataService.js` abstraction
+
+## Security
+- All routes (except login) require authentication
+- Use role-based middleware for authorization
+- Validate all inputs
+- Sanitize user data
+- Use environment variables for secrets
