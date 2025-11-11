@@ -86,9 +86,12 @@ CRON_SCHEDULE="30 10 * * *"  # 10:30 AM daily (for testing only)
 #### Web Frontend (.env)
 ```env
 REACT_APP_API_URL=http://localhost:3000/api
-REACT_APP_FIREBASE_API_KEY=
-REACT_APP_FIREBASE_AUTH_DOMAIN=
-REACT_APP_FIREBASE_PROJECT_ID=
+REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your-project-id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
+REACT_APP_FIREBASE_APP_ID=1:123456789:web:abc123def456
 ```
 
 #### Mobile App (.env)
@@ -153,25 +156,53 @@ backend/
 ```
 frontend-web/
 ├── public/
+│   └── manifest.json
 ├── src/
 │   ├── components/
 │   │   ├── admin/          # Admin-specific components
+│   │   │   ├── AnalyzePayrollWidget.jsx
+│   │   │   ├── ProcessPayrollWidget.jsx
+│   │   │   └── PayrollTable.jsx
 │   │   ├── manager/        # Manager-specific components
 │   │   ├── foreman/        # Foreman-specific components
 │   │   └── shared/         # Shared components
+│   │       ├── NotificationBell.jsx
+│   │       ├── NotificationDropdown.jsx
+│   │       ├── Sidebar.jsx
+│   │       ├── AdminLayout.jsx
+│   │       ├── ManagerLayout.jsx
+│   │       ├── ForemanLayout.jsx
+│   │       ├── AddUserModal.jsx
+│   │       └── EditUserModal.jsx
+│   ├── config/
+│   │   └── firebase.js      # Firebase client SDK config
 │   ├── context/
-│   │   └── AuthContext.js
+│   │   └── AuthContext.js  # Authentication context with Firebase
 │   ├── pages/
 │   │   ├── Login.jsx
 │   │   ├── admin/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Upload.jsx
+│   │   │   ├── Review.jsx
+│   │   │   ├── Approve.jsx
+│   │   │   ├── Users.jsx
+│   │   │   ├── Reports.jsx
+│   │   │   └── Settings.jsx
 │   │   ├── manager/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Teams.jsx
+│   │   │   └── Analytics.jsx
 │   │   └── foreman/
+│   │       ├── Dashboard.jsx
+│   │       ├── TeamMembers.jsx
+│   │       ├── Schedule.jsx
+│   │       └── History.jsx
 │   ├── services/
-│   │   └── api.js
+│   │   └── api.js          # Axios instance with interceptors
 │   ├── utils/
 │   │   ├── formatters.js
 │   │   └── validation.js
-│   ├── App.js
+│   ├── App.js              # Main routing configuration
 │   ├── index.js
 │   └── index.css
 ├── .env
@@ -244,6 +275,7 @@ mobile/
   "react": "^18.2.0",
   "react-router-dom": "^6.20.0",
   "axios": "^1.6.2",
+  "firebase": "^10.7.1",
   "chart.js": "^4.4.0",
   "react-chartjs-2": "^5.2.0",
   "tailwindcss": "^3.3.6"
@@ -469,4 +501,10 @@ mobile/
 18. **Admin Protection**: Admins cannot delete themselves ✅ **IMPLEMENTED**
 19. **Unit Testing**: Comprehensive test suite with 65 passing tests ✅ **IMPLEMENTED**
 20. **Test Coverage**: Core business logic (calculation engine, CSV export) fully tested ✅ **IMPLEMENTED**
+21. **Frontend Authentication**: Firebase client SDK with AuthContext, token storage, axios interceptor ✅ **IMPLEMENTED**
+22. **Frontend Routing**: React Router with nested routes, role-based layouts, protected routes ✅ **IMPLEMENTED**
+23. **Web Dashboards**: Admin, Manager, and Foreman dashboards with all pages implemented ✅ **IMPLEMENTED**
+24. **Crew Member Restriction**: Web access blocked for crew members (invalid credentials message) ✅ **IMPLEMENTED**
+25. **Token Management**: Firebase ID token stored as `authToken` in localStorage for axios interceptor ✅ **IMPLEMENTED**
+26. **Axios Interceptor Pattern**: Request interceptor adds token, response interceptor handles 401 redirects ✅ **IMPLEMENTED**
 

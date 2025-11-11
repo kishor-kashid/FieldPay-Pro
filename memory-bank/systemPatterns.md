@@ -204,17 +204,31 @@ server.js
 ### Frontend Structure (Web)
 ```
 App.js
-  ├── AuthContext (global auth state)
+  ├── AuthContext (global auth state, Firebase auth, token management)
   ├── Routes
-  │   ├── /login
+  │   ├── /login (Login page with role-based redirection)
   │   ├── /admin/* (AdminLayout)
+  │   │   ├── /admin/dashboard (AdminDashboard)
+  │   │   ├── /admin/upload (Upload page)
+  │   │   ├── /admin/review (Review page)
+  │   │   ├── /admin/approve (Approve page)
+  │   │   ├── /admin/users (Users page)
+  │   │   ├── /admin/reports (Reports page)
+  │   │   └── /admin/settings (Settings page)
   │   ├── /manager/* (ManagerLayout)
+  │   │   ├── /manager/dashboard (ManagerDashboard)
+  │   │   ├── /manager/teams (Teams page)
+  │   │   └── /manager/analytics (Analytics page)
   │   └── /foreman/* (ForemanLayout)
+  │       ├── /foreman/dashboard (ForemanDashboard)
+  │       ├── /foreman/members (TeamMembers page)
+  │       ├── /foreman/schedule (Schedule page)
+  │       └── /foreman/history (History page)
   └── Components
-      ├── Shared (NotificationBell, etc.)
-      ├── Admin (PayrollTable, etc.)
-      ├── Manager (PerformanceChart, etc.)
-      └── Foreman (MemberDetailModal, etc.)
+      ├── Shared (NotificationBell, NotificationDropdown, Sidebar)
+      ├── Admin (AnalyzePayrollWidget, ProcessPayrollWidget, PayrollTable, etc.)
+      ├── Manager (PerformanceChart, TeamCard, etc.)
+      └── Foreman (MemberCard, ScheduleView, etc.)
 ```
 
 ### Mobile App Structure
@@ -251,13 +265,25 @@ App.js
 9. **Notifications**: `notificationService` creates role-specific notifications (only after Process, not Analyze)
 10. **Response**: API returns processing summary
 
-### User Authentication Flow
-1. **Login**: User authenticates via Firebase Auth
-2. **Token**: Firebase returns JWT token
-3. **Storage**: Token stored in client (localStorage/AsyncStorage)
-4. **Requests**: Token included in Authorization header
-5. **Verification**: `auth` middleware verifies token on each request
-6. **Role Check**: `roleCheck` middleware validates permissions
+### User Authentication Flow ✅ **IMPLEMENTED**
+1. **Login**: User authenticates via Firebase Auth (client SDK)
+2. **Token**: Firebase returns ID token
+3. **Storage**: 
+   - Token stored as `authToken` in localStorage (for axios interceptor)
+   - User profile stored as `user` in localStorage (for persistence)
+4. **Profile Fetch**: Backend `/auth/profile` endpoint fetches user role and details
+5. **Role-Based Redirection**: 
+   - Admin → `/admin/dashboard`
+   - Manager → `/manager/dashboard`
+   - Foreman → `/foreman/dashboard`
+   - Crew Member → Show "Invalid credentials" (web access restricted)
+6. **Requests**: 
+   - Axios interceptor automatically adds `authToken` from localStorage to Authorization header
+   - Direct fetch calls use `getToken()` from AuthContext
+7. **Verification**: `auth` middleware verifies token on each request
+8. **Role Check**: `roleCheck` middleware validates permissions
+9. **Token Refresh**: `getToken()` refreshes token and updates localStorage
+10. **Logout**: Clears Firebase auth, removes tokens from localStorage, redirects to login
 
 ### CSV Upload Flow
 1. **Upload**: Admin uploads CSV via web interface
@@ -282,15 +308,21 @@ App.js
 
 ## Security Patterns
 
-### Authentication
-- Firebase Authentication for user login
-- JWT tokens for API authentication
-- Token expiration and refresh handling
+### Authentication ✅ **IMPLEMENTED**
+- Firebase Authentication for user login (client SDK)
+- Firebase ID tokens for API authentication
+- Token stored in localStorage as `authToken` for axios interceptor compatibility
+- Token refresh via `getToken()` method in AuthContext
+- Auth state listener (`onAuthStateChanged`) for automatic profile fetching
+- Profile data persisted in localStorage for offline access
 
-### Authorization
-- Role-based middleware checks
-- Route-level permission enforcement
+### Authorization ✅ **IMPLEMENTED**
+- Role-based middleware checks (backend)
+- Route-level permission enforcement (frontend routing)
 - User can only access own data (crew members)
+- Crew members restricted from web app access (show invalid credentials)
+- Admin-only routes protected (users, payroll processing)
+- Manager/Foreman role-based data filtering
 
 ### Data Protection
 - Environment variables for sensitive config
@@ -305,11 +337,14 @@ App.js
 - Structured error responses with appropriate HTTP codes
 - Error logging for debugging
 
-### Frontend
+### Frontend ✅ **IMPLEMENTED**
 - Error boundaries for React components
 - API error handling with user-friendly messages
 - Form validation with clear feedback
 - Loading states for async operations
+- Axios response interceptor handles 401 errors (redirects to login)
+- Polling mechanism for user profile loading during login
+- Error messages for crew member access attempts
 
 ## Testing Patterns
 

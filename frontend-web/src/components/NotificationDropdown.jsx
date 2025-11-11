@@ -4,11 +4,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
 const NotificationDropdown = ({ onClose, onNotificationRead }) => {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,7 +18,9 @@ const NotificationDropdown = ({ onClose, onNotificationRead }) => {
     if (!user) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
+      
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/notifications?limit=10`,
         {
@@ -51,7 +53,9 @@ const NotificationDropdown = ({ onClose, onNotificationRead }) => {
     if (!user) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
+      
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/notifications/${notificationId}/read`,
         {
@@ -85,7 +89,9 @@ const NotificationDropdown = ({ onClose, onNotificationRead }) => {
     if (!user) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
+      
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/notifications/read-all`,
         {
@@ -117,7 +123,9 @@ const NotificationDropdown = ({ onClose, onNotificationRead }) => {
     if (!user) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
+      
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/notifications/${notificationId}`,
         {

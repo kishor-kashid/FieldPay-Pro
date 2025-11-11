@@ -21,7 +21,7 @@ const {
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.uid;
+    const userId = req.user.id;
     const { read, type, limit, offset } = req.query;
 
     const filters = {
@@ -54,7 +54,7 @@ router.get('/', authenticateToken, async (req, res) => {
  */
 router.get('/unread', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.uid;
+    const userId = req.user.id;
     const count = await getUnreadCount(userId);
 
     res.json({
@@ -77,7 +77,7 @@ router.get('/unread', authenticateToken, async (req, res) => {
  */
 router.patch('/:id/read', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.uid;
+    const userId = req.user.id;
     const { id } = req.params;
 
     const notification = await markAsRead(id, userId);
@@ -103,7 +103,7 @@ router.patch('/:id/read', authenticateToken, async (req, res) => {
  */
 router.patch('/read-all', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.uid;
+    const userId = req.user.id;
     const count = await markAllAsRead(userId);
 
     res.json({
@@ -127,7 +127,7 @@ router.patch('/read-all', authenticateToken, async (req, res) => {
  */
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.uid;
+    const userId = req.user.id;
     const { id } = req.params;
 
     await deleteNotification(id, userId);
@@ -152,7 +152,7 @@ router.delete('/:id', authenticateToken, async (req, res) => {
  */
 router.delete('/read', authenticateToken, async (req, res) => {
   try {
-    const userId = req.user.uid;
+    const userId = req.user.id;
     const count = await deleteReadNotifications(userId);
 
     res.json({
