@@ -86,9 +86,12 @@ CRON_SCHEDULE="30 10 * * *"  # 10:30 AM daily (for testing only)
 #### Web Frontend (.env)
 ```env
 REACT_APP_API_URL=http://localhost:3000/api
-REACT_APP_FIREBASE_API_KEY=
-REACT_APP_FIREBASE_AUTH_DOMAIN=
-REACT_APP_FIREBASE_PROJECT_ID=
+REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+REACT_APP_FIREBASE_PROJECT_ID=your-project-id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
+REACT_APP_FIREBASE_APP_ID=1:123456789:web:abc123def456
 ```
 
 #### Mobile App (.env)
@@ -153,25 +156,53 @@ backend/
 ```
 frontend-web/
 ├── public/
+│   └── manifest.json
 ├── src/
 │   ├── components/
 │   │   ├── admin/          # Admin-specific components
+│   │   │   ├── AnalyzePayrollWidget.jsx
+│   │   │   ├── ProcessPayrollWidget.jsx
+│   │   │   └── PayrollTable.jsx
 │   │   ├── manager/        # Manager-specific components
 │   │   ├── foreman/        # Foreman-specific components
 │   │   └── shared/         # Shared components
+│   │       ├── NotificationBell.jsx
+│   │       ├── NotificationDropdown.jsx
+│   │       ├── Sidebar.jsx
+│   │       ├── AdminLayout.jsx
+│   │       ├── ManagerLayout.jsx
+│   │       ├── ForemanLayout.jsx
+│   │       ├── AddUserModal.jsx
+│   │       └── EditUserModal.jsx
+│   ├── config/
+│   │   └── firebase.js      # Firebase client SDK config
 │   ├── context/
-│   │   └── AuthContext.js
+│   │   └── AuthContext.js  # Authentication context with Firebase
 │   ├── pages/
 │   │   ├── Login.jsx
 │   │   ├── admin/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Upload.jsx
+│   │   │   ├── Review.jsx
+│   │   │   ├── Approve.jsx
+│   │   │   ├── Users.jsx
+│   │   │   ├── Reports.jsx
+│   │   │   └── Settings.jsx
 │   │   ├── manager/
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Teams.jsx
+│   │   │   └── Analytics.jsx
 │   │   └── foreman/
+│   │       ├── Dashboard.jsx
+│   │       ├── TeamMembers.jsx
+│   │       ├── Schedule.jsx
+│   │       └── History.jsx
 │   ├── services/
-│   │   └── api.js
+│   │   └── api.js          # Axios instance with interceptors
 │   ├── utils/
 │   │   ├── formatters.js
 │   │   └── validation.js
-│   ├── App.js
+│   ├── App.js              # Main routing configuration
 │   ├── index.js
 │   └── index.css
 ├── .env
@@ -244,6 +275,7 @@ mobile/
   "react": "^18.2.0",
   "react-router-dom": "^6.20.0",
   "axios": "^1.6.2",
+  "firebase": "^10.7.1",
   "chart.js": "^4.4.0",
   "react-chartjs-2": "^5.2.0",
   "tailwindcss": "^3.3.6"
@@ -364,7 +396,7 @@ mobile/
 ### Payroll API Routes (`routes/payroll.js`) ✅ **IMPLEMENTED**
 - POST `/api/payroll/analyze` - Preview payroll (no DB writes, no notifications) - Admin only
 - POST `/api/payroll/process` - Process payroll (commit to DB) - Admin only
-- GET `/api/payroll/records` - Get payroll records (role-based filtering) - All roles
+- GET `/api/payroll/records` - Get payroll records (role-based filtering, supports date range: start_date, end_date) - All roles
 - GET `/api/payroll/records/:id` - Get specific record - Role-based
 - PUT `/api/payroll/records/:id/approve` - Approve record - Admin/Manager only
 - GET `/api/payroll/export` - Export CSV (3 formats) - Admin/Manager only
@@ -425,8 +457,8 @@ mobile/
 - **Features**: Role validation, duplicate prevention, search across name/email/employee_id
 
 ### User Management API Routes (`routes/users.js`) ✅ **IMPLEMENTED**
-- GET `/api/users` - List all users (with filters) - Admin only
-- GET `/api/users/stats` - Get user statistics - Admin only
+- GET `/api/users` - List all users (with filters) - Admin, Manager, and Foreman (foremen see only their crew)
+- GET `/api/users/stats` - Get user statistics - Admin and Manager only
 - GET `/api/users/:id` - Get user details - Admin or own profile
 - POST `/api/users` - Create new user - Admin only
 - PATCH `/api/users/:id` - Update user - Admin (all fields) or own profile (limited fields)
@@ -469,4 +501,28 @@ mobile/
 18. **Admin Protection**: Admins cannot delete themselves ✅ **IMPLEMENTED**
 19. **Unit Testing**: Comprehensive test suite with 65 passing tests ✅ **IMPLEMENTED**
 20. **Test Coverage**: Core business logic (calculation engine, CSV export) fully tested ✅ **IMPLEMENTED**
+21. **Frontend Authentication**: Firebase client SDK with AuthContext, token storage, axios interceptor ✅ **IMPLEMENTED**
+22. **Frontend Routing**: React Router with nested routes, role-based layouts, protected routes ✅ **IMPLEMENTED**
+23. **Web Dashboards**: Admin, Manager, and Foreman dashboards with all pages implemented ✅ **IMPLEMENTED**
+24. **Crew Member Restriction**: Web access blocked for crew members (invalid credentials message) ✅ **IMPLEMENTED**
+25. **Token Management**: Firebase ID token stored as `authToken` in localStorage for axios interceptor ✅ **IMPLEMENTED**
+26. **Axios Interceptor Pattern**: Request interceptor adds token, response interceptor handles 401 redirects ✅ **IMPLEMENTED**
+27. **Payroll Calculation Simplified**: Removed efficiency and performance bonuses, formula is now: Total Pay = Base Pay - Penalties ✅ **IMPLEMENTED**
+28. **Base Rate Display**: Added Base Rate column to all payroll tables (PayrollTable, Review, Approve) showing hourly rate ✅ **IMPLEMENTED**
+29. **Database Schema Consolidation**: Single comprehensive schema file (`000_comprehensive_schema.sql`) for clean setup ✅ **IMPLEMENTED**
+30. **Reset-Seed Script**: `npm run reset-seed` script to delete all data and regenerate users + payroll data in one go ✅ **IMPLEMENTED**
+31. **Crew Members Expanded**: 10 crew members total (expanded from 4), divided into 2 groups (4 and 6 members) ✅ **IMPLEMENTED**
+32. **Total Penalties Mapping**: Fixed to ensure `total_penalties` is properly mapped from database `penalties` field ✅ **IMPLEMENTED**
+33. **Manager Dashboard Enhancement**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics, real-time alerts, anomaly breakdown, and crew comparison table ✅ **IMPLEMENTED**
+34. **Manager Teams Page Enhancement**: Date range support, improved crew_id matching (CREW1/foreman1), aggregated metrics, better empty states ✅ **IMPLEMENTED**
+35. **Manager Analytics Simplification**: Charts removed, dynamic data generation, date range validation ✅ **IMPLEMENTED**
+36. **Backend API Access Expansion**: User management endpoints now accessible to managers and foremen (not just admins) ✅ **IMPLEMENTED**
+37. **Data Setup Consolidation**: Single comprehensive `setupDatabase.js` script for database initialization ✅ **IMPLEMENTED**
+38. **Foreman Dashboard Enhancement**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics, real-time alerts, member cards with aggregated data ✅ **IMPLEMENTED**
+39. **Foreman Teams Page Enhancement**: Real data from API, date range support, MemberDetailModal integration ✅ **IMPLEMENTED**
+40. **Foreman History Simplification**: Charts removed, dynamic data generation, date range validation ✅ **IMPLEMENTED**
+41. **Foreman Schedule Enhancement**: Date validation added ✅ **IMPLEMENTED**
+42. **MemberDetailModal Fix**: Chart.js dependency removed, uses real performance data, dynamic strengths/weaknesses ✅ **IMPLEMENTED**
+43. **Backend Crew Matching Enhancement**: Flexible crew_id matching (CREW1/foreman1, CREW2/foreman2) using number extraction and case-insensitive matching ✅ **IMPLEMENTED**
+44. **Backend Foreman Filtering Fix**: Updated payroll routes to use `user.crew_id` instead of `user.uid` for foremen ✅ **IMPLEMENTED**
 

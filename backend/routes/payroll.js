@@ -74,7 +74,15 @@ router.post('/analyze', authenticateToken, requireAdmin, async (req, res, next) 
 router.post('/process', authenticateToken, requireAdmin, async (req, res, next) => {
   try {
     const { date, reprocess } = req.body;
-    const triggeredBy = req.user.uid; // Get user ID from authenticated token
+    // Use database user ID (UUID) instead of Firebase UID
+    const triggeredBy = req.user.id; // Get database user ID (UUID) from authenticated user
+    
+    if (!triggeredBy) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID not found. Please ensure user exists in database.'
+      });
+    }
     
     // Default to yesterday if no date provided
     const targetDate = date || (() => {
@@ -83,7 +91,7 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
       return yesterday.toISOString().split('T')[0];
     })();
     
-    console.log(`🚀 Admin ${req.user.uid} processing payroll for ${targetDate} (reprocess: ${reprocess || false})`);
+    console.log(`🚀 Admin ${req.user.email} (ID: ${triggeredBy}) processing payroll for ${targetDate} (reprocess: ${reprocess || false})`);
     
     const result = await processPayroll(targetDate, triggeredBy, { reprocess: reprocess || false });
     
@@ -115,26 +123,53 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
  */
 router.get('/records', authenticateToken, async (req, res, next) => {
   try {
-    const { date, employee_id, crew_id, status, anomalies_only } = req.query;
+    const { date, start_date, end_date, employee_id, crew_id, status, anomalies_only } = req.query;
     const user = req.user;
     
     // Build filters based on role
     const filters = {};
     
     if (date) filters.date = date;
+    if (start_date) filters.start_date = start_date;
+    if (end_date) filters.end_date = end_date;
     if (status) filters.status = status;
     if (anomalies_only === 'true') filters.anomalies_only = true;
     
     // Role-based filtering
     if (user.role === 'crew_member') {
       // Crew members can only see their own records
-      filters.employee_id = user.uid;
+      filters.employee_id = user.id || user.uid;
     } else if (user.role === 'foreman') {
       // Foremen can see their crew's records
       if (employee_id) {
         filters.employee_id = employee_id;
       } else {
-        filters.crew_id = user.uid; // Foreman's crew
+        // Use foreman's crew_id from user object, not uid
+        const foremanCrewId = user.crew_id || user.customClaims?.crew_id;
+        if (foremanCrewId) {
+          filters.crew_id = foremanCrewId;
+        }
+        // If crew_id is provided in query, use it (but still restricted to foreman's crew)
+        if (crew_id && foremanCrewId) {
+          // Allow if it matches foreman's crew (with flexible matching)
+          const normalizedQueryCrew = String(crew_id).trim().toLowerCase();
+          const normalizedForemanCrew = String(foremanCrewId).trim().toLowerCase();
+          
+          // Extract numbers for matching (CREW1 vs foreman1)
+          const queryNumMatch = normalizedQueryCrew.match(/\d+/);
+          const foremanNumMatch = normalizedForemanCrew.match(/\d+/);
+          
+          if (queryNumMatch && foremanNumMatch && queryNumMatch[0] === foremanNumMatch[0]) {
+            // Numbers match, use the query crew_id
+            filters.crew_id = crew_id;
+          } else if (normalizedQueryCrew === normalizedForemanCrew) {
+            // Exact match
+            filters.crew_id = crew_id;
+          } else {
+            // Use foreman's crew_id
+            filters.crew_id = foremanCrewId;
+          }
+        }
       }
     } else if (user.role === 'manager' || user.role === 'admin') {
       // Managers and admins can see all, with optional filtering

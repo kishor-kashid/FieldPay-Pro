@@ -4,10 +4,10 @@
  */
 
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const EditUserModal = ({ user: initialUser, onClose, onSuccess }) => {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
@@ -35,7 +35,11 @@ const EditUserModal = ({ user: initialUser, onClose, onSuccess }) => {
     setError(null);
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) {
+        setError('Authentication token not available');
+        return;
+      }
       
       // Prepare data (only include changed fields)
       const userData = {};

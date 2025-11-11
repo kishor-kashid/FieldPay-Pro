@@ -26,6 +26,16 @@
 - ✅ User Management API Routes (6 endpoints)
 - ✅ Admin Users Page (statistics, search, filtering)
 - ✅ Add/Edit User Modals
+- ✅ Review Payroll Page (crew column, dynamic crew filter, sorting)
+- ✅ Reports Page (dynamic data generation, date range filtering)
+- ✅ Manager Dashboard (comprehensive compliance and performance overview)
+- ✅ Manager Teams Page (enhanced crew data calculation, date range support)
+- ✅ Manager Analytics Page (simplified, dynamic data)
+- ✅ Foreman Dashboard (comprehensive compliance and performance overview, date range support)
+- ✅ Foreman TeamMembers Page (real data from API, date range support)
+- ✅ Foreman History Page (simplified, dynamic data, charts removed)
+- ✅ Foreman Schedule Page (date validation added)
+- ✅ MemberDetailModal (Chart.js removed, real data display)
 
 ## What's Left to Build
 
@@ -48,22 +58,34 @@
 - [ ] Error handling and validation
 - [ ] Integration tests
 
-### Web Frontend (25% Complete)
+### Web Frontend (80% Complete)
 - [x] Project setup (React + Tailwind) ✅
 - [x] Firebase client SDK configuration ✅
 - [x] Authentication context and hooks ✅
+- [x] Authentication UI (login page with role-based redirection) ✅
+- [x] Routing setup (nested routes, role-based layouts) ✅
 - [x] Notification components (bell + dropdown) ✅
 - [x] Admin Users page (CRUD, search, stats) ✅
 - [x] Add/Edit User modals ✅
-- [ ] Authentication UI (login/logout pages)
-- [ ] Routing setup
-- [ ] Admin dashboard (analyze & process widgets)
-- [ ] Manager dashboard (analytics, teams, reports)
-- [ ] Foreman dashboard (team overview, members, schedule, history)
-- [ ] Charts and data visualizations
+- [x] Admin dashboard (dashboard page, analyze/process widgets, quick actions, stats) ✅
+- [x] Admin pages (Upload, Review, Approve, Reports, Settings) ✅
+- [x] Review Payroll page enhancements (crew column, dynamic filters) ✅
+- [x] Reports page enhancements (dynamic data, date range filtering) ✅
+- [x] Manager dashboard (dashboard page with compliance metrics, teams page with enhanced calculations, analytics page) ✅
+- [x] Manager dashboard enhancements (date range selector, compliance metrics, alerts, anomaly breakdown, crew comparison) ✅
+- [x] Manager Teams page enhancements (date range support, improved crew matching, aggregated metrics) ✅
+- [x] Foreman dashboard (dashboard with compliance metrics, team members with real data, schedule with validation, history with real data) ✅
+- [x] Foreman dashboard enhancements (date range selector, compliance metrics, alerts, member cards with real data) ✅
+- [x] Foreman TeamMembers page (real data from API, date range support, member detail modal) ✅
+- [x] Foreman History page (charts removed, real data, date range validation) ✅
+- [x] MemberDetailModal fix (Chart.js removed, real data display) ✅
+- [x] Role-based access control (crew members restricted from web app) ✅
+- [x] Token management (Firebase token stored for axios interceptor) ✅
+- [x] Charts removed from Reports page (simplified UI) ✅
+- [ ] Charts and data visualizations (enhancements) - if needed in future
 - [ ] CSV upload interface
-- [ ] Error handling and validation
-- [ ] Responsive design
+- [ ] Error handling and validation (enhancements)
+- [ ] Responsive design (polish)
 
 ### Mobile App (15% Complete)
 - [x] Project setup (React Native + Expo) ✅
@@ -108,7 +130,10 @@
 - ✅ PR #7: Payroll Processing Execution & Logging - **COMPLETED**
 - ✅ PR #8: Notifications System - **COMPLETED**
 - ✅ PR #9: User Management Routes - **COMPLETED**
-- ⏳ PR #10: Admin Dashboard - **NEXT**
+- ✅ PR #10: Admin Dashboard - **COMPLETED**
+- ✅ PR #11: Manager Dashboard - **COMPLETED**
+- ✅ PR #12: Foreman Dashboard - **COMPLETED**
+- ⏳ PR #13: Crew Member Mobile Screens - **NEXT**
 
 ### PR Status
 - **PR #1**: ✅ **COMPLETED** - Project Setup & Initial Configuration
@@ -120,11 +145,16 @@
 - **PR #7**: ✅ **COMPLETED** - Payroll Processing Execution & Logging
 - **PR #8**: ✅ **COMPLETED** - Notifications System
 - **PR #9**: ✅ **COMPLETED** - User Management Routes
-- **PR #10**: ⏳ **NEXT** - Admin Dashboard
-- **PR #11-25**: Not started
+- **PR #10**: ✅ **COMPLETED** - Admin Dashboard
+- **PR #11**: ✅ **COMPLETED** - Manager Dashboard
+- **PR #12**: ✅ **COMPLETED** - Foreman Dashboard
+- **PR #13**: ⏳ **NEXT** - Crew Member Mobile Screens
+- **PR #14-25**: Not started
 
 ## Known Issues
-None yet - project just starting.
+- ✅ **RESOLVED**: Admin login logout issue - Fixed by storing Firebase token as `authToken` in localStorage for axios interceptor
+- ✅ **RESOLVED**: Crew member web access - Restricted with invalid credentials message
+- ✅ **RESOLVED**: Notification API errors - Fixed by using `req.user.id` instead of `req.user.uid` in backend routes
 
 ## Completed Milestones
 1. ✅ Project requirements gathering and documentation
@@ -140,12 +170,15 @@ None yet - project just starting.
 11. ✅ **PR #7: Execution Logging & Cron Service** (Execution logging service, optional testing cron, 3 execution endpoints, audit trail)
 12. ✅ **PR #8: Notifications System** (Notification service, 6 API endpoints, web/mobile components, role-based delivery)
 13. ✅ **PR #9: User Management** (User service, 6 API endpoints, admin Users page, Add/Edit modals, search/filtering)
+14. ✅ **PR #10: Admin Dashboard** (Dashboard page, Analyze/Process widgets, quick actions, stats, all admin pages)
+15. ✅ **PR #11: Manager Dashboard** (Dashboard page, Teams page, Analytics page)
+16. ✅ **PR #12: Foreman Dashboard** (Dashboard page, Team Members page, Schedule page, History page)
 
 ## Next Milestones
-1. ⏳ PR #10: Admin dashboard (analyze & process widgets)
-2. ⏳ PR #11: Manager dashboard
-3. ⏳ PR #12: Foreman dashboard
-4. ⏳ PR #13: Crew member mobile screens
+1. ⏳ PR #13: Crew member mobile screens (dashboard, breakdown, history, profile, help)
+2. ⏳ PR #14: CSV upload functionality
+3. ⏳ PR #15: Charts and analytics enhancements
+4. ⏳ PR #16-25: Testing, deployment, polish
 
 ## Testing Status
 - ✅ **Unit Tests**: 65 tests passing across 5 test files
@@ -215,4 +248,27 @@ None yet - project just starting.
 - **Unit tests**: 65 tests covering critical business logic (calculation engine, CSV export, user operations)
 - **Test coverage**: Core P4P calculation engine fully tested, CSV export fully tested, basic user operations tested
 - **Test quality**: All tests passing, console output suppressed for readability
+- **Payroll calculation**: Simplified to Base Pay - Penalties (efficiency and bonuses removed)
+- **Base Rate display**: Added to all payroll tables and detail modals showing hourly rate
+- **Database schema**: Comprehensive single-file schema (`000_comprehensive_schema.sql`) for clean setup
+- **Reset-seed script**: `npm run reset-seed` to delete all data and regenerate in one go
+- **Crew members**: 10 total (expanded from 4), divided into 2 groups (4 and 6 members)
+- **Total penalties**: Fixed mapping from database `penalties` field to frontend `total_penalties`
+- **UI Simplification**: Status columns removed from all payroll tables and widgets for cleaner, focused interface
+- **Approve & Export Page**: Streamlined to focus on payroll analysis, processing, and export functionality
+- **Reports Section**: Dynamic report generation from database with date range filtering, charts removed
+- **Review Payroll Page**: Crew column added with sorting, dynamic crew filter dropdown from database
+- **Backend API**: Payroll records endpoint supports date range filtering (start_date, end_date parameters)
+- **Manager Dashboard**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics (pending, approved, anomalies, rejected), compliance rate calculation, real-time alerts from compliance data, anomaly breakdown by type, crew performance comparison table
+- **Manager Teams Page**: Date range selector, improved crew_id matching (handles CREW1/foreman1, CREW2/foreman2), total payout aggregation across date ranges, top performers aggregation, additional metrics (approved count, anomaly count, compliance rate, avg payout/record), better empty state handling
+- **Manager Analytics Page**: Charts removed, date range validation added, dynamic data generation from database
+- **Backend API Access**: User management endpoints (`/api/users`, `/api/users/stats`) now accessible to managers and foremen (expanded from admin-only)
+- **Data Setup Script**: Consolidated `setupDatabase.js` script for comprehensive database initialization (delete all data, seed users, process payroll for date range, mark previous as approved)
+- **Foreman Dashboard**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics (pending, approved, anomalies, rejected), compliance rate calculation, real-time alerts from compliance data, member cards with aggregated performance data (total payout, records, approved, anomalies, hours)
+- **Foreman TeamMembers Page**: Date range selector, real data from API (userAPI and payrollAPI), member cards with performance metrics, MemberDetailModal integration
+- **Foreman History Page**: Charts removed, dynamic data generation from database, date range validation, groups records by date, shows summary stats (avg payout, total payout, total records, best day)
+- **Foreman Schedule Page**: Date validation added (max = today)
+- **MemberDetailModal**: Chart.js dependency removed (fixes "linear scale not registered" error), uses real performance data, dynamic strengths/weaknesses based on actual metrics, contact information display
+- **Backend Crew Matching**: Enhanced crew_id matching in payroll service to handle CREW1/foreman1, CREW2/foreman2 mismatches using number extraction and case-insensitive matching
+- **Backend Foreman Access**: Updated payroll routes to use `user.crew_id` instead of `user.uid` for foremen filtering
 

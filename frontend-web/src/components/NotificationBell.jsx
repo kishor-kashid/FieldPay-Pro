@@ -4,11 +4,11 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import NotificationDropdown from './NotificationDropdown';
 
 const NotificationBell = () => {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,9 @@ const NotificationBell = () => {
     if (!user) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
+      
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/notifications/unread`,
         {

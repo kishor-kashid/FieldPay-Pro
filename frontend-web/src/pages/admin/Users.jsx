@@ -4,12 +4,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import AddUserModal from '../../components/AddUserModal';
 import EditUserModal from '../../components/EditUserModal';
 
 const Users = () => {
-  const { user } = useAuth();
+  const { user, getToken } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +29,8 @@ const Users = () => {
 
     try {
       setLoading(true);
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
       
       // Build query string
       const params = new URLSearchParams();
@@ -65,7 +66,8 @@ const Users = () => {
     if (!user) return;
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/users/stats`,
         {
@@ -96,7 +98,8 @@ const Users = () => {
     }
 
     try {
-      const token = await user.getIdToken();
+      const token = await getToken();
+      if (!token) return;
       const response = await fetch(
         `${process.env.REACT_APP_API_URL}/users/${userId}`,
         {

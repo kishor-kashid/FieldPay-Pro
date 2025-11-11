@@ -113,18 +113,6 @@ function detectAnomalies(calculation) {
   const anomalies = [];
   let hasAnomalies = false;
   
-  // Check efficiency anomalies
-  if (calculation.efficiency !== null && calculation.efficiency !== undefined) {
-    const efficiencyCheck = checkEfficiencyAnomaly(calculation.efficiency);
-    if (efficiencyCheck.isAnomaly) {
-      hasAnomalies = true;
-      anomalies.push(...efficiencyCheck.reasons);
-    }
-  } else {
-    hasAnomalies = true;
-    anomalies.push('Missing efficiency data');
-  }
-  
   // Check for missing critical data
   if (!calculation.base_pay || calculation.base_pay === 0) {
     hasAnomalies = true;
@@ -185,40 +173,25 @@ function calculateEmployeePayroll(employee, jobs) {
     // Calculate base pay
     const basePay = calculateBasePay(hoursWorked, baseRate);
     
-    // Calculate efficiency
-    let efficiencyData = null;
-    let efficiency = null;
-    
-    if (jobs && jobs.length > 0) {
-      efficiencyData = calculateAggregateEfficiency(jobs, hoursWorked);
-      efficiency = efficiencyData.overall_efficiency;
-    } else {
-      // No jobs assigned - cannot calculate efficiency
-      console.warn(`No jobs assigned to employee ${employee.employee_id}`);
-    }
-    
-    // Calculate bonuses
-    const bonusResult = efficiency !== null 
-      ? calculatePerformanceBonus(basePay, efficiency)
-      : { amount: 0, applied: false, details: [] };
-    
     // Calculate penalties
     const latePenalty = clockIn 
       ? calculateLatePenalty(basePay, clockIn)
       : { amount: 0, applied: false };
-    
+
     const longLunchPenalty = (lunchStart && lunchEnd)
       ? calculateLongLunchPenalty(basePay, lunchStart, lunchEnd)
       : { amount: 0, applied: false };
-    
+
     const totalPenalties = latePenalty.amount + longLunchPenalty.amount;
     
-    // Calculate total pay
-    let totalPay = basePay + bonusResult.amount - totalPenalties;
+    // Calculate total pay (base pay minus penalties only)
+    // Formula: totalPay = basePay - totalPenalties
+    // NO bonuses, NO efficiency calculations, NO other additions
+    let totalPay = basePay - totalPenalties;
     
-    // Ensure total pay is not negative
-    if (totalPay < settings.minTotalPay) {
-      totalPay = settings.minTotalPay;
+    // Ensure total pay is not negative (minimum is 0)
+    if (totalPay < 0) {
+      totalPay = 0;
     }
     
     totalPay = parseFloat(totalPay.toFixed(settings.moneyDecimalPlaces));
@@ -231,9 +204,6 @@ function calculateEmployeePayroll(employee, jobs) {
       hours_worked: hoursWorked,
       base_rate: baseRate,
       base_pay: basePay,
-      efficiency: efficiency,
-      efficiency_percentage: efficiency !== null ? parseFloat((efficiency * 100).toFixed(2)) : null,
-      performance_bonus: bonusResult.amount,
       late_penalty: latePenalty.amount,
       long_lunch_penalty: longLunchPenalty.amount,
       total_penalties: parseFloat(totalPenalties.toFixed(settings.moneyDecimalPlaces)),
@@ -244,12 +214,10 @@ function calculateEmployeePayroll(employee, jobs) {
       lunch_end: lunchEnd,
       crew_id: timesheet.crew_id || employee.crew_id,
       // Detailed breakdown
-      bonus_details: bonusResult.details,
       penalty_details: {
         late: latePenalty,
         long_lunch: longLunchPenalty
       },
-      efficiency_breakdown: efficiencyData,
       job_count: jobs ? jobs.length : 0
     };
     
@@ -322,11 +290,8 @@ function calculateBatchPayroll(employees, jobs, assignments) {
   
   // Calculate summary statistics
   const totalBasePay = results.reduce((sum, r) => sum + r.base_pay, 0);
-  const totalBonuses = results.reduce((sum, r) => sum + r.performance_bonus, 0);
   const totalPenalties = results.reduce((sum, r) => sum + r.total_penalties, 0);
   const totalPay = results.reduce((sum, r) => sum + r.total_pay, 0);
-  const avgEfficiency = results.filter(r => r.efficiency !== null)
-    .reduce((sum, r, _, arr) => sum + r.efficiency / arr.length, 0);
   
   return {
     success: true,
@@ -336,11 +301,8 @@ function calculateBatchPayroll(employees, jobs, assignments) {
       failed_calculations: errorCount,
       anomalies_detected: anomalyCount,
       total_base_pay: parseFloat(totalBasePay.toFixed(2)),
-      total_bonuses: parseFloat(totalBonuses.toFixed(2)),
       total_penalties: parseFloat(totalPenalties.toFixed(2)),
-      total_payout: parseFloat(totalPay.toFixed(2)),
-      average_efficiency: avgEfficiency ? parseFloat(avgEfficiency.toFixed(4)) : null,
-      average_efficiency_percentage: avgEfficiency ? parseFloat((avgEfficiency * 100).toFixed(2)) : null
+      total_payout: parseFloat(totalPay.toFixed(2))
     },
     results: results,
     errors: errors

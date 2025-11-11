@@ -1,6 +1,8 @@
--- Clean Scapes P4P System - Database Schema
--- Migration: 001_create_tables.sql
--- Description: Creates all required tables for the P4P system
+-- ============================================
+-- Clean Scapes P4P System - Comprehensive Database Schema
+-- Migration: 000_comprehensive_schema.sql
+-- Description: Creates all tables with all required fields
+-- ============================================
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -22,10 +24,10 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Indexes for users table
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
-CREATE INDEX IF NOT EXISTS idx_users_crew_id ON users(crew_id);
-CREATE INDEX IF NOT EXISTS idx_users_employee_id ON users(employee_id);
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_crew_id ON users(crew_id);
+CREATE INDEX idx_users_employee_id ON users(employee_id);
 
 -- ============================================
 -- JOBS TABLE
@@ -45,10 +47,10 @@ CREATE TABLE IF NOT EXISTS jobs (
 );
 
 -- Indexes for jobs table
-CREATE INDEX IF NOT EXISTS idx_jobs_date ON jobs(date);
-CREATE INDEX IF NOT EXISTS idx_jobs_crew_id ON jobs(crew_id);
-CREATE INDEX IF NOT EXISTS idx_jobs_external_id ON jobs(external_id);
-CREATE INDEX IF NOT EXISTS idx_jobs_date_crew ON jobs(date, crew_id);
+CREATE INDEX idx_jobs_date ON jobs(date);
+CREATE INDEX idx_jobs_crew_id ON jobs(crew_id);
+CREATE INDEX idx_jobs_external_id ON jobs(external_id);
+CREATE INDEX idx_jobs_date_crew ON jobs(date, crew_id);
 
 -- ============================================
 -- TIMESHEETS TABLE
@@ -68,9 +70,9 @@ CREATE TABLE IF NOT EXISTS timesheets (
 );
 
 -- Indexes for timesheets table
-CREATE INDEX IF NOT EXISTS idx_timesheets_employee_id ON timesheets(employee_id);
-CREATE INDEX IF NOT EXISTS idx_timesheets_date ON timesheets(date);
-CREATE INDEX IF NOT EXISTS idx_timesheets_employee_date ON timesheets(employee_id, date);
+CREATE INDEX idx_timesheets_employee_id ON timesheets(employee_id);
+CREATE INDEX idx_timesheets_date ON timesheets(date);
+CREATE INDEX idx_timesheets_employee_date ON timesheets(employee_id, date);
 
 -- ============================================
 -- PAYROLL_RECORDS TABLE
@@ -80,24 +82,31 @@ CREATE TABLE IF NOT EXISTS payroll_records (
   employee_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   date DATE NOT NULL,
   hours_worked DECIMAL(10, 2),
+  base_rate DECIMAL(10, 2),
   base_pay DECIMAL(10, 2),
-  efficiency_score DECIMAL(5, 2),
-  performance_bonus DECIMAL(10, 2) DEFAULT 0,
+  late_penalty DECIMAL(10, 2) DEFAULT 0,
+  long_lunch_penalty DECIMAL(10, 2) DEFAULT 0,
   penalties DECIMAL(10, 2) DEFAULT 0,
   total_pay DECIMAL(10, 2),
-  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  has_anomalies BOOLEAN DEFAULT FALSE,
+  anomaly_flags TEXT[],
+  status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'pending_review', 'calculated')),
+  approved BOOLEAN DEFAULT FALSE,
   admin_notes TEXT,
+  crew_id VARCHAR(50),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   UNIQUE(employee_id, date)
 );
 
 -- Indexes for payroll_records table
-CREATE INDEX IF NOT EXISTS idx_payroll_records_employee_id ON payroll_records(employee_id);
-CREATE INDEX IF NOT EXISTS idx_payroll_records_date ON payroll_records(date);
-CREATE INDEX IF NOT EXISTS idx_payroll_records_status ON payroll_records(status);
-CREATE INDEX IF NOT EXISTS idx_payroll_records_employee_date ON payroll_records(employee_id, date);
-CREATE INDEX IF NOT EXISTS idx_payroll_records_date_status ON payroll_records(date, status);
+CREATE INDEX idx_payroll_records_employee_id ON payroll_records(employee_id);
+CREATE INDEX idx_payroll_records_date ON payroll_records(date);
+CREATE INDEX idx_payroll_records_status ON payroll_records(status);
+CREATE INDEX idx_payroll_records_employee_date ON payroll_records(employee_id, date);
+CREATE INDEX idx_payroll_records_date_status ON payroll_records(date, status);
+CREATE INDEX idx_payroll_records_crew_id ON payroll_records(crew_id);
+CREATE INDEX idx_payroll_records_has_anomalies ON payroll_records(has_anomalies);
 
 -- ============================================
 -- NOTIFICATIONS TABLE
@@ -114,10 +123,10 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 -- Indexes for notifications table
-CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
-CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
-CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, read);
-CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX idx_notifications_read ON notifications(read);
+CREATE INDEX idx_notifications_user_read ON notifications(user_id, read);
+CREATE INDEX idx_notifications_created_at ON notifications(created_at);
 
 -- ============================================
 -- EXECUTION_LOGS TABLE
@@ -128,7 +137,7 @@ CREATE TABLE IF NOT EXISTS execution_logs (
   start_time TIMESTAMP WITH TIME ZONE NOT NULL,
   end_time TIMESTAMP WITH TIME ZONE,
   records_processed INTEGER DEFAULT 0,
-  status VARCHAR(50) NOT NULL CHECK (status IN ('success', 'failed', 'partial')),
+  status VARCHAR(50) NOT NULL CHECK (status IN ('success', 'failed', 'partial', 'processing')),
   error_message TEXT,
   triggered_by UUID REFERENCES users(id) ON DELETE SET NULL,
   is_reprocess BOOLEAN DEFAULT FALSE,
@@ -137,11 +146,11 @@ CREATE TABLE IF NOT EXISTS execution_logs (
 );
 
 -- Indexes for execution_logs table
-CREATE INDEX IF NOT EXISTS idx_execution_logs_execution_date ON execution_logs(execution_date);
-CREATE INDEX IF NOT EXISTS idx_execution_logs_status ON execution_logs(status);
-CREATE INDEX IF NOT EXISTS idx_execution_logs_triggered_by ON execution_logs(triggered_by);
-CREATE INDEX IF NOT EXISTS idx_execution_logs_is_reprocess ON execution_logs(is_reprocess);
-CREATE INDEX IF NOT EXISTS idx_execution_logs_created_at ON execution_logs(created_at);
+CREATE INDEX idx_execution_logs_execution_date ON execution_logs(execution_date);
+CREATE INDEX idx_execution_logs_status ON execution_logs(status);
+CREATE INDEX idx_execution_logs_triggered_by ON execution_logs(triggered_by);
+CREATE INDEX idx_execution_logs_is_reprocess ON execution_logs(is_reprocess);
+CREATE INDEX idx_execution_logs_created_at ON execution_logs(created_at);
 
 -- ============================================
 -- TRIGGERS FOR UPDATED_AT
@@ -167,4 +176,13 @@ CREATE TRIGGER update_timesheets_updated_at BEFORE UPDATE ON timesheets
 
 CREATE TRIGGER update_payroll_records_updated_at BEFORE UPDATE ON payroll_records
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ============================================
+-- SUCCESS MESSAGE
+-- ============================================
+DO $$
+BEGIN
+  RAISE NOTICE 'Clean Scapes P4P Database Schema created successfully!';
+  RAISE NOTICE 'Tables created: users, jobs, timesheets, payroll_records, notifications, execution_logs';
+END $$;
 

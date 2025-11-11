@@ -61,30 +61,29 @@ Request → Auth Middleware → Role Check → Validation → Route Handler → 
 - Middleware checks user role before route access
 
 ### 5. Calculation Engine Pattern ✅ **IMPLEMENTED**
-**Pattern**: Rule-based calculation with anomaly detection
+**Pattern**: Simplified rule-based calculation with penalty detection
 ```
 Input: Job Data + Timesheet Data
   ↓
-Calculate Efficiency (budgeted_hours / actual_hours)
+Calculate Base Pay (hours_worked × base_rate)
   ↓
-Apply Bonuses (based on efficiency thresholds)
+Apply Penalties (late clock-in: 5% of base pay, long lunch: 2% of base pay)
   ↓
-Apply Penalties (late clock-in, long lunch)
+Calculate Total Pay (base_pay - total_penalties)
   ↓
-Calculate Total Pay (base_pay + bonuses - penalties)
-  ↓
-Detect Anomalies (efficiency <60% or >120%, missing data, negative pay)
+Detect Anomalies (missing data, negative pay, unusual patterns)
   ↓
 Output: Payroll Record with flags
 ```
 
 **Implementation:**
-- `calculationRules.js` - Configuration for penalties (5% late, 2% long lunch), bonuses (100% & 50% multipliers)
-- `calculationService.js` - Core calculation logic with 6 main functions
-- 26 unit tests covering all scenarios and edge cases
+- `calculationRules.js` - Configuration for penalties (5% late, 2% long lunch)
+- `calculationService.js` - Core calculation logic (efficiency and bonuses removed)
 - Handles multiple jobs per employee with job-by-job breakdown
+- **Formula**: `Total Pay = Base Pay - Penalties` (no bonuses, no efficiency multipliers)
+- Base Rate stored per employee in `users.base_rate` and `payroll_records.base_rate`
 
-**Rationale**: Consistent, auditable calculations with error detection
+**Rationale**: Simplified, transparent calculations focused on base pay and penalties only
 
 ### 6. Notification Pattern ✅ **IMPLEMENTED**
 **Pattern**: Event-driven notifications after key actions
@@ -152,8 +151,8 @@ Output: Payroll Record with flags
   - `getUserStats()` - Statistics (total, by role)
   
 - ✅ 6 API endpoints with role-based access control:
-  - GET `/api/users` - List all users with filters (admin only)
-  - GET `/api/users/stats` - User statistics (admin only)
+  - GET `/api/users` - List all users with filters (admin, manager, and foreman - foremen see only their crew)
+  - GET `/api/users/stats` - User statistics (admin and manager only)
   - GET `/api/users/:id` - Get user details (admin or own profile)
   - POST `/api/users` - Create new user (admin only)
   - PATCH `/api/users/:id` - Update user (admin all fields, users own limited fields)
@@ -204,17 +203,31 @@ server.js
 ### Frontend Structure (Web)
 ```
 App.js
-  ├── AuthContext (global auth state)
+  ├── AuthContext (global auth state, Firebase auth, token management)
   ├── Routes
-  │   ├── /login
+  │   ├── /login (Login page with role-based redirection)
   │   ├── /admin/* (AdminLayout)
+  │   │   ├── /admin/dashboard (AdminDashboard)
+  │   │   ├── /admin/upload (Upload page)
+  │   │   ├── /admin/review (Review page)
+  │   │   ├── /admin/approve (Approve page)
+  │   │   ├── /admin/users (Users page)
+  │   │   ├── /admin/reports (Reports page)
+  │   │   └── /admin/settings (Settings page)
   │   ├── /manager/* (ManagerLayout)
+  │   │   ├── /manager/dashboard (ManagerDashboard - compliance & performance overview)
+  │   │   ├── /manager/teams (Teams page - crew comparison with date range)
+  │   │   └── /manager/analytics (Analytics page - simplified, dynamic data)
   │   └── /foreman/* (ForemanLayout)
+  │       ├── /foreman/dashboard (ForemanDashboard - compliance & performance overview)
+  │       ├── /foreman/members (TeamMembers page - real data, date range support)
+  │       ├── /foreman/schedule (Schedule page - date validation)
+  │       └── /foreman/history (History page - simplified, dynamic data)
   └── Components
-      ├── Shared (NotificationBell, etc.)
-      ├── Admin (PayrollTable, etc.)
-      ├── Manager (PerformanceChart, etc.)
-      └── Foreman (MemberDetailModal, etc.)
+      ├── Shared (NotificationBell, NotificationDropdown, Sidebar)
+      ├── Admin (AnalyzePayrollWidget, ProcessPayrollWidget, PayrollTable, etc.)
+      ├── Manager (removed charts, simplified components)
+      └── Foreman (MemberCard, ScheduleView, etc.)
 ```
 
 ### Mobile App Structure
@@ -251,13 +264,25 @@ App.js
 9. **Notifications**: `notificationService` creates role-specific notifications (only after Process, not Analyze)
 10. **Response**: API returns processing summary
 
-### User Authentication Flow
-1. **Login**: User authenticates via Firebase Auth
-2. **Token**: Firebase returns JWT token
-3. **Storage**: Token stored in client (localStorage/AsyncStorage)
-4. **Requests**: Token included in Authorization header
-5. **Verification**: `auth` middleware verifies token on each request
-6. **Role Check**: `roleCheck` middleware validates permissions
+### User Authentication Flow ✅ **IMPLEMENTED**
+1. **Login**: User authenticates via Firebase Auth (client SDK)
+2. **Token**: Firebase returns ID token
+3. **Storage**: 
+   - Token stored as `authToken` in localStorage (for axios interceptor)
+   - User profile stored as `user` in localStorage (for persistence)
+4. **Profile Fetch**: Backend `/auth/profile` endpoint fetches user role and details
+5. **Role-Based Redirection**: 
+   - Admin → `/admin/dashboard`
+   - Manager → `/manager/dashboard`
+   - Foreman → `/foreman/dashboard`
+   - Crew Member → Show "Invalid credentials" (web access restricted)
+6. **Requests**: 
+   - Axios interceptor automatically adds `authToken` from localStorage to Authorization header
+   - Direct fetch calls use `getToken()` from AuthContext
+7. **Verification**: `auth` middleware verifies token on each request
+8. **Role Check**: `roleCheck` middleware validates permissions
+9. **Token Refresh**: `getToken()` refreshes token and updates localStorage
+10. **Logout**: Clears Firebase auth, removes tokens from localStorage, redirects to login
 
 ### CSV Upload Flow
 1. **Upload**: Admin uploads CSV via web interface
@@ -269,11 +294,12 @@ App.js
 ## Database Schema Patterns
 
 ### Core Tables
-- `users` - User accounts with roles and preferences
-- `payroll_records` - Calculated payroll results
+- `users` - User accounts with roles, preferences, and base_rate (hourly rate)
+- `payroll_records` - Calculated payroll results (base_rate, base_pay, penalties, total_pay)
 - `jobs` - Service Autopilot job data
 - `timesheets` - Paychex timesheet data
 - `notifications` - In-app notifications
+- `execution_logs` - Payroll processing audit trail
 
 ### Relationships
 - `payroll_records.employee_id` → `users.id`
@@ -282,15 +308,21 @@ App.js
 
 ## Security Patterns
 
-### Authentication
-- Firebase Authentication for user login
-- JWT tokens for API authentication
-- Token expiration and refresh handling
+### Authentication ✅ **IMPLEMENTED**
+- Firebase Authentication for user login (client SDK)
+- Firebase ID tokens for API authentication
+- Token stored in localStorage as `authToken` for axios interceptor compatibility
+- Token refresh via `getToken()` method in AuthContext
+- Auth state listener (`onAuthStateChanged`) for automatic profile fetching
+- Profile data persisted in localStorage for offline access
 
-### Authorization
-- Role-based middleware checks
-- Route-level permission enforcement
+### Authorization ✅ **IMPLEMENTED**
+- Role-based middleware checks (backend)
+- Route-level permission enforcement (frontend routing)
 - User can only access own data (crew members)
+- Crew members restricted from web app access (show invalid credentials)
+- Admin-only routes protected (users, payroll processing)
+- Manager/Foreman role-based data filtering
 
 ### Data Protection
 - Environment variables for sensitive config
@@ -305,11 +337,14 @@ App.js
 - Structured error responses with appropriate HTTP codes
 - Error logging for debugging
 
-### Frontend
+### Frontend ✅ **IMPLEMENTED**
 - Error boundaries for React components
 - API error handling with user-friendly messages
 - Form validation with clear feedback
 - Loading states for async operations
+- Axios response interceptor handles 401 errors (redirects to login)
+- Polling mechanism for user profile loading during login
+- Error messages for crew member access attempts
 
 ## Testing Patterns
 
