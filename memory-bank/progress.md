@@ -87,7 +87,7 @@
 - [ ] Error handling and validation (enhancements)
 - [ ] Responsive design (polish)
 
-### Mobile App (40% Complete)
+### Mobile App (55% Complete)
 - [x] Project setup (React Native + Expo) ✅
 - [x] Firebase client SDK configuration ✅
 - [x] Authentication context with AsyncStorage ✅
@@ -104,7 +104,11 @@
 - [x] Auth service for Firebase integration ✅
 - [x] Expo SDK upgrade (49 → 54) ✅
 - [x] App.js with proper providers (ErrorBoundary, LanguageProvider, AuthProvider) ✅
-- [ ] Dashboard screen (yesterday's performance) - Placeholder exists
+- [x] Formatters utility (currency, date, percentage, hours) ✅
+- [x] ScoreCard component (star rating, motivational messages) ✅
+- [x] PayoutBreakdown component (base pay, penalties, total) ✅
+- [x] QuickStats component (hours, jobs, on time, lunch) ✅
+- [x] Dashboard screen (yesterday's performance with full functionality) ✅
 - [ ] Breakdown screen (detailed pay calculation)
 - [ ] History screen (30-day performance) - Placeholder exists
 - [ ] Profile screen (settings, language toggle) - Placeholder exists
@@ -161,8 +165,11 @@
 - **PR #12**: ✅ **COMPLETED** - Foreman Dashboard
 - **PR #13**: ✅ **COMPLETED** - Mobile App i18n Setup
 - **PR #14**: ✅ **COMPLETED** - Mobile App Authentication & Navigation
-- **PR #15**: ⏳ **NEXT** - Mobile App - Crew Member Dashboard
-- **PR #16-25**: Not started
+- **PR #15**: ✅ **COMPLETED** - Mobile App - Crew Member Dashboard
+- **PR #16**: ⏳ **PENDING** - Mobile App - Breakdown Screen
+- **PR #17-23**: Not started
+- **PR #24**: ✅ **COMPLETED** - Deployment Setup (Backend deployed to Firebase Cloud Functions)
+- **PR #25**: Not started
 
 ## Known Issues
 - ✅ **RESOLVED**: Admin login logout issue - Fixed by storing Firebase token as `authToken` in localStorage for axios interceptor
@@ -188,14 +195,21 @@
 16. ✅ **PR #12: Foreman Dashboard** (Dashboard page, Team Members page, Schedule page, History page)
 17. ✅ **PR #13: Mobile App i18n Setup** (Translation files, react-i18next config, LanguageContext, LanguageToggle)
 18. ✅ **PR #14: Mobile App Authentication & Navigation** (React Navigation, LoginScreen, AuthContext, API service)
+19. ✅ **PR #15: Mobile App - Crew Member Dashboard** (ScoreCard, PayoutBreakdown, QuickStats, formatters utility, DashboardScreen)
+20. ✅ **PR #24: Deployment Setup** (Firebase config, Cloud Functions adaptation, deployment scripts, comprehensive documentation)
+21. ✅ **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
+    - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+    - Fixed route paths (removed double `/api` prefix)
+    - Environment variables configured (env.*, supabase.* namespaces)
+    - Local development uses `.env.local` (ignored by Firebase)
+    - Runtime: Node.js 20
 
 ## Next Milestones
-1. ⏳ PR #15: Crew member dashboard screen (yesterday's performance, score, payout)
-2. ⏳ PR #16: Breakdown screen (detailed pay calculation)
-3. ⏳ PR #17: History screen (30-day performance trend)
-4. ⏳ PR #18: Profile & Settings screen
-5. ⏳ PR #19: Notifications (in-app notifications)
-6. ⏳ PR #20-25: CSV upload, charts, testing, deployment, polish
+1. ⏳ PR #16: Breakdown screen (detailed pay calculation, job-by-job breakdown)
+2. ⏳ PR #17: History screen (30-day performance trend)
+3. ⏳ PR #18: Profile & Settings screen
+4. ⏳ PR #19: Notifications (in-app notifications)
+5. ⏳ PR #20-25: CSV upload, charts, testing, deployment, polish
 
 ## Testing Status
 - ✅ **Unit Tests**: 65 tests passing across 5 test files
@@ -211,8 +225,14 @@
 - ⏳ E2E tests planned for future
 
 ## Deployment Status
-- Not deployed
-- Deployment setup planned for PR #24
+- ✅ **Backend Deployed**: Firebase Cloud Functions
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Runtime: Node.js 20
+  - Routes fixed: Removed double `/api` prefix (routes now: `/auth`, `/payroll`, `/notifications`, `/users`)
+  - Environment variables: Using Firebase Functions config (env.*, supabase.* namespaces)
+  - Local development: Uses `.env.local` file (ignored by Firebase deployment)
+- ⏳ **Frontend**: Not yet deployed (Firebase Hosting ready)
+- ⏳ **Mobile App**: Development only (Expo Go testing)
 
 ## Performance Metrics
 - Target: Process ~50 employees in <10 minutes
@@ -232,11 +252,14 @@
 
 ## Notes
 - All development follows the 25 PR structure
-- Mock APIs implemented and ready for use (set USE_MOCK=true in .env)
+- Mock APIs implemented and ready for use (set USE_MOCK=true in .env.local)
+- **Backend Deployment**: Successfully deployed to Firebase Cloud Functions at `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+- **Environment Variables**: Local development uses `.env.local` (ignored by Firebase deployment), production uses Firebase Functions config
+- **Route Paths**: Fixed double `/api` prefix issue (routes: `/auth`, `/payroll`, `/notifications`, `/users`)
 - Real API integration is future work (switch by setting USE_MOCK=false)
 - Bilingual support is critical for mobile app success
 - Database users seeded: 8 test users (admin, manager, 2 foremen, 4 crew members)
-- Firebase users can be auto-created with `CREATE_FIREBASE_USERS=true` in .env
+- Firebase users can be auto-created with `CREATE_FIREBASE_USERS=true` in .env.local
 - Default test password: `password123` (development only)
 - Authentication fully functional: JWT verification, role-based access, profile management
 - Mock APIs available at `/mock/service-autopilot/*` and `/mock/paychex/*` (10 endpoints total)
@@ -293,4 +316,14 @@
 - **Mobile App SDK Upgrade**: Upgraded from Expo SDK 49 to SDK 54, removed webpack (uses Metro), updated all dependencies, fixed babel-preset-expo
 - **Mobile App Documentation**: Created COMMANDS.md with comprehensive command reference for mobile development
 - **Mobile App Cleanup**: Removed test files, restored App.js with proper provider structure
+- **Mobile App Dashboard (PR #15)**: Full crew member dashboard implementation
+  - Created `formatters.js` utility with currency, date, percentage, and hours formatters
+  - Created `ScoreCard.js` component with 1-5 star rating based on efficiency (retention percentage)
+  - Created `PayoutBreakdown.js` component displaying base pay, penalties, and total with currency formatting
+  - Created `QuickStats.js` component showing hours worked, jobs completed, on-time status, and lunch compliance
+  - Updated `DashboardScreen.js` with full functionality: fetch yesterday's payroll data, pull-to-refresh, error handling, loading states
+  - Updated translations (en.json, es.json) with motivational messages: excellent, greatJob, goodWork, keepTrying, needsImprovement
+  - Efficiency calculation: (Total Pay / Base Pay) × 100 (shows retention percentage, capped at 100%)
+  - API integration: Uses existing `payrollAPI.getYesterdayRecord()` method
+  - Star rating thresholds: 5★ (≥100%), 4★ (≥90%), 3★ (≥75%), 2★ (≥60%), 1★ (<60%)
 

@@ -54,7 +54,9 @@
 
 ### Environment Variables
 
-#### Backend (.env)
+#### Backend (.env.local)
+**Note**: Use `.env.local` for local development (not `.env`) to avoid Firebase deployment conflicts.
+
 ```env
 # Server
 PORT=3000
@@ -85,6 +87,28 @@ ENABLE_CRON=false
 CRON_SCHEDULE="30 10 * * *"  # 10:30 AM daily (for testing only)
 ```
 
+**Firebase Cloud Functions Environment Variables:**
+For production deployment, set environment variables using Firebase CLI:
+```bash
+# Firebase Admin SDK (use "env" namespace - "firebase" is reserved)
+firebase functions:config:set env.firebase_project_id="your-project-id"
+firebase functions:config:set env.firebase_client_email="firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com"
+firebase functions:config:set env.firebase_private_key="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+
+# Supabase Database (use "supabase" namespace)
+firebase functions:config:set supabase.url="https://your-project.supabase.co"
+firebase functions:config:set supabase.key="your-supabase-anon-key"
+
+# Optional: External APIs (use "app" namespace)
+firebase functions:config:set app.usemock="true"
+```
+
+**Why `.env.local`?**
+- `.env.local` is ignored by Firebase deployment (won't cause reserved namespace errors)
+- `.env.local` is in `.gitignore` (won't be committed to version control)
+- `.env.local` is in `.firebaseignore` (won't be uploaded to Firebase)
+- All backend files load from `.env.local` for local development
+
 #### Web Frontend (.env)
 ```env
 REACT_APP_API_URL=http://localhost:3000/api
@@ -96,9 +120,14 @@ REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
 REACT_APP_FIREBASE_APP_ID=1:123456789:web:abc123def456
 ```
 
-#### Mobile App (.env)
+#### Mobile App (.env or .env.local)
 ```env
+# For local development (use your computer's IP or localhost)
 EXPO_PUBLIC_API_URL=http://localhost:3000/api
+
+# For production (use Firebase Cloud Functions URL)
+# EXPO_PUBLIC_API_URL=https://us-central1-fieldpay-pro.cloudfunctions.net/api
+
 EXPO_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
 EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
 EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
@@ -106,6 +135,8 @@ EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
 EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
 EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123
 ```
+
+**Production API URL**: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
 
 ## Project Structure
 
@@ -147,11 +178,13 @@ backend/
 ├── tests/
 │   ├── calculationService.test.js
 │   └── routes/
-├── .env
-├── .env.example
+├── .env.local          # Local development environment (ignored by Firebase)
+├── .env.local.example  # Example file for .env.local
+├── .firebaseignore     # Files to exclude from Firebase deployment
 ├── .gitignore
+├── index.js            # Firebase Cloud Functions entry point
 ├── package.json
-└── server.js
+└── server.js            # Local development server
 ```
 
 ### Web Frontend Structure
@@ -337,18 +370,25 @@ mobile/
 - Mock data for development
 
 ### Deployment Strategy
-- **Backend**: Firebase Cloud Functions (serverless)
-  - Express.js API adapted for Cloud Functions
+- **Backend**: ✅ **DEPLOYED** - Firebase Cloud Functions (serverless)
+  - Express.js API adapted for Cloud Functions (`backend/index.js`)
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Runtime: Node.js 20
+  - Route paths: `/auth`, `/payroll`, `/notifications`, `/users` (no `/api` prefix - function URL already includes it)
   - Manual payroll processing trigger (no automatic scheduling)
-  - Environment variables via Firebase Functions config
-- **Web**: Build → Firebase Hosting
+  - Environment variables via Firebase Functions config (env.*, supabase.* namespaces)
+  - Local development: Uses `.env.local` (ignored by Firebase deployment)
+  - Deployment: `cd backend && npm run deploy`
+- **Web**: ⏳ **READY** - Firebase Hosting (not yet deployed)
   - React build output deployed to Firebase Hosting
   - React Router redirects configured
+  - Production API URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
 - **Mobile**: Development only
   - Tested on Expo Go during development
+  - Production API URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
   - No production build or deployment needed
 
-**Note**: Deployment will be done after full development and local testing are complete.
+**Deployment Status**: Backend successfully deployed to Firebase Cloud Functions. Frontend deployment pending.
 
 ## External Integrations
 

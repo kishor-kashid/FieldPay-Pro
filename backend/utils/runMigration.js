@@ -5,7 +5,7 @@
  * Usage: node utils/runMigration.js [migration-file.sql]
  */
 
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const fs = require('fs');
 const path = require('path');
 const { supabase } = require('../config/database');

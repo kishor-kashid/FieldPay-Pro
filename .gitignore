@@ -51,7 +51,19 @@ temp/
 # Firebase
 .firebase/
 firebase-debug.log
+firebase-debug.*.log
 firestore-debug.log
+firestore-debug.*.log
+ui-debug.log
+ui-debug.*.log
+# Firebase emulator data
+.firebase-emulators/
+# Firebase service account keys (credentials - NEVER commit)
+*-firebase-adminsdk-*.json
+service-account*.json
+firebase-service-account*.json
+# Firebase cache
+.firebase-cache/
 
 # Expo
 .expo/

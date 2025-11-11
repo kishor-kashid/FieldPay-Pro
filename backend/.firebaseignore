@@ -1,0 +1,46 @@
+# Firebase deployment ignore file
+# This tells Firebase CLI which files NOT to upload during deployment
+
+# Environment variables (use Firebase Functions config instead)
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+
+# Tests
+tests/
+*.test.js
+__tests__/
+
+# Development files
+node_modules/
+.git/
+.gitignore
+
+# Documentation
+*.md
+README.md
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+firebase-debug.log
+firebase-debug.*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scripts (utility scripts not needed in production)
+scripts/
+utils/seedData.js
+utils/createFirebaseUsers.js
+utils/runMigration.js
+
+# Local development server (we use index.js for Cloud Functions)
+server.js
+

@@ -41,7 +41,14 @@
     "basePay": "Pago Base",
     "bonus": "Bono",
     "penalties": "Penalizaciones",
-    "total": "Total"
+    "total": "Total",
+    "excellent": "¡Excelente trabajo! ¡Sigue así!",
+    "greatJob": "¡Buen trabajo! ¡Lo estás haciendo bien!",
+    "goodWork": "Buen trabajo. Hay margen de mejora.",
+    "keepTrying": "¡Sigue intentando! Puedes hacerlo mejor.",
+    "needsImprovement": "Necesita mejorar. ¡Trabajemos más duro!",
+    "loading": "Cargando tus datos de rendimiento...",
+    "refresh": "Desliza para actualizar"
   },
   "breakdown": {
     "title": "Desglose de Pago",

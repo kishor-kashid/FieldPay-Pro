@@ -3,30 +3,53 @@
  * Manages configuration for Service Autopilot, Paychex, and mock APIs
  */
 
-require('dotenv').config();
+// Load environment variables (for local testing only, ignore errors in Cloud Functions)
+try {
+  require('dotenv').config({ path: '.env.local' });
+} catch (error) {
+  // Ignore dotenv errors in Cloud Functions environment
+}
+
+/**
+ * Get environment variables from Firebase Functions config or process.env
+ */
+function getEnvValue(key, defaultValue = '') {
+  // Try to load Firebase Functions config (only available in Cloud Functions)
+  let functionsConfig = {};
+  try {
+    const functions = require('firebase-functions');
+    functionsConfig = functions.config();
+  } catch (error) {
+    // Not in Cloud Functions environment
+  }
+
+  // Check in app namespace for general config
+  const configKey = key.toLowerCase().replace(/_/g, '');
+  return functionsConfig.app?.[configKey] || process.env[key] || defaultValue;
+}
 
 /**
  * API Configuration Object
  */
 const apiConfig = {
   // Use mock APIs or real APIs based on environment variable
-  useMock: process.env.USE_MOCK === 'true',
+  useMock: getEnvValue('USE_MOCK') === 'true',
 
   // Service Autopilot API Configuration
   serviceAutopilot: {
     // Real API configuration (for production)
     real: {
-      baseUrl: process.env.SERVICE_AUTOPILOT_API_URL || 'https://api.serviceautopilot.com/v1',
-      apiKey: process.env.SERVICE_AUTOPILOT_API_KEY || '',
+      baseUrl: getEnvValue('SERVICE_AUTOPILOT_API_URL', 'https://api.serviceautopilot.com/v1'),
+      apiKey: getEnvValue('SERVICE_AUTOPILOT_API_KEY'),
       timeout: 30000, // 30 seconds
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.SERVICE_AUTOPILOT_API_KEY || ''}`
+        'Authorization': `Bearer ${getEnvValue('SERVICE_AUTOPILOT_API_KEY')}`
       }
     },
     // Mock API configuration (for development)
     mock: {
-      baseUrl: `http://localhost:${process.env.PORT || 3000}/mock/service-autopilot`,
+      baseUrl: `http://localhost:${getEnvValue('PORT', '3000')}/mock/service-autopilot`,
       timeout: 5000,
       headers: {
         'Content-Type': 'application/json'
@@ -38,17 +61,17 @@ const apiConfig = {
   paychex: {
     // Real API configuration (for production)
     real: {
-      baseUrl: process.env.PAYCHEX_API_URL || 'https://api.paychex.com/v1',
-      apiKey: process.env.PAYCHEX_API_KEY || '',
+      baseUrl: getEnvValue('PAYCHEX_API_URL', 'https://api.paychex.com/v1'),
+      apiKey: getEnvValue('PAYCHEX_API_KEY'),
       timeout: 30000, // 30 seconds
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.PAYCHEX_API_KEY || ''}`
+        'Authorization': `Bearer ${getEnvValue('PAYCHEX_API_KEY')}`
       }
     },
     // Mock API configuration (for development)
     mock: {
-      baseUrl: `http://localhost:${process.env.PORT || 3000}/mock/paychex`,
+      baseUrl: `http://localhost:${getEnvValue('PORT', '3000')}/mock/paychex`,
       timeout: 5000,
       headers: {
         'Content-Type': 'application/json'

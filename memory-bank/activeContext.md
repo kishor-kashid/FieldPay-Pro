@@ -1,11 +1,39 @@
 # Active Context: Clean Scapes P4P System
 
 ## Current Work Focus
-**Phase**: Mobile App Development  
-**Status**: PR13-PR14 completed - Mobile app i18n setup and authentication/navigation infrastructure complete  
-**Date**: After mobile app SDK upgrade and infrastructure setup
+**Phase**: Deployment & Mobile App Integration  
+**Status**: Backend successfully deployed to Firebase Cloud Functions, mobile app integration in progress  
+**Date**: Post-deployment - Backend live, mobile app connecting to production API
 
 ## Recent Changes
+- ✅ **Backend Successfully Deployed**: Firebase Cloud Functions Live
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Runtime: Node.js 20 (upgraded from Node.js 18)
+  - Fixed route paths: Removed double `/api` prefix (routes now: `/auth`, `/payroll`, `/notifications`, `/users`)
+  - Environment variables: Using Firebase Functions config (env.*, supabase.* namespaces)
+  - Local development: Changed to `.env.local` (ignored by Firebase, won't cause deployment errors)
+  - Created `.firebaseignore` to exclude `.env.local` and other dev files from deployment
+  - Updated all dotenv.config() calls to load `.env.local` instead of `.env`
+  - Health check endpoint: `GET /` and `GET /health` both working
+  - Deployment command: `cd backend && npm run deploy`
+- ✅ **PR #24 Completed**: Deployment Setup - Firebase Configuration
+  - Created Firebase configuration files (firebase.json, .firebaserc)
+  - Adapted Express backend for Cloud Functions (backend/index.js)
+  - Updated backend package.json with firebase-functions dependency
+  - Added deployment scripts (deploy-all, deploy-backend, deploy-frontend)
+  - Created comprehensive deployment documentation (DEPLOYMENT.md, QUICK_START, PRODUCTION_CHECKLIST)
+  - Environment variables documented (.env.example files)
+  - Frontend production configuration ready (.env.production)
+  - Mobile app configuration documented for deployed backend
+- ✅ **PR #15 Completed**: Mobile App - Crew Member Dashboard
+  - Created formatters utility (currency, date, percentage, hours)
+  - Created ScoreCard component with star rating (1-5 stars) and motivational messages
+  - Created PayoutBreakdown component showing base pay, penalties, and total
+  - Created QuickStats component with hours, jobs, on time, and lunch status
+  - Updated DashboardScreen with full functionality (fetch yesterday's data, pull-to-refresh, error handling)
+  - Updated translation files (en.json, es.json) with motivational messages and dashboard content
+  - API service already includes payrollAPI.getYesterdayRecord() method
+  - Efficiency calculation: (Total Pay / Base Pay) * 100 (retention percentage)
 - ✅ **PR #13 Completed**: Mobile App i18n Setup
   - Created English and Spanish translation files (`en.json`, `es.json`)
   - Configured react-i18next with AsyncStorage persistence
@@ -147,31 +175,34 @@
 15. ✅ PR #12: Foreman Dashboard
 16. ✅ PR #13: Mobile App i18n Setup
 17. ✅ PR #14: Mobile App Authentication & Navigation
-18. ✅ Unit Tests: Backend unit tests (65 tests, all passing)
-19. ✅ Frontend Authentication: Fixed token storage and axios interceptor
-20. ✅ Mobile App SDK Upgrade: Upgraded to Expo SDK 54
-21. ⏳ **NEXT**: PR #15: Mobile App - Crew Member Dashboard
+18. ✅ PR #15: Mobile App - Crew Member Dashboard
+19. ✅ Unit Tests: Backend unit tests (65 tests, all passing)
+20. ✅ Frontend Authentication: Fixed token storage and axios interceptor
+21. ✅ Mobile App SDK Upgrade: Upgraded to Expo SDK 54
+22. ✅ Backend Deployment: Successfully deployed to Firebase Cloud Functions
+23. ⏳ **NEXT**: Mobile App - Connect to production API and test dashboard
+24. ⏳ **NEXT**: PR #16: Mobile App - Breakdown Screen
 
 ## Next Steps
 
-### Immediate (PR #15 - NEXT)
-1. ⏳ Build crew member dashboard screen (yesterday's performance, score, payout breakdown)
-2. ⏳ Create score card component
-3. ⏳ Create payout breakdown component
-4. ⏳ Implement API integration for dashboard data
+### Immediate (PR #16 - NEXT)
+1. ⏳ Build breakdown screen (detailed pay calculation)
+2. ⏳ Create job breakdown component
+3. ⏳ Show base pay, penalties, job-by-job efficiency
+4. ⏳ Add navigation from dashboard to breakdown
 
 ### Recent Completions
+- ✅ PR #15 - Crew Member Dashboard (yesterday's performance with score, payout, quick stats)
 - ✅ Manager dashboard with team performance and payroll compliance overview
 - ✅ Manager Teams page with enhanced crew data calculation
 - ✅ Manager Analytics page simplified (charts removed, dynamic data)
 - ✅ Backend API access expanded for managers (user stats and user list)
 
-### Short-term (PRs #15-18)
-1. ⏳ **NEXT**: PR #15 - Crew Member Dashboard (yesterday's performance)
-2. ⏳ PR #16 - Breakdown Screen (detailed pay calculation)
-3. ⏳ PR #17 - History Screen (30-day performance)
-4. ⏳ PR #18 - Profile & Settings Screen
-5. ⏳ PR #19 - Notifications (in-app notifications)
+### Short-term (PRs #16-19)
+1. ⏳ **NEXT**: PR #16 - Breakdown Screen (detailed pay calculation)
+2. ⏳ PR #17 - History Screen (30-day performance)
+3. ⏳ PR #18 - Profile & Settings Screen
+4. ⏳ PR #19 - Notifications (in-app notifications)
 
 ### Medium-term (PRs #9-15)
 1. ⏳ Create user management
@@ -299,6 +330,14 @@ None at this time.
 - **Foreman Schedule Page**: Date validation added
 - **MemberDetailModal**: Chart.js removed, uses real performance data, dynamic strengths/weaknesses
 - **Backend Crew Matching**: Enhanced crew_id matching logic to handle CREW1/foreman1, CREW2/foreman2 mismatches using number extraction
+- **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Fixed route paths: Removed double `/api` prefix (routes: `/auth`, `/payroll`, `/notifications`, `/users`)
+  - Environment variables: Using Firebase Functions config (env.*, supabase.* namespaces)
+  - Local development: Changed to `.env.local` (ignored by Firebase deployment)
+  - Created `.firebaseignore` to exclude dev files from deployment
+  - Updated all dotenv.config() calls to load `.env.local` instead of `.env`
+  - Runtime: Node.js 20 (upgraded from Node.js 18)
 
 ## Communication Notes
 - Project is for Clean Scapes ($7M landscaping company)

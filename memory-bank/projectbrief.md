@@ -86,7 +86,7 @@ Development broken down into 25 Pull Requests covering:
 - Backend API access expanded (foremen can access user endpoints for their crew)  
 **Backend Progress:** 80% complete (includes unit tests)  
 **Web Frontend Progress:** 80% complete (All dashboards enhanced with compliance features and real data)  
-**Mobile Progress:** 15% complete  
+**Mobile Progress:** 55% complete (i18n, auth, navigation, dashboard complete)  
 **Testing:** 65 unit tests passing (calculation, user, data, notification, CSV export)  
-**Next Steps:** PR #13 - Crew Member Mobile Screens (Dashboard, Breakdown, History, Profile, Help)
+**Next Steps:** PR #16 - Crew Member Mobile Screens (Breakdown screen with detailed pay calculation)
 

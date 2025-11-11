@@ -41,7 +41,14 @@
     "basePay": "Base Pay",
     "bonus": "Bonus",
     "penalties": "Penalties",
-    "total": "Total"
+    "total": "Total",
+    "excellent": "Excellent work! Keep it up!",
+    "greatJob": "Great job! You're doing well!",
+    "goodWork": "Good work! Room for improvement.",
+    "keepTrying": "Keep trying! You can do better.",
+    "needsImprovement": "Needs improvement. Let's work harder!",
+    "loading": "Loading your performance data...",
+    "refresh": "Pull to refresh"
   },
   "breakdown": {
     "title": "Pay Breakdown",
