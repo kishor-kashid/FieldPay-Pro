@@ -87,20 +87,29 @@
 - [ ] Error handling and validation (enhancements)
 - [ ] Responsive design (polish)
 
-### Mobile App (15% Complete)
+### Mobile App (40% Complete)
 - [x] Project setup (React Native + Expo) ✅
 - [x] Firebase client SDK configuration ✅
 - [x] Authentication context with AsyncStorage ✅
 - [x] Notification banner component ✅
-- [ ] Internationalization (i18n) setup (EN/ES)
-- [ ] Authentication UI (login/logout screens)
-- [ ] Navigation setup
-- [ ] Dashboard screen (yesterday's performance)
+- [x] Internationalization (i18n) setup (EN/ES) ✅
+- [x] Translation files (en.json, es.json) ✅
+- [x] Language context and storage utilities ✅
+- [x] Language toggle component ✅
+- [x] Authentication UI (login screen) ✅
+- [x] Navigation setup (Stack Navigator, Bottom Tab Navigator) ✅
+- [x] Auth Navigator (login screen) ✅
+- [x] Main Navigator (Home, History, Profile tabs) ✅
+- [x] API service with authentication headers ✅
+- [x] Auth service for Firebase integration ✅
+- [x] Expo SDK upgrade (49 → 54) ✅
+- [x] App.js with proper providers (ErrorBoundary, LanguageProvider, AuthProvider) ✅
+- [ ] Dashboard screen (yesterday's performance) - Placeholder exists
 - [ ] Breakdown screen (detailed pay calculation)
-- [ ] History screen (30-day performance)
-- [ ] Profile screen (settings, language toggle)
+- [ ] History screen (30-day performance) - Placeholder exists
+- [ ] Profile screen (settings, language toggle) - Placeholder exists
 - [ ] Help/FAQ screen
-- [ ] Bilingual content
+- [ ] Full bilingual content implementation
 
 ### Infrastructure (60% Complete)
 - [x] Supabase database setup ✅
@@ -133,7 +142,9 @@
 - ✅ PR #10: Admin Dashboard - **COMPLETED**
 - ✅ PR #11: Manager Dashboard - **COMPLETED**
 - ✅ PR #12: Foreman Dashboard - **COMPLETED**
-- ⏳ PR #13: Crew Member Mobile Screens - **NEXT**
+- ✅ PR #13: Mobile App i18n Setup - **COMPLETED**
+- ✅ PR #14: Mobile App Authentication & Navigation - **COMPLETED**
+- ⏳ PR #15: Mobile App - Crew Member Dashboard - **NEXT**
 
 ### PR Status
 - **PR #1**: ✅ **COMPLETED** - Project Setup & Initial Configuration
@@ -148,8 +159,10 @@
 - **PR #10**: ✅ **COMPLETED** - Admin Dashboard
 - **PR #11**: ✅ **COMPLETED** - Manager Dashboard
 - **PR #12**: ✅ **COMPLETED** - Foreman Dashboard
-- **PR #13**: ⏳ **NEXT** - Crew Member Mobile Screens
-- **PR #14-25**: Not started
+- **PR #13**: ✅ **COMPLETED** - Mobile App i18n Setup
+- **PR #14**: ✅ **COMPLETED** - Mobile App Authentication & Navigation
+- **PR #15**: ⏳ **NEXT** - Mobile App - Crew Member Dashboard
+- **PR #16-25**: Not started
 
 ## Known Issues
 - ✅ **RESOLVED**: Admin login logout issue - Fixed by storing Firebase token as `authToken` in localStorage for axios interceptor
@@ -173,12 +186,16 @@
 14. ✅ **PR #10: Admin Dashboard** (Dashboard page, Analyze/Process widgets, quick actions, stats, all admin pages)
 15. ✅ **PR #11: Manager Dashboard** (Dashboard page, Teams page, Analytics page)
 16. ✅ **PR #12: Foreman Dashboard** (Dashboard page, Team Members page, Schedule page, History page)
+17. ✅ **PR #13: Mobile App i18n Setup** (Translation files, react-i18next config, LanguageContext, LanguageToggle)
+18. ✅ **PR #14: Mobile App Authentication & Navigation** (React Navigation, LoginScreen, AuthContext, API service)
 
 ## Next Milestones
-1. ⏳ PR #13: Crew member mobile screens (dashboard, breakdown, history, profile, help)
-2. ⏳ PR #14: CSV upload functionality
-3. ⏳ PR #15: Charts and analytics enhancements
-4. ⏳ PR #16-25: Testing, deployment, polish
+1. ⏳ PR #15: Crew member dashboard screen (yesterday's performance, score, payout)
+2. ⏳ PR #16: Breakdown screen (detailed pay calculation)
+3. ⏳ PR #17: History screen (30-day performance trend)
+4. ⏳ PR #18: Profile & Settings screen
+5. ⏳ PR #19: Notifications (in-app notifications)
+6. ⏳ PR #20-25: CSV upload, charts, testing, deployment, polish
 
 ## Testing Status
 - ✅ **Unit Tests**: 65 tests passing across 5 test files
@@ -271,4 +288,9 @@
 - **MemberDetailModal**: Chart.js dependency removed (fixes "linear scale not registered" error), uses real performance data, dynamic strengths/weaknesses based on actual metrics, contact information display
 - **Backend Crew Matching**: Enhanced crew_id matching in payroll service to handle CREW1/foreman1, CREW2/foreman2 mismatches using number extraction and case-insensitive matching
 - **Backend Foreman Access**: Updated payroll routes to use `user.crew_id` instead of `user.uid` for foremen filtering
+- **Mobile App i18n Setup (PR #13)**: English and Spanish translation files, react-i18next configuration, LanguageContext, LanguageToggle component, AsyncStorage persistence
+- **Mobile App Authentication & Navigation (PR #14)**: React Navigation setup, AuthNavigator, MainNavigator with bottom tabs, LoginScreen, AuthContext, API service, auth service
+- **Mobile App SDK Upgrade**: Upgraded from Expo SDK 49 to SDK 54, removed webpack (uses Metro), updated all dependencies, fixed babel-preset-expo
+- **Mobile App Documentation**: Created COMMANDS.md with comprehensive command reference for mobile development
+- **Mobile App Cleanup**: Removed test files, restored App.js with proper provider structure
 

@@ -1,0 +1,125 @@
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "submit": "Enviar",
+    "retry": "Reintentar",
+    "ok": "OK"
+  },
+  "auth": {
+    "login": "Iniciar Sesión",
+    "logout": "Cerrar Sesión",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "loginButton": "Iniciar Sesión",
+    "loggingIn": "Iniciando sesión...",
+    "loginError": "Error al iniciar sesión. Por favor verifique sus credenciales.",
+    "logoutConfirm": "¿Está seguro de que desea cerrar sesión?",
+    "forgotPassword": "¿Olvidó su contraseña?",
+    "invalidCredentials": "Correo electrónico o contraseña inválidos"
+  },
+  "dashboard": {
+    "title": "Panel",
+    "yesterday": "Rendimiento de Ayer",
+    "performanceScore": "Puntuación de Rendimiento",
+    "payout": "Pago",
+    "hours": "Horas",
+    "jobs": "Trabajos",
+    "onTime": "A Tiempo",
+    "lunch": "Almuerzo",
+    "viewBreakdown": "Ver Desglose",
+    "viewHistory": "Ver Historial",
+    "noData": "No hay datos de rendimiento disponibles",
+    "basePay": "Pago Base",
+    "bonus": "Bono",
+    "penalties": "Penalizaciones",
+    "total": "Total"
+  },
+  "breakdown": {
+    "title": "Desglose de Pago",
+    "date": "Fecha",
+    "basePay": "Pago Base",
+    "basePayDescription": "Horas trabajadas × tarifa por hora",
+    "bonus": "Bono de Rendimiento",
+    "bonusDescription": "Basado en la puntuación de eficiencia",
+    "penalties": "Deducciones",
+    "penaltiesDescription": "Llegada tardía y almuerzo largo",
+    "latePenalty": "Llegada Tardía",
+    "lunchPenalty": "Almuerzo Largo",
+    "total": "Pago Total",
+    "jobs": "Trabajos",
+    "job": "Trabajo",
+    "budgetedHours": "Presupuestado",
+    "actualHours": "Real",
+    "efficiency": "Eficiencia",
+    "noJobs": "No hay trabajos para esta fecha"
+  },
+  "history": {
+    "title": "Historial",
+    "last30Days": "Últimos 30 Días",
+    "average": "Promedio",
+    "bestDay": "Mejor Día",
+    "totalEarned": "Total Ganado",
+    "noHistory": "No hay historial disponible",
+    "loadMore": "Cargar Más",
+    "date": "Fecha",
+    "score": "Puntuación",
+    "payout": "Pago"
+  },
+  "profile": {
+    "title": "Perfil",
+    "name": "Nombre",
+    "email": "Correo Electrónico",
+    "employeeId": "ID de Empleado",
+    "crew": "Equipo",
+    "role": "Rol",
+    "language": "Idioma",
+    "settings": "Configuración",
+    "notifications": "Notificaciones",
+    "changePassword": "Cambiar Contraseña",
+    "help": "Ayuda",
+    "about": "Acerca de",
+    "version": "Versión",
+    "logout": "Cerrar Sesión"
+  },
+  "help": {
+    "title": "Ayuda y Preguntas Frecuentes",
+    "howPayCalculated": "¿Cómo se calcula mi pago?",
+    "howPayCalculatedAnswer": "Su pago se calcula en base a:\n• Pago base: Horas trabajadas × tarifa por hora\n• Bono de rendimiento: Basado en eficiencia (horas presupuestadas vs reales)\n• Penalizaciones: Llegada tardía (5%) y almuerzo largo (2%)",
+    "whatAffectsScore": "¿Qué afecta mi puntuación de rendimiento?",
+    "whatAffectsScoreAnswer": "Su puntuación de rendimiento se basa en:\n• Eficiencia: Completar trabajos dentro de las horas presupuestadas\n• Puntualidad: Llegar a tiempo (antes de las 7:00 AM)\n• Descansos para almorzar: Mantener los descansos bajo 30 minutos",
+    "whyPenalized": "¿Por qué fui penalizado?",
+    "whyPenalizedAnswer": "Las penalizaciones se aplican por:\n• Llegada tardía: 5% del pago base si marca entrada después de las 7:00 AM\n• Almuerzo largo: 2% del pago base si el descanso excede 30 minutos",
+    "howToImprove": "¿Cómo puedo mejorar mi puntuación?",
+    "howToImproveAnswer": "Para mejorar su puntuación de rendimiento:\n• Llegue a tiempo (antes de las 7:00 AM)\n• Complete trabajos dentro de las horas presupuestadas\n• Mantenga los descansos para almorzar bajo 30 minutos\n• Trabaje eficientemente y manténgase enfocado",
+    "contactOffice": "Contactar Oficina",
+    "contactOfficeAnswer": "Si tiene preguntas o inquietudes sobre su pago, por favor contacte la oficina:\n\nTeléfono: (555) 123-4567\nCorreo: payroll@cleanscapes.com\nHorario: Lunes-Viernes, 8:00 AM - 5:00 PM"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "newResults": "¡Nuevos Resultados Disponibles!",
+    "newResultsDescription": "Sus resultados de rendimiento están listos para ver.",
+    "noNotifications": "No hay notificaciones",
+    "markAllRead": "Marcar Todas como Leídas"
+  },
+  "language": {
+    "english": "Inglés",
+    "spanish": "Español",
+    "selectLanguage": "Seleccionar Idioma"
+  },
+  "errors": {
+    "networkError": "Error de red. Por favor verifique su conexión.",
+    "serverError": "Error del servidor. Por favor intente más tarde.",
+    "unknownError": "Ocurrió un error desconocido.",
+    "validationError": "Por favor verifique su entrada e intente nuevamente."
+  }
+}
+

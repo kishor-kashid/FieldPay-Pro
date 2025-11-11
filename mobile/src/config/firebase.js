@@ -20,16 +20,38 @@ const firebaseConfig = {
 };
 
 // Validate configuration
-if (!firebaseConfig.apiKey || !firebaseConfig.authDomain || !firebaseConfig.projectId) {
-  console.error('Firebase configuration is missing. Please check your .env file.');
+const isFirebaseConfigured = 
+  firebaseConfig.apiKey && 
+  firebaseConfig.authDomain && 
+  firebaseConfig.projectId;
+
+if (!isFirebaseConfigured) {
+  console.error('⚠️ Firebase configuration is missing. Please check your .env file.');
+  console.error('Required variables:');
+  console.error('  - EXPO_PUBLIC_FIREBASE_API_KEY');
+  console.error('  - EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN');
+  console.error('  - EXPO_PUBLIC_FIREBASE_PROJECT_ID');
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase (will throw error if config is invalid)
+let app;
+let auth;
 
-// Initialize Firebase Authentication
-// For Expo, Firebase Auth automatically handles persistence
-const auth = getAuth(app);
+try {
+  if (isFirebaseConfigured) {
+    app = initializeApp(firebaseConfig);
+    // Initialize Firebase Authentication
+    // For Expo, Firebase Auth automatically handles persistence
+    auth = getAuth(app);
+  } else {
+    // Create a mock auth object to prevent crashes
+    console.warn('⚠️ Firebase not configured. Authentication will not work.');
+    auth = null;
+  }
+} catch (error) {
+  console.error('❌ Failed to initialize Firebase:', error);
+  auth = null;
+}
 
 export { auth };
 export default app;

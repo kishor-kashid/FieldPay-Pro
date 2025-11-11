@@ -24,12 +24,14 @@
 
 ### Mobile App
 - **Framework**: React Native
-- **Platform**: Expo
-- **Navigation**: React Navigation (Stack, Bottom Tabs)
-- **Internationalization**: react-i18next
+- **Platform**: Expo SDK 54
+- **Navigation**: React Navigation (Stack Navigator, Bottom Tab Navigator)
+- **Internationalization**: react-i18next (EN/ES support)
 - **Storage**: @react-native-async-storage/async-storage
 - **HTTP Client**: Axios
-- **State Management**: React Context API
+- **State Management**: React Context API (AuthContext, LanguageContext)
+- **Build Tool**: Metro Bundler (webpack removed in SDK 54)
+- **Babel**: babel-preset-expo
 
 ### Infrastructure
 - **Database Hosting**: Supabase (PostgreSQL)
