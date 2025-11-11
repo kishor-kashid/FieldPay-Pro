@@ -30,8 +30,8 @@ Request → Auth Middleware → Role Check → Validation → Route Handler → 
 **Components**:
 - `auth.js` - JWT token verification
 - `roleCheck.js` - Role-based access control (RBAC)
-- `validation.js` - Request body validation
-- `errorHandler.js` - Global error handling
+- `validation.js` - Request body, query, and params validation ✅ **IMPLEMENTED**
+- `errorHandler.js` - Global error handling ✅ **IMPLEMENTED**
 
 **Rationale**: Security, validation, and error handling centralized
 
@@ -128,7 +128,51 @@ Output: Payroll Record with flags
 
 **Rationale**: Allows manual data import when external APIs are unavailable, with validation and preview before processing
 
-### 8. Payroll Processing Pattern ✅ **IMPLEMENTED**
+### 8. Error Handling & Validation Pattern ✅ **IMPLEMENTED**
+**Pattern**: Comprehensive error handling and validation across backend and frontend
+- Backend: Global error handler middleware catches all errors, formats responses, logs errors
+- Backend: Validation middleware validates request bodies, query parameters, and route parameters
+- Frontend: ErrorBoundary component catches React errors and displays fallback UI
+- Frontend: Validation utilities for form validation (email, required, number range, string length, date, phone, password)
+- API: Enhanced error handling with error types (network, authentication, authorization, validation, server, generic)
+
+**Implementation:**
+- ✅ `errorHandler.js` - Global error handler middleware
+  - Catches all errors from route handlers
+  - Formats error responses with appropriate status codes
+  - Logs errors with context (path, method, timestamp)
+  - Handles PostgreSQL errors, network errors, custom errors
+  - Provides `asyncHandler` wrapper for async route handlers
+  - Provides `createError` helper for custom errors
+- ✅ `validation.js` - Request validation middleware
+  - `validateBody()` - Validates request body against schema
+  - `validateQuery()` - Validates query parameters
+  - `validateParams()` - Validates route parameters
+  - Supports required fields, data types, string length, number ranges, custom validation functions
+  - Common validation schemas (email, UUID, role, language)
+- ✅ `ErrorBoundary.jsx` - React error boundary component
+  - Catches React errors in component tree
+  - Displays fallback UI with error details (development only)
+  - Provides "Try Again" and "Refresh Page" options
+  - Wrapped around App component for global error catching
+- ✅ `validation.js` (frontend-web) - Form validation utilities
+  - Email, required, number range, string length, date, phone, password validation
+  - `validateForm()` function for validating entire form objects
+  - Field-level error messages with icons
+- ✅ `validation.js` (mobile) - Mobile form validation utilities
+  - Email, required, string length validation
+  - `validateForm()` function for form validation
+- ✅ Enhanced API error handling (web and mobile)
+  - Network error handling (no response from server)
+  - Authentication error handling (401) with automatic logout
+  - Authorization error handling (403) with user-friendly messages
+  - Validation error handling (400) with error details
+  - Server error handling (500+) with user-friendly messages
+  - Error types attached to error objects for programmatic handling
+
+**Rationale**: Centralized error handling and validation improves user experience, security, and maintainability
+
+### 9. Payroll Processing Pattern ✅ **IMPLEMENTED**
 **Pattern**: Manual admin-triggered payroll processing (no automatic scheduling)
 - Two-button approach:
   - **Analyze Payroll**: Preview calculations without saving (safe to run multiple times)

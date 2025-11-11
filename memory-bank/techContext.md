@@ -238,7 +238,7 @@ frontend-web/
 │   │   └── api.js          # Axios instance with interceptors
 │   ├── utils/
 │   │   ├── formatters.js
-│   │   └── validation.js
+│   │   └── validation.js ✅ (email, required, number range, string length, date, phone, password validation)
 │   ├── App.js              # Main routing configuration
 │   ├── index.js
 │   └── index.css
@@ -425,6 +425,22 @@ mobile/
 - **Paychex**: Real API integration or CSV export (switch via USE_MOCK=false)
 
 ## Implemented Backend Services ✅
+
+### Error Handler Middleware (`middleware/errorHandler.js`) ✅
+- `errorHandler()` - Global error handler middleware
+  - Catches all errors from route handlers
+  - Formats error responses with appropriate status codes
+  - Logs errors with context (path, method, timestamp)
+  - Handles PostgreSQL errors, network errors, custom errors
+- `asyncHandler()` - Wrapper for async route handlers
+- `createError()` - Helper for creating custom errors with status codes
+
+### Validation Middleware (`middleware/validation.js`) ✅
+- `validateBody()` - Validates request body against schema
+- `validateQuery()` - Validates query parameters
+- `validateParams()` - Validates route parameters
+- Supports required fields, data types, string length, number ranges, custom validation functions
+- Common validation schemas (email, UUID, role, language)
 
 ### Calculation Service (`calculationService.js`)
 - `calculateEfficiency()` - Compute efficiency percentage from budgeted vs actual hours

@@ -38,15 +38,9 @@ if (process.env.USE_MOCK === 'true') {
   console.log('🎭 Mock API routes registered');
 }
 
-// Error handling middleware (will be implemented in PR #22)
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
+// Error handling middleware
+const { errorHandler } = require('./middleware/errorHandler');
+app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {
