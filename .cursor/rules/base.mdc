@@ -1,0 +1,58 @@
+Description: Core project rules and patterns for Clean Scapes P4P System
+Globs: **/*
+
+# Clean Scapes P4P System - Base Rules
+
+## Project Overview
+This is a Pay-for-Performance (P4P) automated system for Clean Scapes, a $7 million landscaping company. The system automates payroll processing, calculates performance-based pay, and provides bilingual feedback to field crews.
+
+## Development Approach
+- Follow the 25 PR structure outlined in `p4p_task_list.md`
+- Each PR should be focused, testable, and complete
+- Use mock APIs during development (switch to real APIs later)
+- Write clear commit messages
+- Test thoroughly before creating PRs
+
+## Code Organization
+- Backend: `backend/` directory with services, routes, middleware, utils
+- Web Frontend: `frontend-web/` directory with React + Tailwind CSS
+- Mobile App: `mobile/` directory with React Native + Expo
+- Documentation: `docs/` directory
+- Mock Data: `mock-data/` directory
+
+## Key Principles
+1. **Separation of Concerns**: Services handle business logic, routes handle HTTP, middleware handles cross-cutting concerns
+2. **Role-Based Access**: Always check user roles (admin, manager, foreman, crew_member) before granting access
+3. **Error Handling**: Use try-catch blocks, global error handler, user-friendly error messages
+4. **Validation**: Validate all inputs at middleware and service levels
+5. **Bilingual Support**: Mobile app must support English and Spanish (react-i18next)
+
+## Critical Business Rules
+- Efficiency = Budgeted Hours / Actual Hours
+- Late penalty: Clock-in after 7:00 AM
+- Long lunch penalty: Lunch break > 30 minutes
+- Performance bonus based on efficiency thresholds
+- Anomaly flags: Efficiency <60% or >120%, missing data, negative pay
+- Daily processing at 10:30 AM (cron job)
+
+## File Naming Conventions
+- Backend: camelCase (e.g., `calculationService.js`)
+- Frontend: PascalCase for components (e.g., `PayrollTable.jsx`), camelCase for utilities
+- Mobile: PascalCase for screens/components (e.g., `DashboardScreen.js`), camelCase for utilities
+
+## Environment Variables
+- Always use `.env.example` files to document required variables
+- Never commit `.env` files
+- Use `USE_MOCK=true` for development, `false` for production
+
+## Testing
+- Write unit tests for calculation logic
+- Write integration tests for API routes
+- Use mock data for development
+- Test error scenarios
+
+## Documentation
+- Update Memory Bank files when patterns change
+- Document API endpoints in `docs/API.md`
+- Document database schema in `docs/DATABASE.md`
+- Keep README.md updated

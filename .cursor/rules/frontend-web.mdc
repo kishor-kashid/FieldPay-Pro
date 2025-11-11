@@ -1,0 +1,93 @@
+Description: Web frontend rules and patterns
+Globs: frontend-web/**/*
+
+# Web Frontend Rules - Clean Scapes P4P System
+
+## Component Structure
+- Use functional components with hooks
+- Separate container and presentational components when needed
+- Use React Context for global state (auth, theme)
+- Keep components focused and reusable
+
+## Layout Pattern
+- Use layout components: `AdminLayout`, `ManagerLayout`, `ForemanLayout`
+- Layouts include: Sidebar navigation, Top navbar, Main content area
+- Route-based layouts in `App.js`
+
+## Styling
+- Use Tailwind CSS utility classes
+- Create reusable component classes when needed
+- Follow mobile-first responsive design
+- Maintain consistent spacing and colors
+
+## State Management
+- Use React Context API for:
+  - Authentication state (`AuthContext`)
+  - User preferences
+- Use local state (`useState`) for:
+  - Form inputs
+  - Component-specific UI state
+- Use `useEffect` for data fetching
+
+## API Integration
+- Use `services/api.js` for all API calls
+- Include authentication token in headers
+- Handle loading states
+- Display error messages to users
+- Use try-catch for error handling
+
+## Form Handling
+- Validate inputs before submission
+- Show validation errors inline
+- Disable submit button during submission
+- Show success/error messages after submission
+
+## Routing
+- Use React Router DOM
+- Protect routes with authentication checks
+- Redirect based on user role after login
+- Use route parameters for dynamic pages
+
+## Charts and Visualizations
+- Use Chart.js with react-chartjs-2
+- Make charts responsive
+- Use consistent color schemes
+- Include legends and labels
+- Show loading states while fetching data
+
+## Data Tables
+- Use consistent table styling
+- Include sorting and filtering
+- Show loading states
+- Handle empty states (no data)
+- Make rows clickable for details
+
+## Error Handling
+- Use ErrorBoundary for React errors
+- Show user-friendly error messages
+- Log errors for debugging
+- Provide retry options when appropriate
+
+## Loading States
+- Show loading spinners for async operations
+- Use skeleton screens for better UX
+- Disable buttons during submission
+- Show progress indicators for long operations
+
+## Accessibility
+- Use semantic HTML
+- Include ARIA labels where needed
+- Ensure keyboard navigation works
+- Maintain color contrast ratios
+
+## Performance
+- Lazy load routes when possible
+- Optimize images
+- Use React.memo for expensive components
+- Avoid unnecessary re-renders
+
+## Role-Based UI
+- Show/hide features based on user role
+- Admin: Full access to all features
+- Manager: Analytics and reports only
+- Foreman: Team management features only

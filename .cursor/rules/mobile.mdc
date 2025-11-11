@@ -1,0 +1,130 @@
+Description: Mobile app rules and patterns
+Globs: mobile/**/*
+
+# Mobile App Rules - Clean Scapes P4P System
+
+## Critical Requirement: Bilingual Support
+- **MUST** support English and Spanish
+- Use `react-i18next` for translations
+- Store language preference in AsyncStorage
+- Allow language toggle in Profile screen
+- All user-facing text must be translated
+
+## Component Structure
+- Use functional components with hooks
+- Separate screens and components
+- Use React Context for global state (auth, language)
+- Keep components focused and reusable
+
+## Navigation
+- Use React Navigation
+- Stack Navigator for auth flow
+- Bottom Tab Navigator for main app (Home, History, Profile)
+- Stack Navigator nested in tabs for detail screens
+
+## Styling
+- Use React Native StyleSheet
+- Create consistent design system
+- Use responsive dimensions (avoid hardcoded values)
+- Follow platform conventions (iOS vs Android)
+
+## State Management
+- Use React Context API for:
+  - Authentication state (`AuthContext`)
+  - Language preference (`LanguageContext`)
+- Use local state (`useState`) for:
+  - Form inputs
+  - Screen-specific UI state
+- Use `useEffect` for data fetching
+
+## API Integration
+- Use `services/api.js` for all API calls
+- Include authentication token in headers
+- Store token in AsyncStorage
+- Handle loading states
+- Display error messages to users
+- Handle network errors gracefully
+
+## Data Persistence
+- Use AsyncStorage for:
+  - Authentication token
+  - Language preference
+  - User profile data (cache)
+- Clear storage on logout
+
+## Screen Patterns
+
+### Dashboard Screen
+- Show yesterday's performance score prominently
+- Display star rating (1-5 stars based on efficiency)
+- Show payout breakdown (base, bonus, penalties, total)
+- Quick stats: hours, jobs, on-time, lunch
+- Buttons to view breakdown and history
+
+### Breakdown Screen
+- Show detailed pay calculation
+- Job-by-job efficiency breakdown
+- Visual indicators (✅ or ⚠️)
+- Base pay, bonuses, penalties clearly separated
+- Final total highlighted
+
+### History Screen
+- Show last 30 days of performance
+- Performance trend chart
+- Average, best day, total earned
+- List of recent days with scores
+- Tap to view details
+
+### Profile Screen
+- User information display
+- Language toggle (EN/ES)
+- Settings options
+- Help/FAQ link
+- Logout button
+
+## Charts
+- Use react-native-chart-kit or similar
+- Make charts responsive
+- Show loading states
+- Include legends and labels
+
+## Error Handling
+- Show user-friendly error messages
+- Handle network errors (offline scenarios)
+- Provide retry options
+- Log errors for debugging
+
+## Loading States
+- Show loading spinners for async operations
+- Use skeleton screens for better UX
+- Disable buttons during submission
+
+## Notifications
+- Show notification banner on dashboard
+- Display unread count badge on home tab
+- Mark notifications as read when viewed
+- Link notifications to relevant screens
+
+## Platform Considerations
+- Test on both iOS and Android
+- Handle platform-specific differences
+- Use platform-appropriate UI components
+- Follow platform design guidelines
+
+## Performance
+- Optimize image loading
+- Use React.memo for expensive components
+- Avoid unnecessary re-renders
+- Lazy load screens when possible
+
+## Accessibility
+- Include accessibility labels
+- Support screen readers
+- Ensure touch targets are large enough
+- Maintain color contrast
+
+## Translation Files
+- `i18n/en.json` - English translations
+- `i18n/es.json` - Spanish translations
+- Keep structure identical between files
+- Use translation keys consistently
