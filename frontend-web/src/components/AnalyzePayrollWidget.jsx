@@ -12,16 +12,41 @@ const AnalyzePayrollWidget = () => {
   const [error, setError] = useState('');
 
   const handleAnalyze = async () => {
+    if (!date) {
+      setError('Please select a date');
+      return;
+    }
+
+    // Validate date is not in the future
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    
+    if (selectedDate > today) {
+      setError('Cannot analyze payroll for future dates');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setResults(null);
 
     try {
       const response = await payrollAPI.analyze(date);
+      
+      if (response.data.success === false) {
+        setError(response.data.error || 'Failed to analyze payroll');
+        return;
+      }
+      
       setResults(response.data);
     } catch (err) {
       console.error('Analyze error:', err);
-      setError(err.response?.data?.error || 'Failed to analyze payroll');
+      const errorMessage = err.response?.data?.error 
+        || err.response?.data?.message 
+        || err.message 
+        || 'Failed to analyze payroll. Please check the date and try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -46,6 +71,7 @@ const AnalyzePayrollWidget = () => {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            max={new Date().toISOString().split('T')[0]}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             disabled={loading}
           />
@@ -70,59 +96,75 @@ const AnalyzePayrollWidget = () => {
 
       {results && (
         <div className="space-y-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <p className="text-sm text-gray-700">
+              <span className="font-semibold">Analysis Date:</span> {new Date(date).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
+          </div>
+
           <div className="grid grid-cols-3 gap-4">
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-gray-600">Total Employees</p>
-              <p className="text-2xl font-bold text-blue-600">{results.summary?.totalEmployees || 0}</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {results.summary?.totalEmployees || results.summary?.successful_calculations || results.results?.length || 0}
+              </p>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
               <p className="text-sm text-gray-600">Total Pay</p>
               <p className="text-2xl font-bold text-green-600">
-                ${(results.summary?.totalPay || 0).toFixed(2)}
+                ${(results.summary?.totalPay || 
+                    (results.results?.reduce((sum, r) => sum + (r.total_pay || 0), 0) || 0)
+                  ).toFixed(2)}
               </p>
             </div>
             <div className="bg-yellow-50 rounded-lg p-4">
               <p className="text-sm text-gray-600">Anomalies</p>
-              <p className="text-2xl font-bold text-yellow-600">{results.summary?.anomalies || 0}</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {results.summary?.anomalies || 
+                 (results.results?.filter(r => r.has_anomaly).length || 0)}
+              </p>
             </div>
           </div>
 
-          <div className="border border-gray-200 rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hours</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Efficiency</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bonus</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penalty</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Pay</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {results.records?.map((record, index) => (
-                    <tr key={index} className={record.has_anomaly ? 'bg-yellow-50' : ''}>
-                      <td className="px-4 py-3 text-sm text-gray-900">{record.employee_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{record.hours_worked?.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm text-gray-900">{record.efficiency_score?.toFixed(0)}%</td>
-                      <td className="px-4 py-3 text-sm text-green-600">${record.performance_bonus?.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm text-red-600">${record.penalties?.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-900">${record.total_pay?.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm">
-                        {record.has_anomaly && (
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            ⚠️ Anomaly
-                          </span>
-                        )}
-                      </td>
+          {results.results && results.results.length > 0 ? (
+            <div className="border border-gray-200 rounded-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Employee</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hours</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Base Rate</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penalty</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Pay</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {results.results.map((record, index) => (
+                      <tr key={index} className={record.has_anomaly ? 'bg-yellow-50' : ''}>
+                        <td className="px-4 py-3 text-sm text-gray-900">{record.employee_name || record.name || 'N/A'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{record.hours_worked?.toFixed(2) || '0.00'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">${record.base_rate?.toFixed(2) || '0.00'}/hr</td>
+                        <td className="px-4 py-3 text-sm text-red-600">${(record.penalties || record.total_penalties || 0).toFixed(2)}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">${record.total_pay?.toFixed(2) || '0.00'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <p className="text-sm text-yellow-800">
+                ⚠️ No payroll data found for this date. Please check if timesheet data exists for {new Date(date).toLocaleDateString()}.
+              </p>
+            </div>
+          )}
 
           <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg">
             <p className="text-sm">

@@ -80,6 +80,60 @@ const sampleUsers = [
     crew_id: 'CREW2',
     preferred_language: 'en',
     base_rate: 19.00
+  },
+  {
+    email: 'crew5@cleanscapes.com',
+    role: 'crew_member',
+    name: 'Miguel Hernandez',
+    employee_id: 'EMP005',
+    crew_id: 'CREW1',
+    preferred_language: 'es',
+    base_rate: 17.00
+  },
+  {
+    email: 'crew6@cleanscapes.com',
+    role: 'crew_member',
+    name: 'Sofia Ramirez',
+    employee_id: 'EMP006',
+    crew_id: 'CREW1',
+    preferred_language: 'es',
+    base_rate: 18.00
+  },
+  {
+    email: 'crew7@cleanscapes.com',
+    role: 'crew_member',
+    name: 'Diego Torres',
+    employee_id: 'EMP007',
+    crew_id: 'CREW2',
+    preferred_language: 'es',
+    base_rate: 17.50
+  },
+  {
+    email: 'crew8@cleanscapes.com',
+    role: 'crew_member',
+    name: 'Isabella Flores',
+    employee_id: 'EMP008',
+    crew_id: 'CREW2',
+    preferred_language: 'es',
+    base_rate: 18.50
+  },
+  {
+    email: 'crew9@cleanscapes.com',
+    role: 'crew_member',
+    name: 'Luis Morales',
+    employee_id: 'EMP009',
+    crew_id: 'CREW2',
+    preferred_language: 'es',
+    base_rate: 19.00
+  },
+  {
+    email: 'crew10@cleanscapes.com',
+    role: 'crew_member',
+    name: 'Carmen Diaz',
+    employee_id: 'EMP010',
+    crew_id: 'CREW2',
+    preferred_language: 'es',
+    base_rate: 18.00
   }
 ];
 

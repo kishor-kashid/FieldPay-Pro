@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { payrollAPI, userAPI } from '../../services/api';
 
 ChartJS.register(
   CategoryScale,
@@ -30,63 +31,166 @@ const Analytics = () => {
     start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0],
   });
+  const [loading, setLoading] = useState(true);
+  const [efficiencyTrendData, setEfficiencyTrendData] = useState(null);
+  const [costPerJobData, setCostPerJobData] = useState(null);
+  const [performanceDistributionData, setPerformanceDistributionData] = useState(null);
+  const [insights, setInsights] = useState(null);
 
-  // Mock data for charts
-  const efficiencyTrendData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-    datasets: [
-      {
-        label: 'Crew 1',
-        data: [95, 96, 94, 97],
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      },
-      {
-        label: 'Crew 2',
-        data: [92, 91, 93, 92],
-        borderColor: 'rgb(34, 197, 94)',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-      },
-      {
-        label: 'Crew 3',
-        data: [85, 87, 86, 88],
-        borderColor: 'rgb(251, 146, 60)',
-        backgroundColor: 'rgba(251, 146, 60, 0.1)',
-      },
-    ],
+  useEffect(() => {
+    loadAnalyticsData();
+  }, [dateRange]);
+
+  const loadAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load efficiency trend (weekly data)
+      await loadEfficiencyTrend();
+      
+      // Load cost per job and performance distribution
+      await loadDistributionData();
+      
+      // Load insights
+      await loadInsights();
+    } catch (error) {
+      console.error('Failed to load analytics data:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const costPerJobData = {
-    labels: ['Mowing', 'Trimming', 'Cleanup', 'Installation', 'Maintenance'],
-    datasets: [
-      {
-        label: 'Average Cost ($)',
-        data: [150, 80, 200, 500, 120],
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.6)',
-          'rgba(34, 197, 94, 0.6)',
-          'rgba(251, 146, 60, 0.6)',
-          'rgba(168, 85, 247, 0.6)',
-          'rgba(236, 72, 153, 0.6)',
+  const loadEfficiencyTrend = async () => {
+    try {
+      const usersResponse = await userAPI.getUsers();
+      const users = usersResponse.data?.users || [];
+      const foremen = users.filter(u => u.role === 'foreman').slice(0, 3);
+      
+      const labels = [];
+      const datasets = [];
+      
+      // Initialize datasets for each crew
+      foremen.forEach((foreman, index) => {
+        datasets[index] = {
+          label: `Crew ${foreman.crew_id || foreman.id}`,
+          data: [],
+          borderColor: index === 0 ? 'rgb(59, 130, 246)' : index === 1 ? 'rgb(34, 197, 94)' : 'rgb(251, 146, 60)',
+          backgroundColor: index === 0 ? 'rgba(59, 130, 246, 0.1)' : index === 1 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(251, 146, 60, 0.1)',
+        };
+      });
+      
+      // Get last 4 weeks
+      for (let week = 3; week >= 0; week--) {
+        const weekStart = new Date();
+        weekStart.setDate(weekStart.getDate() - (week * 7));
+        labels.push(`Week ${4 - week}`);
+        
+        const dateStr = weekStart.toISOString().split('T')[0];
+        
+        // Get summary for this date (company-wide average)
+        try {
+          const response = await payrollAPI.getSummary({ date: dateStr });
+          const avgEff = response.data?.avgEfficiencyPercentage || 0;
+          
+          // Use same average for all crews (simplified - would need per-crew breakdown)
+          datasets.forEach(dataset => {
+            dataset.data.push(avgEff);
+          });
+        } catch (error) {
+          // If no data for this date, push 0
+          datasets.forEach(dataset => {
+            dataset.data.push(0);
+          });
+        }
+      }
+      
+      setEfficiencyTrendData({
+        labels,
+        datasets: datasets.filter(d => d.data.length > 0)
+      });
+    } catch (error) {
+      console.error('Error loading efficiency trend:', error);
+      setEfficiencyTrendData(null);
+    }
+  };
+
+  const loadDistributionData = async () => {
+    try {
+      // Get records for the date range
+      const recordsResponse = await payrollAPI.getRecords({
+        start_date: dateRange.start,
+        end_date: dateRange.end
+      });
+      const records = recordsResponse.data?.records || [];
+      
+      // Performance distribution
+      const excellent = records.filter(r => r.efficiency && r.efficiency >= 0.95).length;
+      const good = records.filter(r => r.efficiency && r.efficiency >= 0.85 && r.efficiency < 0.95).length;
+      const fair = records.filter(r => r.efficiency && r.efficiency >= 0.75 && r.efficiency < 0.85).length;
+      const needsImprovement = records.filter(r => r.efficiency && r.efficiency < 0.75).length;
+      
+      setPerformanceDistributionData({
+        labels: ['Excellent (>95%)', 'Good (85-95%)', 'Fair (75-85%)', 'Needs Improvement (<75%)'],
+        datasets: [
+          {
+            data: [excellent, good, fair, needsImprovement],
+            backgroundColor: [
+              'rgba(34, 197, 94, 0.6)',
+              'rgba(59, 130, 246, 0.6)',
+              'rgba(251, 146, 60, 0.6)',
+              'rgba(239, 68, 68, 0.6)',
+            ],
+          },
         ],
-      },
-    ],
+      });
+      
+      // Cost per job - simplified (would need job type data from backend)
+      setCostPerJobData(null); // Removed hard-coded data
+    } catch (error) {
+      console.error('Error loading distribution data:', error);
+    }
   };
 
-  const performanceDistributionData = {
-    labels: ['Excellent (>95%)', 'Good (85-95%)', 'Fair (75-85%)', 'Needs Improvement (<75%)'],
-    datasets: [
-      {
-        data: [35, 40, 20, 5],
-        backgroundColor: [
-          'rgba(34, 197, 94, 0.6)',
-          'rgba(59, 130, 246, 0.6)',
-          'rgba(251, 146, 60, 0.6)',
-          'rgba(239, 68, 68, 0.6)',
-        ],
-      },
-    ],
+  const loadInsights = async () => {
+    try {
+      // Get summary for date range
+      const recordsResponse = await payrollAPI.getRecords({
+        start_date: dateRange.start,
+        end_date: dateRange.end
+      });
+      const records = recordsResponse.data?.records || [];
+      
+      if (records.length === 0) {
+        setInsights(null);
+        return;
+      }
+      
+      // Calculate highest efficiency
+      const maxEfficiency = Math.max(...records.map(r => (r.efficiency || 0) * 100));
+      const maxRecord = records.find(r => (r.efficiency || 0) * 100 === maxEfficiency);
+      
+      // Calculate improvement (simplified)
+      const avgEfficiency = records.reduce((sum, r) => sum + (r.efficiency || 0), 0) / records.length * 100;
+      
+      setInsights({
+        highestEfficiency: Math.round(maxEfficiency),
+        highestCrew: maxRecord?.crew_id || 'N/A',
+        avgEfficiency: Math.round(avgEfficiency),
+        costSavings: 0 // Would need budget comparison
+      });
+    } catch (error) {
+      console.error('Error loading insights:', error);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-600 mt-4">Loading analytics data...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -118,7 +222,10 @@ const Analytics = () => {
             />
           </div>
           <div className="flex items-end">
-            <button className="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <button 
+              onClick={loadAnalyticsData}
+              className="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
               Update Analysis
             </button>
           </div>
@@ -126,113 +233,83 @@ const Analytics = () => {
       </div>
 
       {/* Key Insights */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium mb-2">Highest Efficiency</h3>
-          <p className="text-3xl font-bold">97%</p>
-          <p className="text-sm mt-1">Crew 1 - Week 4</p>
+      {insights ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg shadow-md p-6">
+            <h3 className="text-sm font-medium mb-2">Highest Efficiency</h3>
+            <p className="text-3xl font-bold">{insights.highestEfficiency}%</p>
+            <p className="text-sm mt-1">{insights.highestCrew}</p>
+          </div>
+          <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-md p-6">
+            <h3 className="text-sm font-medium mb-2">Average Efficiency</h3>
+            <p className="text-3xl font-bold">{insights.avgEfficiency}%</p>
+            <p className="text-sm mt-1">Last 30 days</p>
+          </div>
+          <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-md p-6">
+            <h3 className="text-sm font-medium mb-2">Cost Savings</h3>
+            <p className="text-3xl font-bold">N/A</p>
+            <p className="text-sm mt-1">Requires budget data</p>
+          </div>
         </div>
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium mb-2">Most Improved</h3>
-          <p className="text-3xl font-bold">+3.5%</p>
-          <p className="text-sm mt-1">Crew 3 - Last 30 days</p>
+      ) : (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <p className="text-gray-500 text-center py-8">No insights data available</p>
         </div>
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg shadow-md p-6">
-          <h3 className="text-sm font-medium mb-2">Cost Savings</h3>
-          <p className="text-3xl font-bold">$2,400</p>
-          <p className="text-sm mt-1">Vs. Budgeted Hours</p>
-        </div>
-      </div>
+      )}
 
       {/* Efficiency Trend */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Crew Efficiency Trends</h3>
-        <Line
-          data={efficiencyTrendData}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
+      {efficiencyTrendData ? (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Crew Efficiency Trends</h3>
+          <Line
+            data={efficiencyTrendData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { position: 'top' },
               },
-            },
-          }}
-        />
-      </div>
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                },
+              },
+            }}
+          />
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <p className="text-gray-500 text-center py-8">No efficiency trend data available</p>
+        </div>
+      )}
 
       {/* Cost and Distribution Analysis */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Cost per Job Type</h3>
-          <Bar
-            data={costPerJobData}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { display: false },
-              },
-            }}
-          />
-        </div>
-
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance Distribution</h3>
-          <Doughnut
-            data={performanceDistributionData}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { position: 'bottom' },
-              },
-            }}
-          />
-        </div>
+        {/* Cost per Job Type - Removed hard-coded data */}
+        {/* This requires job type breakdown from backend */}
+        
+        {performanceDistributionData ? (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Performance Distribution</h3>
+            <Doughnut
+              data={performanceDistributionData}
+              options={{
+                responsive: true,
+                plugins: {
+                  legend: { position: 'bottom' },
+                },
+              }}
+            />
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <p className="text-gray-500 text-center py-8">No distribution data available</p>
+          </div>
+        )}
       </div>
 
-      {/* Seasonal Analysis */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Seasonal Insights</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Best Performing Months</h4>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-gray-900">September</span>
-                <span className="text-sm font-bold text-green-600">96.5%</span>
-              </div>
-              <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-gray-900">August</span>
-                <span className="text-sm font-bold text-green-600">95.8%</span>
-              </div>
-              <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-gray-900">July</span>
-                <span className="text-sm font-bold text-green-600">94.2%</span>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h4 className="text-sm font-medium text-gray-700 mb-3">Areas for Improvement</h4>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between bg-yellow-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-gray-900">Winter Months</span>
-                <span className="text-sm font-bold text-yellow-600">-12% Efficiency</span>
-              </div>
-              <div className="flex items-center justify-between bg-yellow-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-gray-900">Rainy Days</span>
-                <span className="text-sm font-bold text-yellow-600">-8% Efficiency</span>
-              </div>
-              <div className="flex items-center justify-between bg-yellow-50 p-3 rounded-lg">
-                <span className="text-sm font-medium text-gray-900">Monday Mornings</span>
-                <span className="text-sm font-bold text-yellow-600">-5% Efficiency</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Seasonal Analysis - Removed hard-coded data */}
+      {/* This section requires historical data aggregation from backend */}
 
       {/* Export Options */}
       <div className="bg-white rounded-lg shadow-md p-6">

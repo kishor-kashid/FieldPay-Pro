@@ -32,7 +32,6 @@ const MemberDetailModal = ({ member, onClose }) => {
         <div className="flex justify-between items-start mb-6">
           <div>
             <h3 className="text-2xl font-semibold text-gray-900">{member.name}</h3>
-            <p className="text-gray-600 mt-1">ID: {member.employee_id || member.id}</p>
           </div>
           <button
             onClick={onClose}

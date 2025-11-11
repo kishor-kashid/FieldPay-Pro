@@ -160,7 +160,6 @@ const History = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Payout</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Members</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jobs Completed</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -186,15 +185,6 @@ const History = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {record.jobsCompleted}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      record.efficiency >= 95 ? 'bg-green-100 text-green-800' :
-                      record.efficiency >= 85 ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {record.efficiency >= 95 ? 'Excellent' : record.efficiency >= 85 ? 'Good' : 'Fair'}
-                    </span>
                   </td>
                 </tr>
               ))}

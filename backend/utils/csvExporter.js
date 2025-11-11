@@ -21,8 +21,6 @@ function generatePayrollCSV(records) {
     'Hours Worked',
     'Base Rate',
     'Base Pay',
-    'Efficiency %',
-    'Performance Bonus',
     'Late Penalty',
     'Long Lunch Penalty',
     'Total Pay',
@@ -43,8 +41,6 @@ function generatePayrollCSV(records) {
       record.hours_worked,
       record.base_rate.toFixed(2),
       record.base_pay.toFixed(2),
-      record.efficiency ? (record.efficiency * 100).toFixed(2) : '0.00',
-      record.performance_bonus.toFixed(2),
       record.late_penalty.toFixed(2),
       record.long_lunch_penalty.toFixed(2),
       record.total_pay.toFixed(2),
@@ -79,9 +75,6 @@ function generateDetailedPayrollCSV(records) {
     'Hours Worked',
     'Base Rate',
     'Base Pay',
-    'Efficiency',
-    'Efficiency %',
-    'Performance Bonus',
     'Late Penalty',
     'Long Lunch Penalty',
     'Total Penalties',
@@ -114,9 +107,6 @@ function generateDetailedPayrollCSV(records) {
       record.hours_worked,
       record.base_rate.toFixed(2),
       record.base_pay.toFixed(2),
-      record.efficiency ? record.efficiency.toFixed(4) : '0.0000',
-      record.efficiency ? (record.efficiency * 100).toFixed(2) : '0.00',
-      record.performance_bonus.toFixed(2),
       record.late_penalty.toFixed(2),
       record.long_lunch_penalty.toFixed(2),
       (record.late_penalty + record.long_lunch_penalty).toFixed(2),
@@ -169,10 +159,8 @@ function generateSummaryCSV(records) {
     'Days Worked',
     'Total Hours',
     'Total Base Pay',
-    'Total Bonuses',
     'Total Penalties',
     'Total Payout',
-    'Average Efficiency %',
     'Anomaly Count'
   ];
   
@@ -181,11 +169,8 @@ function generateSummaryCSV(records) {
     const records = group.records;
     const totalHours = records.reduce((sum, r) => sum + r.hours_worked, 0);
     const totalBasePay = records.reduce((sum, r) => sum + r.base_pay, 0);
-    const totalBonuses = records.reduce((sum, r) => sum + r.performance_bonus, 0);
     const totalPenalties = records.reduce((sum, r) => sum + r.late_penalty + r.long_lunch_penalty, 0);
     const totalPayout = records.reduce((sum, r) => sum + r.total_pay, 0);
-    const avgEfficiency = records.filter(r => r.efficiency !== null)
-      .reduce((sum, r, _, arr) => sum + (r.efficiency / arr.length), 0);
     const anomalyCount = records.filter(r => r.has_anomalies).length;
     
     return [
@@ -194,10 +179,8 @@ function generateSummaryCSV(records) {
       records.length,
       totalHours.toFixed(2),
       totalBasePay.toFixed(2),
-      totalBonuses.toFixed(2),
       totalPenalties.toFixed(2),
       totalPayout.toFixed(2),
-      avgEfficiency ? (avgEfficiency * 100).toFixed(2) : '0.00',
       anomalyCount
     ].join(',');
   });

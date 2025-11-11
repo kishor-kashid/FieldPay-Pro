@@ -139,24 +139,63 @@ async function savePayrollRecords(records, date) {
   try {
     console.log(`💾 Saving ${records.length} payroll records to database...`);
     
-    // Prepare records for insertion
-    const recordsToInsert = records.map(record => ({
-      employee_id: record.employee_id,
-      date: date,
-      hours_worked: record.hours_worked,
-      base_rate: record.base_rate,
-      base_pay: record.base_pay,
-      efficiency: record.efficiency,
-      performance_bonus: record.performance_bonus,
-      late_penalty: record.late_penalty,
-      long_lunch_penalty: record.long_lunch_penalty,
-      total_pay: record.total_pay,
-      has_anomalies: record.has_anomalies,
-      anomaly_flags: record.anomaly_flags,
-      status: record.has_anomalies ? 'pending_review' : 'calculated',
-      approved: false,
-      crew_id: record.crew_id
-    }));
+    // Fetch all users from database to map mock IDs to real UUIDs
+    const { data: users, error: userError } = await supabase
+      .from('users')
+      .select('id, email, employee_id')
+      .eq('role', 'crew_member');
+    
+    if (userError) {
+      throw new Error(`Failed to fetch users: ${userError.message}`);
+    }
+    
+    // Create mapping from mock IDs (crew1, crew2, etc.) to database UUIDs
+    const userMapping = {};
+    users.forEach(user => {
+      // Extract the mock ID from email (crew1@cleanscapes.com -> crew1)
+      const emailPrefix = user.email.split('@')[0];
+      userMapping[emailPrefix] = user.id;
+    });
+    
+    // Prepare records for insertion, mapping employee_id to actual UUIDs
+    const recordsToInsert = records.map(record => {
+      const dbUserId = userMapping[record.employee_id];
+      
+      if (!dbUserId) {
+        console.warn(`Warning: No database user found for mock ID: ${record.employee_id}`);
+        return null;
+      }
+      
+      // Ensure total_pay is calculated correctly: base_pay - total_penalties
+      // Recalculate to ensure no bonuses, efficiency, or other additions are included
+      const calculatedTotalPay = Math.max(0, record.base_pay - record.total_penalties);
+      
+      // Safety check: total pay should never exceed base pay
+      if (calculatedTotalPay > record.base_pay) {
+        console.warn(`Warning: Total pay (${calculatedTotalPay}) exceeds base pay (${record.base_pay}) for employee ${record.employee_id}. Using base pay.`);
+      }
+      
+      return {
+        employee_id: dbUserId, // Use the actual UUID from database
+        date: date,
+        hours_worked: record.hours_worked,
+        base_rate: record.base_rate,
+        base_pay: record.base_pay,
+        late_penalty: record.late_penalty,
+        long_lunch_penalty: record.long_lunch_penalty,
+        penalties: record.total_penalties, // Save total_penalties to penalties field
+        total_pay: calculatedTotalPay, // Recalculate to ensure correctness
+        has_anomalies: record.has_anomalies,
+        anomaly_flags: record.anomaly_flags,
+        status: record.has_anomalies ? 'pending_review' : 'calculated',
+        approved: false,
+        crew_id: record.crew_id
+      };
+    }).filter(record => record !== null); // Remove any records that couldn't be mapped
+    
+    if (recordsToInsert.length === 0) {
+      throw new Error('No valid payroll records to insert after user mapping');
+    }
     
     // Insert records
     const { data, error } = await supabase
@@ -416,6 +455,15 @@ async function getPayrollRecords(filters = {}) {
       query = query.eq('date', filters.date);
     }
     
+    // Support date range filtering
+    if (filters.start_date) {
+      query = query.gte('date', filters.start_date);
+    }
+    
+    if (filters.end_date) {
+      query = query.lte('date', filters.end_date);
+    }
+    
     if (filters.employee_id) {
       query = query.eq('employee_id', filters.employee_id);
     }
@@ -438,10 +486,28 @@ async function getPayrollRecords(filters = {}) {
       throw error;
     }
     
+    // Transform records to include employee_name from joined user
+    // Also calculate total_penalties from penalties field (or sum of late + long_lunch)
+    const transformedRecords = data.map(record => {
+      // Calculate total_penalties if not present
+      const totalPenalties = record.total_penalties !== null && record.total_penalties !== undefined
+        ? record.total_penalties
+        : (record.penalties !== null && record.penalties !== undefined)
+          ? record.penalties
+          : ((record.late_penalty || 0) + (record.long_lunch_penalty || 0));
+      
+      return {
+        ...record,
+        employee_name: record.user?.name || 'Unknown',
+        employee_id_display: record.user?.employee_id || record.employee_id,
+        total_penalties: totalPenalties // Ensure total_penalties is always present
+      };
+    });
+    
     return {
       success: true,
-      count: data.length,
-      records: data
+      count: transformedRecords.length,
+      records: transformedRecords
     };
     
   } catch (error) {

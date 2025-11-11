@@ -13,7 +13,32 @@ const ProcessPayrollWidget = () => {
   const [error, setError] = useState('');
   const [showReprocessModal, setShowReprocessModal] = useState(false);
 
+  const validateDate = () => {
+    if (!date) {
+      setError('Please select a date');
+      return false;
+    }
+
+    // Validate date is not in the future
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    
+    if (selectedDate > today) {
+      setError('Cannot process payroll for future dates');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleProcess = async (reprocess = false) => {
+    // Validate date before processing
+    if (!validateDate()) {
+      setStatus('error');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setStatus('processing');
@@ -79,10 +104,17 @@ const ProcessPayrollWidget = () => {
             id="process-date"
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              setDate(e.target.value);
+              setError(''); // Clear error when date changes
+            }}
+            max={new Date().toISOString().split('T')[0]}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
             disabled={loading}
           />
+          {error && !loading && (
+            <p className="text-sm text-red-600 mt-1">{error}</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>

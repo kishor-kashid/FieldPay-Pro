@@ -1,55 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
+import { payrollAPI, userAPI } from '../../services/api';
 
 const Teams = () => {
   const [selectedCrew, setSelectedCrew] = useState(null);
+  const [crews, setCrews] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const crews = [
-    {
-      id: 1,
-      name: 'Crew 1',
-      foreman: 'Carlos Rodriguez',
-      members: 18,
-      avgEfficiency: 96,
-      totalPayout: 18500,
-      status: 'excellent',
-      topMembers: [
-        { name: 'John Doe', efficiency: 105, pay: 1200 },
-        { name: 'Mike Smith', efficiency: 102, pay: 1150 },
-        { name: 'Tom Brown', efficiency: 98, pay: 1050 },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Crew 2',
-      foreman: 'Maria Garcia',
-      members: 16,
-      avgEfficiency: 92,
-      totalPayout: 16200,
-      status: 'good',
-      topMembers: [
-        { name: 'Sarah Johnson', efficiency: 99, pay: 1100 },
-        { name: 'David Lee', efficiency: 95, pay: 1000 },
-        { name: 'Alex Wong', efficiency: 91, pay: 950 },
-      ],
-    },
-    {
-      id: 3,
-      name: 'Crew 3',
-      foreman: 'James Wilson',
-      members: 16,
-      avgEfficiency: 85,
-      totalPayout: 14800,
-      status: 'needs_improvement',
-      topMembers: [
-        { name: 'Chris Taylor', efficiency: 92, pay: 980 },
-        { name: 'Pat Martinez', efficiency: 87, pay: 920 },
-        { name: 'Jordan White', efficiency: 82, pay: 880 },
-      ],
-    },
-  ];
+  useEffect(() => {
+    loadCrewsData();
+  }, []);
 
-  const comparisonData = {
+  const loadCrewsData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get yesterday's date
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      // Fetch all users to get crew information
+      const usersResponse = await userAPI.getUsers();
+      const users = usersResponse.data?.users || [];
+
+      // Get all foremen (they represent crews)
+      const foremen = users.filter(u => u.role === 'foreman');
+      
+      // Fetch payroll records for yesterday
+      const recordsResponse = await payrollAPI.getRecords({ date: yesterdayStr });
+      const records = recordsResponse.data?.records || [];
+
+      // Group records by crew_id
+      const crewDataMap = {};
+      
+      foremen.forEach(foreman => {
+        const crewId = foreman.crew_id || foreman.id;
+        const crewRecords = records.filter(r => r.crew_id === crewId);
+        const crewMembers = users.filter(u => u.crew_id === crewId && u.role === 'crew_member');
+        
+        if (crewRecords.length > 0 || crewMembers.length > 0) {
+          const avgEfficiency = crewRecords.length > 0
+            ? crewRecords.reduce((sum, r) => sum + (r.efficiency || 0), 0) / crewRecords.length * 100
+            : 0;
+          
+          const totalPayout = crewRecords.reduce((sum, r) => sum + (r.total_pay || 0), 0);
+          
+          // Get top 3 performers
+          const topMembers = [...crewRecords]
+            .filter(r => r.efficiency !== null)
+            .sort((a, b) => (b.efficiency || 0) - (a.efficiency || 0))
+            .slice(0, 3)
+            .map(r => ({
+              name: r.employee_name || 'Unknown',
+              efficiency: Math.round((r.efficiency || 0) * 100),
+              pay: Math.round(r.total_pay || 0)
+            }));
+
+          let status = 'good';
+          if (avgEfficiency >= 95) status = 'excellent';
+          else if (avgEfficiency < 85) status = 'needs_improvement';
+
+          crewDataMap[crewId] = {
+            id: crewId,
+            name: `Crew ${crewId}`,
+            foreman: foreman.name || 'Unknown',
+            members: crewMembers.length,
+            avgEfficiency: Math.round(avgEfficiency),
+            totalPayout: Math.round(totalPayout),
+            status: status,
+            topMembers: topMembers
+          };
+        }
+      });
+
+      setCrews(Object.values(crewDataMap));
+    } catch (error) {
+      console.error('Failed to load crews data:', error);
+      setCrews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const comparisonData = crews.length > 0 ? {
     labels: crews.map(c => c.name),
     datasets: [
       {
@@ -60,7 +94,7 @@ const Teams = () => {
         borderWidth: 1,
       },
     ],
-  };
+  } : null;
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -80,6 +114,15 @@ const Teams = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+        <p className="text-gray-600 mt-4">Loading teams data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -88,28 +131,35 @@ const Teams = () => {
       </div>
 
       {/* Crew Comparison Chart */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">Crew Efficiency Comparison</h3>
-        <Bar
-          data={comparisonData}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: { position: 'top' },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
+      {comparisonData && crews.length > 0 ? (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Crew Efficiency Comparison</h3>
+          <Bar
+            data={comparisonData}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: { position: 'top' },
               },
-            },
-          }}
-        />
-      </div>
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                },
+              },
+            }}
+          />
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <p className="text-gray-500 text-center py-8">No crew data available</p>
+        </div>
+      )}
 
       {/* Crew Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {crews.map((crew) => (
+      {crews.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {crews.map((crew) => (
           <div
             key={crew.id}
             className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -145,8 +195,13 @@ const Teams = () => {
               View Details
             </button>
           </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <p className="text-gray-500 text-center py-8">No crews found</p>
+        </div>
+      )}
 
       {/* Detailed Crew View Modal */}
       {selectedCrew && (
@@ -184,8 +239,9 @@ const Teams = () => {
             {/* Top Performers */}
             <div>
               <h4 className="text-lg font-semibold text-gray-800 mb-3">Top Performers</h4>
-              <div className="space-y-3">
-                {selectedCrew.topMembers.map((member, index) => (
+              {selectedCrew.topMembers && selectedCrew.topMembers.length > 0 ? (
+                <div className="space-y-3">
+                  {selectedCrew.topMembers.map((member, index) => (
                   <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
                     <div>
                       <p className="font-medium text-gray-900">{member.name}</p>
@@ -196,8 +252,11 @@ const Teams = () => {
                       <p className="text-xs text-gray-500">Daily Pay</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">No performance data available</p>
+              )}
             </div>
           </div>
         </div>

@@ -13,23 +13,75 @@ const ForemanDashboard = () => {
 
   const loadTeamData = async () => {
     try {
-      // Mock data for now
-      const mockData = {
-        teamName: user?.crew_id ? `Crew ${user.crew_id}` : 'My Team',
+      setLoading(true);
+      
+      // Get yesterday's date
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      const crewId = user?.crew_id;
+      if (!crewId) {
+        setTeamData({
+          teamName: 'My Team',
+          date: 'Yesterday',
+          avgEfficiency: 0,
+          totalPayout: 0,
+          members: [],
+        });
+        return;
+      }
+      
+      // Fetch payroll records for this crew
+      const recordsResponse = await payrollAPI.getRecords({ 
+        date: yesterdayStr,
+        crew_id: crewId 
+      });
+      const records = recordsResponse.data?.records || [];
+      
+      // Calculate average efficiency
+      const avgEfficiency = records.length > 0
+        ? records.reduce((sum, r) => sum + (r.efficiency || 0), 0) / records.length * 100
+        : 0;
+      
+      // Calculate total payout
+      const totalPayout = records.reduce((sum, r) => sum + (r.total_pay || 0), 0);
+      
+      // Map records to member data
+      const members = records.map((record, index) => {
+        const efficiency = (record.efficiency || 0) * 100;
+        let status = 'good';
+        if (efficiency >= 95) status = 'excellent';
+        else if (efficiency < 85) status = 'needs_attention';
+        
+        return {
+          id: record.employee_id || index,
+          name: record.employee_name || 'Unknown',
+          efficiency: Math.round(efficiency),
+          pay: Math.round(record.total_pay || 0),
+          status: status
+        };
+      });
+      
+      // Sort by efficiency (descending)
+      members.sort((a, b) => b.efficiency - a.efficiency);
+      
+      setTeamData({
+        teamName: `Crew ${crewId}`,
         date: 'Yesterday',
-        avgEfficiency: 94,
-        totalPayout: 4200,
-        members: [
-          { id: 1, name: 'John Doe', efficiency: 105, pay: 520, status: 'excellent' },
-          { id: 2, name: 'Jane Smith', efficiency: 98, pay: 480, status: 'excellent' },
-          { id: 3, name: 'Bob Johnson', efficiency: 92, pay: 450, status: 'good' },
-          { id: 4, name: 'Alice Brown', efficiency: 88, pay: 420, status: 'good' },
-          { id: 5, name: 'Charlie Davis', efficiency: 78, pay: 380, status: 'needs_attention' },
-        ],
-      };
-      setTeamData(mockData);
+        avgEfficiency: Math.round(avgEfficiency),
+        totalPayout: Math.round(totalPayout),
+        members: members,
+      });
     } catch (error) {
       console.error('Failed to load team data:', error);
+      setTeamData({
+        teamName: user?.crew_id ? `Crew ${user.crew_id}` : 'My Team',
+        date: 'Yesterday',
+        avgEfficiency: 0,
+        totalPayout: 0,
+        members: [],
+      });
     } finally {
       setLoading(false);
     }
@@ -103,9 +155,9 @@ const ForemanDashboard = () => {
       </div>
 
       {/* Top Performer */}
-      <div className="bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-green-900 mb-3">🏆 Top Performer - Yesterday</h3>
-        {teamData?.members?.[0] && (
+      {teamData?.members && teamData.members.length > 0 ? (
+        <div className="bg-gradient-to-r from-green-50 to-green-100 border-2 border-green-200 rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-green-900 mb-3">🏆 Top Performer - Yesterday</h3>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xl font-bold text-green-900">{teamData.members[0].name}</p>
@@ -116,14 +168,15 @@ const ForemanDashboard = () => {
               <p className="text-sm text-green-700">Efficiency</p>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : null}
 
       {/* Team Members Summary Cards */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-semibold text-gray-800 mb-4">Team Members</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teamData?.members?.map((member) => (
+        {teamData?.members && teamData.members.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {teamData.members.map((member) => (
             <div key={member.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="font-semibold text-gray-900">{member.name}</h4>
@@ -151,8 +204,13 @@ const ForemanDashboard = () => {
                 View Details
               </button>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">No team member data available</p>
+          </div>
+        )}
       </div>
 
       {/* Alerts */}

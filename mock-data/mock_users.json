@@ -87,16 +87,82 @@
       "preferred_language": "es",
       "base_rate": 18.50,
       "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew5",
+      "email": "crew5@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Miguel Hernandez",
+      "employee_id": "EMP-CREW-005",
+      "crew_id": "foreman1",
+      "preferred_language": "es",
+      "base_rate": 17.00,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew6",
+      "email": "crew6@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Sofia Ramirez",
+      "employee_id": "EMP-CREW-006",
+      "crew_id": "foreman1",
+      "preferred_language": "es",
+      "base_rate": 18.00,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew7",
+      "email": "crew7@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Diego Torres",
+      "employee_id": "EMP-CREW-007",
+      "crew_id": "foreman2",
+      "preferred_language": "es",
+      "base_rate": 17.50,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew8",
+      "email": "crew8@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Isabella Flores",
+      "employee_id": "EMP-CREW-008",
+      "crew_id": "foreman2",
+      "preferred_language": "es",
+      "base_rate": 18.50,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew9",
+      "email": "crew9@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Luis Morales",
+      "employee_id": "EMP-CREW-009",
+      "crew_id": "foreman2",
+      "preferred_language": "es",
+      "base_rate": 19.00,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew10",
+      "email": "crew10@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Carmen Diaz",
+      "employee_id": "EMP-CREW-010",
+      "crew_id": "foreman2",
+      "preferred_language": "es",
+      "base_rate": 18.00,
+      "created_at": "2024-01-01T00:00:00Z"
     }
   ],
   "metadata": {
     "description": "Mock user data for Clean Scapes P4P system development",
-    "total_users": 8,
+    "total_users": 14,
     "roles": {
       "admin": 1,
       "manager": 1,
       "foreman": 2,
-      "crew_member": 4
+      "crew_member": 10
     },
     "default_password": "password123",
     "notes": "All users can authenticate with their email and the default password. In production, users should be required to change their password on first login."

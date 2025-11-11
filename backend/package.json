@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "test": "jest",
     "seed": "node utils/seedData.js",
-    "create-firebase-users": "node utils/createFirebaseUsers.js"
+    "create-firebase-users": "node utils/createFirebaseUsers.js",
+    "setup-db": "node scripts/setupDatabase.js"
   },
   "keywords": [
     "payroll",

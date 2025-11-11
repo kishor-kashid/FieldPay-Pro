@@ -74,7 +74,15 @@ router.post('/analyze', authenticateToken, requireAdmin, async (req, res, next) 
 router.post('/process', authenticateToken, requireAdmin, async (req, res, next) => {
   try {
     const { date, reprocess } = req.body;
-    const triggeredBy = req.user.uid; // Get user ID from authenticated token
+    // Use database user ID (UUID) instead of Firebase UID
+    const triggeredBy = req.user.id; // Get database user ID (UUID) from authenticated user
+    
+    if (!triggeredBy) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID not found. Please ensure user exists in database.'
+      });
+    }
     
     // Default to yesterday if no date provided
     const targetDate = date || (() => {
@@ -83,7 +91,7 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
       return yesterday.toISOString().split('T')[0];
     })();
     
-    console.log(`🚀 Admin ${req.user.uid} processing payroll for ${targetDate} (reprocess: ${reprocess || false})`);
+    console.log(`🚀 Admin ${req.user.email} (ID: ${triggeredBy}) processing payroll for ${targetDate} (reprocess: ${reprocess || false})`);
     
     const result = await processPayroll(targetDate, triggeredBy, { reprocess: reprocess || false });
     
@@ -115,13 +123,15 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
  */
 router.get('/records', authenticateToken, async (req, res, next) => {
   try {
-    const { date, employee_id, crew_id, status, anomalies_only } = req.query;
+    const { date, start_date, end_date, employee_id, crew_id, status, anomalies_only } = req.query;
     const user = req.user;
     
     // Build filters based on role
     const filters = {};
     
     if (date) filters.date = date;
+    if (start_date) filters.start_date = start_date;
+    if (end_date) filters.end_date = end_date;
     if (status) filters.status = status;
     if (anomalies_only === 'true') filters.anomalies_only = true;
     

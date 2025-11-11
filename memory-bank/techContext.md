@@ -396,7 +396,7 @@ mobile/
 ### Payroll API Routes (`routes/payroll.js`) ✅ **IMPLEMENTED**
 - POST `/api/payroll/analyze` - Preview payroll (no DB writes, no notifications) - Admin only
 - POST `/api/payroll/process` - Process payroll (commit to DB) - Admin only
-- GET `/api/payroll/records` - Get payroll records (role-based filtering) - All roles
+- GET `/api/payroll/records` - Get payroll records (role-based filtering, supports date range: start_date, end_date) - All roles
 - GET `/api/payroll/records/:id` - Get specific record - Role-based
 - PUT `/api/payroll/records/:id/approve` - Approve record - Admin/Manager only
 - GET `/api/payroll/export` - Export CSV (3 formats) - Admin/Manager only
@@ -507,4 +507,10 @@ mobile/
 24. **Crew Member Restriction**: Web access blocked for crew members (invalid credentials message) ✅ **IMPLEMENTED**
 25. **Token Management**: Firebase ID token stored as `authToken` in localStorage for axios interceptor ✅ **IMPLEMENTED**
 26. **Axios Interceptor Pattern**: Request interceptor adds token, response interceptor handles 401 redirects ✅ **IMPLEMENTED**
+27. **Payroll Calculation Simplified**: Removed efficiency and performance bonuses, formula is now: Total Pay = Base Pay - Penalties ✅ **IMPLEMENTED**
+28. **Base Rate Display**: Added Base Rate column to all payroll tables (PayrollTable, Review, Approve) showing hourly rate ✅ **IMPLEMENTED**
+29. **Database Schema Consolidation**: Single comprehensive schema file (`000_comprehensive_schema.sql`) for clean setup ✅ **IMPLEMENTED**
+30. **Reset-Seed Script**: `npm run reset-seed` script to delete all data and regenerate users + payroll data in one go ✅ **IMPLEMENTED**
+31. **Crew Members Expanded**: 10 crew members total (expanded from 4), divided into 2 groups (4 and 6 members) ✅ **IMPLEMENTED**
+32. **Total Penalties Mapping**: Fixed to ensure `total_penalties` is properly mapped from database `penalties` field ✅ **IMPLEMENTED**
 

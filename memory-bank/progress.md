@@ -26,6 +26,8 @@
 - ✅ User Management API Routes (6 endpoints)
 - ✅ Admin Users Page (statistics, search, filtering)
 - ✅ Add/Edit User Modals
+- ✅ Review Payroll Page (crew column, dynamic crew filter, sorting)
+- ✅ Reports Page (dynamic data generation, date range filtering)
 
 ## What's Left to Build
 
@@ -59,11 +61,14 @@
 - [x] Add/Edit User modals ✅
 - [x] Admin dashboard (dashboard page, analyze/process widgets, quick actions, stats) ✅
 - [x] Admin pages (Upload, Review, Approve, Reports, Settings) ✅
+- [x] Review Payroll page enhancements (crew column, dynamic filters) ✅
+- [x] Reports page enhancements (dynamic data, date range filtering) ✅
 - [x] Manager dashboard (dashboard page, teams page, analytics page) ✅
 - [x] Foreman dashboard (dashboard, team members, schedule, history pages) ✅
 - [x] Role-based access control (crew members restricted from web app) ✅
 - [x] Token management (Firebase token stored for axios interceptor) ✅
-- [ ] Charts and data visualizations (enhancements)
+- [x] Charts removed from Reports page (simplified UI) ✅
+- [ ] Charts and data visualizations (enhancements) - if needed in future
 - [ ] CSV upload interface
 - [ ] Error handling and validation (enhancements)
 - [ ] Responsive design (polish)
@@ -229,4 +234,15 @@
 - **Unit tests**: 65 tests covering critical business logic (calculation engine, CSV export, user operations)
 - **Test coverage**: Core P4P calculation engine fully tested, CSV export fully tested, basic user operations tested
 - **Test quality**: All tests passing, console output suppressed for readability
+- **Payroll calculation**: Simplified to Base Pay - Penalties (efficiency and bonuses removed)
+- **Base Rate display**: Added to all payroll tables and detail modals showing hourly rate
+- **Database schema**: Comprehensive single-file schema (`000_comprehensive_schema.sql`) for clean setup
+- **Reset-seed script**: `npm run reset-seed` to delete all data and regenerate in one go
+- **Crew members**: 10 total (expanded from 4), divided into 2 groups (4 and 6 members)
+- **Total penalties**: Fixed mapping from database `penalties` field to frontend `total_penalties`
+- **UI Simplification**: Status columns removed from all payroll tables and widgets for cleaner, focused interface
+- **Approve & Export Page**: Streamlined to focus on payroll analysis, processing, and export functionality
+- **Reports Section**: Dynamic report generation from database with date range filtering, charts removed
+- **Review Payroll Page**: Crew column added with sorting, dynamic crew filter dropdown from database
+- **Backend API**: Payroll records endpoint supports date range filtering (start_date, end_date parameters)
 

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { payrollAPI } from '../../services/api';
+import { payrollAPI, userAPI } from '../../services/api';
 import PayrollTable from '../../components/PayrollTable';
 
 const Review = () => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [availableCrews, setAvailableCrews] = useState([]);
   const [filters, setFilters] = useState({
     date: new Date().toISOString().split('T')[0],
     status: '',
@@ -17,10 +18,65 @@ const Review = () => {
     loadRecords();
   }, [filters]);
 
+  useEffect(() => {
+    loadAvailableCrews();
+  }, [filters.date]);
+
+  const loadAvailableCrews = async () => {
+    try {
+      const response = await userAPI.getUsers();
+      const users = response.data?.users || [];
+      
+      // Get unique crew_ids from foremen
+      const foremen = users.filter(u => u.role === 'foreman' && u.crew_id);
+      const crewIds = [...new Set(foremen.map(f => f.crew_id))].sort();
+      
+      // Also get unique crew_ids from payroll records for the selected date
+      try {
+        const recordsResponse = await payrollAPI.getRecords({ date: filters.date });
+        const allRecords = recordsResponse.data?.records || [];
+        const recordCrewIds = [...new Set(allRecords.map(r => r.crew_id).filter(Boolean))];
+        
+        // Combine and deduplicate
+        const allCrewIds = [...new Set([...crewIds, ...recordCrewIds])].sort();
+        
+        // Create crew options with names if available
+        const crews = allCrewIds.map(crewId => {
+          const foreman = foremen.find(f => f.crew_id === crewId);
+          return {
+            id: crewId,
+            name: foreman ? `${foreman.name}'s Crew` : `Crew ${crewId}`
+          };
+        });
+        
+        setAvailableCrews(crews);
+      } catch (error) {
+        // If records fetch fails, just use foremen crews
+        const crews = crewIds.map(crewId => {
+          const foreman = foremen.find(f => f.crew_id === crewId);
+          return {
+            id: crewId,
+            name: foreman ? `${foreman.name}'s Crew` : `Crew ${crewId}`
+          };
+        });
+        setAvailableCrews(crews);
+      }
+    } catch (error) {
+      console.error('Failed to load available crews:', error);
+      setAvailableCrews([]);
+    }
+  };
+
   const loadRecords = async () => {
     setLoading(true);
     try {
-      const response = await payrollAPI.getRecords(filters);
+      // Clean up filters - remove empty values
+      const cleanFilters = {
+        date: filters.date,
+        ...(filters.status && { status: filters.status }),
+        ...(filters.crew_id && { crew_id: filters.crew_id }),
+      };
+      const response = await payrollAPI.getRecords(cleanFilters);
       setRecords(response.data.records || []);
     } catch (error) {
       console.error('Failed to load records:', error);
@@ -63,9 +119,19 @@ const Review = () => {
             <input
               type="date"
               value={filters.date}
-              onChange={(e) => setFilters({ ...filters, date: e.target.value })}
+              onChange={(e) => {
+                const selectedDate = e.target.value;
+                const today = new Date().toISOString().split('T')[0];
+                
+                // Allow any past date or today for review
+                if (selectedDate <= today) {
+                  setFilters({ ...filters, date: selectedDate });
+                }
+              }}
+              max={new Date().toISOString().split('T')[0]}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
+            <p className="text-xs text-gray-500 mt-1">Select a date to review payroll records</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
@@ -87,8 +153,11 @@ const Review = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Crews</option>
-              <option value="1">Crew 1</option>
-              <option value="2">Crew 2</option>
+              {availableCrews.map(crew => (
+                <option key={crew.id} value={crew.id}>
+                  {crew.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -163,20 +232,16 @@ const Review = () => {
                   <p className="font-medium">{selectedRecord.hours_worked?.toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Efficiency</p>
-                  <p className="font-medium">{selectedRecord.efficiency_score?.toFixed(0)}%</p>
+                  <p className="text-sm text-gray-600">Base Rate</p>
+                  <p className="font-medium">${selectedRecord.base_rate?.toFixed(2) || '0.00'}/hr</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Base Pay</p>
                   <p className="font-medium">${selectedRecord.base_pay?.toFixed(2)}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Bonus</p>
-                  <p className="font-medium text-green-600">${selectedRecord.performance_bonus?.toFixed(2)}</p>
-                </div>
-                <div>
                   <p className="text-sm text-gray-600">Penalties</p>
-                  <p className="font-medium text-red-600">${selectedRecord.penalties?.toFixed(2)}</p>
+                  <p className="font-medium text-red-600">${selectedRecord.total_penalties?.toFixed(2) || '0.00'}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-600">Total Pay</p>

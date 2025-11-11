@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { payrollAPI } from '../../services/api';
-import AnalyzePayrollWidget from '../../components/AnalyzePayrollWidget';
-import ProcessPayrollWidget from '../../components/ProcessPayrollWidget';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,71 +81,43 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Payroll Processing Widgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AnalyzePayrollWidget />
-        <ProcessPayrollWidget />
-      </div>
-
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-center">
+          <button 
+            onClick={() => navigate('/admin/upload')}
+            className="p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-center cursor-pointer"
+          >
             <div className="text-2xl mb-2">📤</div>
             <div className="text-sm font-medium text-gray-800">Upload Data</div>
           </button>
-          <button className="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-center">
+          <button 
+            onClick={() => navigate('/admin/review')}
+            className="p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-center cursor-pointer"
+          >
             <div className="text-2xl mb-2">📋</div>
             <div className="text-sm font-medium text-gray-800">Review Payroll</div>
           </button>
-          <button className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-center">
+          <button 
+            onClick={() => navigate('/admin/approve')}
+            className="p-4 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors text-center cursor-pointer"
+          >
             <div className="text-2xl mb-2">✓</div>
             <div className="text-sm font-medium text-gray-800">Approve & Export</div>
           </button>
-          <button className="p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors text-center">
+          <button 
+            onClick={() => navigate('/admin/users')}
+            className="p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-colors text-center cursor-pointer"
+          >
             <div className="text-2xl mb-2">👥</div>
             <div className="text-sm font-medium text-gray-800">Manage Users</div>
           </button>
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-3 border-b border-gray-200">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">Payroll Processed</p>
-                <p className="text-xs text-gray-500">Yesterday - 50 employees</p>
-              </div>
-            </div>
-            <span className="text-xs text-gray-500">2 hours ago</span>
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-gray-200">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">New User Added</p>
-                <p className="text-xs text-gray-500">John Doe - Crew Member</p>
-              </div>
-            </div>
-            <span className="text-xs text-gray-500">5 hours ago</span>
-          </div>
-          <div className="flex items-center justify-between py-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-              <div>
-                <p className="text-sm font-medium text-gray-800">Data Uploaded</p>
-                <p className="text-xs text-gray-500">Service Autopilot CSV</p>
-              </div>
-            </div>
-            <span className="text-xs text-gray-500">1 day ago</span>
-          </div>
-        </div>
-      </div>
+      {/* Recent Activity - Removed hard-coded data */}
+      {/* This section can be implemented later with execution logs API */}
     </div>
   );
 };

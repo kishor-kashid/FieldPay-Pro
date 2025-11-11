@@ -18,6 +18,11 @@ const PayrollTable = ({ records, onAddNote, onViewDetails }) => {
     const bVal = b[sortField];
     const multiplier = sortDirection === 'asc' ? 1 : -1;
     
+    // Handle null/undefined values
+    if (aVal == null && bVal == null) return 0;
+    if (aVal == null) return multiplier;
+    if (bVal == null) return -multiplier;
+    
     if (typeof aVal === 'string') {
       return multiplier * aVal.localeCompare(bVal);
     }
@@ -49,22 +54,16 @@ const PayrollTable = ({ records, onAddNote, onViewDetails }) => {
                 Hours {sortField === 'hours_worked' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
               <th
-                onClick={() => handleSort('efficiency_score')}
+                onClick={() => handleSort('base_rate')}
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
               >
-                Efficiency {sortField === 'efficiency_score' && (sortDirection === 'asc' ? '↑' : '↓')}
+                Base Rate {sortField === 'base_rate' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
               <th
-                onClick={() => handleSort('performance_bonus')}
+                onClick={() => handleSort('total_penalties')}
                 className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
               >
-                Bonus {sortField === 'performance_bonus' && (sortDirection === 'asc' ? '↑' : '↓')}
-              </th>
-              <th
-                onClick={() => handleSort('penalties')}
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-              >
-                Penalties {sortField === 'penalties' && (sortDirection === 'asc' ? '↑' : '↓')}
+                Penalties {sortField === 'total_penalties' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
               <th
                 onClick={() => handleSort('total_pay')}
@@ -72,8 +71,11 @@ const PayrollTable = ({ records, onAddNote, onViewDetails }) => {
               >
                 Total Pay {sortField === 'total_pay' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
+              <th
+                onClick={() => handleSort('crew_id')}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                Crew {sortField === 'crew_id' && (sortDirection === 'asc' ? '↑' : '↓')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
@@ -84,8 +86,7 @@ const PayrollTable = ({ records, onAddNote, onViewDetails }) => {
             {sortedRecords.map((record) => (
               <tr key={record.id} className={record.has_anomaly ? 'bg-yellow-50' : ''}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{record.employee_name}</div>
-                  <div className="text-xs text-gray-500">ID: {record.employee_id}</div>
+                  <div className="text-sm font-medium text-gray-900">{record.employee_name || 'Unknown'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {new Date(record.date).toLocaleDateString()}
@@ -93,37 +94,17 @@ const PayrollTable = ({ records, onAddNote, onViewDetails }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {record.hours_worked?.toFixed(2)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`text-sm font-medium ${
-                    record.efficiency_score >= 100 ? 'text-green-600' :
-                    record.efficiency_score >= 80 ? 'text-blue-600' :
-                    'text-red-600'
-                  }`}>
-                    {record.efficiency_score?.toFixed(0)}%
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
-                  ${record.performance_bonus?.toFixed(2)}
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  ${record.base_rate?.toFixed(2) || '0.00'}/hr
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
-                  ${record.penalties?.toFixed(2)}
+                  ${record.total_penalties?.toFixed(2) || '0.00'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
                   ${record.total_pay?.toFixed(2)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex flex-col space-y-1">
-                    {record.has_anomaly && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                        ⚠️ Anomaly
-                      </span>
-                    )}
-                    {record.status === 'approved' && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                        ✓ Approved
-                      </span>
-                    )}
-                  </div>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {record.crew_id || 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                   <button

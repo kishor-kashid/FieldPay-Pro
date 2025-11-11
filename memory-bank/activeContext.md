@@ -6,6 +6,13 @@
 **Date**: After frontend dashboard implementation and authentication fixes
 
 ## Recent Changes
+- ✅ **UI Simplification**: Removed status columns from all payroll tables (PayrollTable, AnalyzePayrollWidget, Approve, History pages)
+- ✅ **Approve & Export Page**: Removed Summary Stats section and payroll records table, keeping only Analyze/Process widgets and Export functionality
+- ✅ **Reports Section**: Removed hard-coded data, now generates reports dynamically from database based on selected date range
+- ✅ **Reports Section**: Removed all charts (Efficiency Trend, Daily Payout, Crew Comparison), keeping only summary cards and export options
+- ✅ **Review Payroll Page**: Added crew column to PayrollTable with sorting capability
+- ✅ **Review Payroll Page**: Fixed crew filter dropdown to dynamically load crews from database (foremen and payroll records)
+- ✅ **Backend Enhancement**: Added date range filtering support (start_date, end_date) to payroll records API
 - ✅ **PR #1 Completed**: Project setup (backend, web, mobile initialized)
 - ✅ **PR #2 Completed**: Database schema created (6 tables, migrations, seed data)
 - ✅ **PR #3 Completed**: Firebase Authentication (middleware, routes, contexts, RBAC)
@@ -183,6 +190,17 @@ None at this time.
 - **Axios interceptor**: Request interceptor adds `authToken` from localStorage, response interceptor handles 401 redirects
 - **Login flow**: Polling mechanism waits for user profile to load before role-based redirection
 - **Backend notification fix**: Changed `req.user.uid` to `req.user.id` in notification routes for correct database queries
+- **Payroll calculation simplified**: Removed efficiency and performance bonuses, formula is now: Total Pay = Base Pay - Penalties
+- **Base Rate column**: Added to payroll tables (PayrollTable, Review, Approve pages) showing hourly rate
+- **Database schema**: Comprehensive schema file (`000_comprehensive_schema.sql`) with all tables and constraints
+- **Reset-seed script**: `resetAndSeed.js` script to delete all data and regenerate users + payroll data in one go
+- **Crew members expanded**: 10 crew members total, divided into 2 groups (4 and 6 members)
+- **Total penalties mapping**: Fixed to ensure `total_penalties` is properly mapped from database `penalties` field
+- **UI Simplification**: Status columns removed from all payroll tables and widgets for cleaner interface
+- **Approve & Export Page**: Streamlined to focus on payroll analysis, processing, and export (removed summary stats and records table)
+- **Reports Section**: Dynamic report generation from database with date range filtering, charts removed for simplicity
+- **Review Payroll Page**: Crew column added with sorting, dynamic crew filter dropdown populated from database
+- **Backend API Enhancement**: Payroll records endpoint now supports date range filtering (start_date, end_date query parameters)
 
 ## Communication Notes
 - Project is for Clean Scapes ($7M landscaping company)
