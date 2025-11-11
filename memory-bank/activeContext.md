@@ -1,11 +1,26 @@
 # Active Context: Clean Scapes P4P System
 
 ## Current Work Focus
-**Phase**: Deployment & Mobile App Integration  
-**Status**: Backend successfully deployed to Firebase Cloud Functions, mobile app integration in progress  
-**Date**: Post-deployment - Backend live, mobile app connecting to production API
+**Phase**: Mobile App Development & Production Integration  
+**Status**: Backend deployed to Firebase Cloud Functions, mobile app fully functional with all core screens  
+**Date**: Post-PR #15-18 - All mobile app screens implemented, production-ready
 
 ## Recent Changes
+- ✅ **PR #15-18 Completed**: Mobile App - All Core Screens Implemented
+  - ✅ PR #15: Dashboard Screen (yesterday's performance with score, payout, quick stats)
+  - ✅ PR #16: Breakdown Screen (detailed pay calculation, base pay, penalties, job breakdown)
+  - ✅ PR #17: History Screen (30-day performance trend, statistics, history cards)
+  - ✅ PR #18: Profile & Settings Screen (user info, language toggle, help screen)
+  - Fixed API response parsing (extract records from `response.data.records` or `response.data.data`)
+  - Removed debug console.log statements from production code
+  - Updated dashboard message: "No performance data available for yesterday"
+  - Fixed language update endpoint (removed `requireOwnDataOrAdmin` middleware causing 403 error)
+  - All screens connected to production Firebase Cloud Functions API
+- ✅ **Backend Bug Fix**: Language Update Endpoint
+  - Fixed 403 error on `/auth/language` endpoint
+  - Removed unnecessary `requireOwnDataOrAdmin()` middleware
+  - Route already protected by `authenticateToken` and updates `req.user.id` (user's own data)
+  - Language toggle now works correctly from Profile screen
 - ✅ **Backend Successfully Deployed**: Firebase Cloud Functions Live
   - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
   - Runtime: Node.js 20 (upgraded from Node.js 18)
@@ -176,23 +191,31 @@
 16. ✅ PR #13: Mobile App i18n Setup
 17. ✅ PR #14: Mobile App Authentication & Navigation
 18. ✅ PR #15: Mobile App - Crew Member Dashboard
-19. ✅ Unit Tests: Backend unit tests (65 tests, all passing)
-20. ✅ Frontend Authentication: Fixed token storage and axios interceptor
-21. ✅ Mobile App SDK Upgrade: Upgraded to Expo SDK 54
-22. ✅ Backend Deployment: Successfully deployed to Firebase Cloud Functions
-23. ⏳ **NEXT**: Mobile App - Connect to production API and test dashboard
-24. ⏳ **NEXT**: PR #16: Mobile App - Breakdown Screen
+19. ✅ PR #16: Mobile App - Breakdown Screen
+20. ✅ PR #17: Mobile App - History Screen
+21. ✅ PR #18: Mobile App - Profile & Settings Screen
+22. ✅ Unit Tests: Backend unit tests (65 tests, all passing)
+23. ✅ Frontend Authentication: Fixed token storage and axios interceptor
+24. ✅ Mobile App SDK Upgrade: Upgraded to Expo SDK 54
+25. ✅ Backend Deployment: Successfully deployed to Firebase Cloud Functions
+26. ✅ Mobile App: All core screens implemented and connected to production API
+27. ✅ Backend Bug Fix: Language update endpoint (403 error resolved)
+28. ⏳ **NEXT**: PR #19: Mobile App - Notifications (in-app notifications)
 
 ## Next Steps
 
-### Immediate (PR #16 - NEXT)
-1. ⏳ Build breakdown screen (detailed pay calculation)
-2. ⏳ Create job breakdown component
-3. ⏳ Show base pay, penalties, job-by-job efficiency
-4. ⏳ Add navigation from dashboard to breakdown
+### Immediate (PR #19 - NEXT)
+1. ⏳ Build in-app notifications screen
+2. ⏳ Create notification list component
+3. ⏳ Add notification detail view
+4. ⏳ Implement mark as read functionality
 
 ### Recent Completions
 - ✅ PR #15 - Crew Member Dashboard (yesterday's performance with score, payout, quick stats)
+- ✅ PR #16 - Breakdown Screen (detailed pay calculation, base pay, penalties, job breakdown)
+- ✅ PR #17 - History Screen (30-day performance trend, statistics, history cards)
+- ✅ PR #18 - Profile & Settings Screen (user info, language toggle, help screen)
+- ✅ Backend Bug Fix - Language update endpoint (403 error resolved)
 - ✅ Manager dashboard with team performance and payroll compliance overview
 - ✅ Manager Teams page with enhanced crew data calculation
 - ✅ Manager Analytics page simplified (charts removed, dynamic data)

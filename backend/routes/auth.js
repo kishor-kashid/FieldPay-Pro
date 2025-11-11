@@ -9,7 +9,6 @@ const express = require('express');
 const router = express.Router();
 const { supabase } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
-const { requireOwnDataOrAdmin } = require('../middleware/roleCheck');
 
 /**
  * POST /api/auth/login
@@ -95,8 +94,9 @@ router.get('/profile', authenticateToken, async (req, res) => {
 /**
  * PATCH /api/auth/language
  * Update user's preferred language
+ * Users can only update their own language preference
  */
-router.patch('/language', authenticateToken, requireOwnDataOrAdmin(), async (req, res) => {
+router.patch('/language', authenticateToken, async (req, res) => {
   try {
     const { preferred_language } = req.body;
 

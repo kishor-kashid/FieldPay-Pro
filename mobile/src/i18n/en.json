@@ -37,7 +37,7 @@
     "lunch": "Lunch",
     "viewBreakdown": "View Breakdown",
     "viewHistory": "View History",
-    "noData": "No performance data available",
+    "noData": "No performance data available for yesterday",
     "basePay": "Base Pay",
     "bonus": "Bonus",
     "penalties": "Penalties",
@@ -62,12 +62,20 @@
     "latePenalty": "Late Arrival",
     "lunchPenalty": "Long Lunch",
     "total": "Total Pay",
+    "totalPenalties": "Total Penalties",
     "jobs": "Jobs",
     "job": "Job",
     "budgetedHours": "Budgeted",
     "actualHours": "Actual",
     "efficiency": "Efficiency",
-    "noJobs": "No jobs for this date"
+    "noJobs": "No jobs for this date",
+    "noData": "No breakdown data available",
+    "loading": "Loading breakdown...",
+    "hours": "hours",
+    "hour": "hour",
+    "jobsDescription": "Jobs completed on this date",
+    "jobsNote": "Job-by-job breakdown will be available soon",
+    "unknownJob": "Unknown Job"
   },
   "history": {
     "title": "History",
@@ -79,7 +87,11 @@
     "loadMore": "Load More",
     "date": "Date",
     "score": "Score",
-    "payout": "Payout"
+    "payout": "Payout",
+    "loading": "Loading history...",
+    "performanceTrend": "Performance Trend",
+    "tapToView": "Tap to view details",
+    "noData": "No performance history available"
   },
   "profile": {
     "title": "Profile",
@@ -92,6 +104,7 @@
     "settings": "Settings",
     "notifications": "Notifications",
     "changePassword": "Change Password",
+    "changePasswordNote": "Password change functionality will be available in a future update.",
     "help": "Help",
     "about": "About",
     "version": "Version",

@@ -38,15 +38,18 @@ export default function DashboardScreen() {
       setError(null);
       const response = await payrollAPI.getYesterdayRecord();
       
-      if (response.data && response.data.length > 0) {
+      // Backend returns: { success: true, count: N, records: [...] }
+      const records = response.data?.records || response.data?.data || [];
+      
+      if (records && records.length > 0) {
         // Get the first record (should only be one for yesterday)
-        setPayrollRecord(response.data[0]);
+        setPayrollRecord(records[0]);
       } else {
         setPayrollRecord(null);
       }
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
-      setError(err.response?.data?.message || t('errors.networkError'));
+      setError(err.response?.data?.message || err.message || t('errors.networkError'));
       
       // Show error alert
       Alert.alert(
@@ -132,10 +135,26 @@ export default function DashboardScreen() {
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, styles.buttonPrimary]}
+          onPress={() => {
+            if (payrollRecord) {
+              navigation.navigate('Breakdown', { 
+                recordId: payrollRecord.id,
+                date: payrollRecord.date 
+              });
+            }
+          }}
+          disabled={!payrollRecord}
+        >
+          <Text style={styles.buttonText}>{t('dashboard.viewBreakdown')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.buttonSecondary]}
           onPress={() => navigation.navigate('History')}
         >
-          <Text style={styles.buttonText}>{t('dashboard.viewHistory')}</Text>
+          <Text style={[styles.buttonText, styles.buttonSecondaryText]}>
+            {t('dashboard.viewHistory')}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -209,7 +228,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   button: {
-    backgroundColor: '#3b82f6',
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
@@ -218,10 +236,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginBottom: 12,
+  },
+  buttonPrimary: {
+    backgroundColor: '#3b82f6',
+  },
+  buttonSecondary: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#3b82f6',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  buttonSecondaryText: {
+    color: '#3b82f6',
   },
 });

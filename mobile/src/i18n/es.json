@@ -37,7 +37,7 @@
     "lunch": "Almuerzo",
     "viewBreakdown": "Ver Desglose",
     "viewHistory": "Ver Historial",
-    "noData": "No hay datos de rendimiento disponibles",
+    "noData": "No hay datos de rendimiento disponibles para ayer",
     "basePay": "Pago Base",
     "bonus": "Bono",
     "penalties": "Penalizaciones",
@@ -62,12 +62,20 @@
     "latePenalty": "Llegada Tardía",
     "lunchPenalty": "Almuerzo Largo",
     "total": "Pago Total",
+    "totalPenalties": "Penalizaciones Totales",
     "jobs": "Trabajos",
     "job": "Trabajo",
     "budgetedHours": "Presupuestado",
     "actualHours": "Real",
     "efficiency": "Eficiencia",
-    "noJobs": "No hay trabajos para esta fecha"
+    "noJobs": "No hay trabajos para esta fecha",
+    "noData": "No hay datos de desglose disponibles",
+    "loading": "Cargando desglose...",
+    "hours": "horas",
+    "hour": "hora",
+    "jobsDescription": "Trabajos completados en esta fecha",
+    "jobsNote": "El desglose trabajo por trabajo estará disponible pronto",
+    "unknownJob": "Trabajo Desconocido"
   },
   "history": {
     "title": "Historial",
@@ -79,7 +87,11 @@
     "loadMore": "Cargar Más",
     "date": "Fecha",
     "score": "Puntuación",
-    "payout": "Pago"
+    "payout": "Pago",
+    "loading": "Cargando historial...",
+    "performanceTrend": "Tendencia de Rendimiento",
+    "tapToView": "Toca para ver detalles",
+    "noData": "No hay historial de rendimiento disponible"
   },
   "profile": {
     "title": "Perfil",
@@ -92,6 +104,7 @@
     "settings": "Configuración",
     "notifications": "Notificaciones",
     "changePassword": "Cambiar Contraseña",
+    "changePasswordNote": "La funcionalidad de cambio de contraseña estará disponible en una actualización futura.",
     "help": "Ayuda",
     "about": "Acerca de",
     "version": "Versión",

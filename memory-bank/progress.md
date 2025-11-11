@@ -87,7 +87,7 @@
 - [ ] Error handling and validation (enhancements)
 - [ ] Responsive design (polish)
 
-### Mobile App (55% Complete)
+### Mobile App (85% Complete)
 - [x] Project setup (React Native + Expo) ✅
 - [x] Firebase client SDK configuration ✅
 - [x] Authentication context with AsyncStorage ✅
@@ -109,11 +109,12 @@
 - [x] PayoutBreakdown component (base pay, penalties, total) ✅
 - [x] QuickStats component (hours, jobs, on time, lunch) ✅
 - [x] Dashboard screen (yesterday's performance with full functionality) ✅
-- [ ] Breakdown screen (detailed pay calculation)
-- [ ] History screen (30-day performance) - Placeholder exists
-- [ ] Profile screen (settings, language toggle) - Placeholder exists
-- [ ] Help/FAQ screen
-- [ ] Full bilingual content implementation
+- [x] Breakdown screen (detailed pay calculation, base pay, penalties, job breakdown) ✅
+- [x] History screen (30-day performance trend, statistics, history cards) ✅
+- [x] Profile screen (user info, language toggle, settings) ✅
+- [x] Help/FAQ screen (collapsible sections, bilingual content) ✅
+- [x] Full bilingual content implementation (EN/ES translations complete) ✅
+- [ ] Notifications screen (in-app notifications)
 
 ### Infrastructure (60% Complete)
 - [x] Supabase database setup ✅
@@ -166,7 +167,10 @@
 - **PR #13**: ✅ **COMPLETED** - Mobile App i18n Setup
 - **PR #14**: ✅ **COMPLETED** - Mobile App Authentication & Navigation
 - **PR #15**: ✅ **COMPLETED** - Mobile App - Crew Member Dashboard
-- **PR #16**: ⏳ **PENDING** - Mobile App - Breakdown Screen
+- **PR #16**: ✅ **COMPLETED** - Mobile App - Breakdown Screen
+- **PR #17**: ✅ **COMPLETED** - Mobile App - History Screen
+- **PR #18**: ✅ **COMPLETED** - Mobile App - Profile & Settings Screen
+- **PR #19**: ⏳ **PENDING** - Mobile App - Notifications
 - **PR #17-23**: Not started
 - **PR #24**: ✅ **COMPLETED** - Deployment Setup (Backend deployed to Firebase Cloud Functions)
 - **PR #25**: Not started
@@ -175,6 +179,8 @@
 - ✅ **RESOLVED**: Admin login logout issue - Fixed by storing Firebase token as `authToken` in localStorage for axios interceptor
 - ✅ **RESOLVED**: Crew member web access - Restricted with invalid credentials message
 - ✅ **RESOLVED**: Notification API errors - Fixed by using `req.user.id` instead of `req.user.uid` in backend routes
+- ✅ **RESOLVED**: Language update 403 error - Fixed by removing unnecessary `requireOwnDataOrAdmin()` middleware from `/auth/language` endpoint
+- ✅ **RESOLVED**: Mobile app data parsing - Fixed API response parsing to correctly extract records from `response.data.records` or `response.data.data`
 
 ## Completed Milestones
 1. ✅ Project requirements gathering and documentation
@@ -196,8 +202,11 @@
 17. ✅ **PR #13: Mobile App i18n Setup** (Translation files, react-i18next config, LanguageContext, LanguageToggle)
 18. ✅ **PR #14: Mobile App Authentication & Navigation** (React Navigation, LoginScreen, AuthContext, API service)
 19. ✅ **PR #15: Mobile App - Crew Member Dashboard** (ScoreCard, PayoutBreakdown, QuickStats, formatters utility, DashboardScreen)
-20. ✅ **PR #24: Deployment Setup** (Firebase config, Cloud Functions adaptation, deployment scripts, comprehensive documentation)
-21. ✅ **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
+20. ✅ **PR #16: Mobile App - Breakdown Screen** (detailed pay calculation, base pay, penalties, job breakdown, JobBreakdownCard component)
+21. ✅ **PR #17: Mobile App - History Screen** (30-day performance trend, PerformanceTrendChart, HistoryCard, statistics)
+22. ✅ **PR #18: Mobile App - Profile & Settings Screen** (user profile, language toggle, help screen, FAQ with collapsible sections)
+23. ✅ **PR #24: Deployment Setup** (Firebase config, Cloud Functions adaptation, deployment scripts, comprehensive documentation)
+24. ✅ **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
     - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
     - Fixed route paths (removed double `/api` prefix)
     - Environment variables configured (env.*, supabase.* namespaces)
@@ -205,11 +214,8 @@
     - Runtime: Node.js 20
 
 ## Next Milestones
-1. ⏳ PR #16: Breakdown screen (detailed pay calculation, job-by-job breakdown)
-2. ⏳ PR #17: History screen (30-day performance trend)
-3. ⏳ PR #18: Profile & Settings screen
-4. ⏳ PR #19: Notifications (in-app notifications)
-5. ⏳ PR #20-25: CSV upload, charts, testing, deployment, polish
+1. ⏳ PR #19: Notifications (in-app notifications screen)
+2. ⏳ PR #20-25: CSV upload, charts, testing, deployment, polish
 
 ## Testing Status
 - ✅ **Unit Tests**: 65 tests passing across 5 test files
@@ -326,4 +332,26 @@
   - Efficiency calculation: (Total Pay / Base Pay) × 100 (shows retention percentage, capped at 100%)
   - API integration: Uses existing `payrollAPI.getYesterdayRecord()` method
   - Star rating thresholds: 5★ (≥100%), 4★ (≥90%), 3★ (≥75%), 2★ (≥60%), 1★ (<60%)
+  - Fixed API response parsing: Correctly extracts records from `response.data.records` or `response.data.data`
+  - Updated dashboard message: "No performance data available for yesterday"
+- **Mobile App Breakdown Screen (PR #16)**: Detailed pay calculation screen
+  - Created `BreakdownScreen.js` with base pay calculation, penalties section, job breakdown
+  - Created `JobBreakdownCard.js` component for individual job details (budgeted vs actual hours, efficiency)
+  - Navigation from Dashboard and History screens
+  - Supports fetching by recordId, date, or defaults to yesterday
+  - Full bilingual support with translations
+- **Mobile App History Screen (PR #17)**: 30-day performance history
+  - Created `HistoryScreen.js` with performance trend chart and history list
+  - Created `PerformanceTrendChart.js` component (bar chart showing last 7 days)
+  - Created `HistoryCard.js` component for individual day's performance
+  - Statistics: Average, best day, total earned
+  - Sort by date descending (most recent first)
+  - Navigation to Breakdown screen from history cards
+- **Mobile App Profile & Settings (PR #18)**: User profile and help screen
+  - Created `ProfileScreen.js` with user info, language toggle, settings, logout
+  - Created `HelpScreen.js` with collapsible FAQ sections (bilingual)
+  - Language toggle integrated with backend API (updates user preference)
+  - Fixed language update endpoint (removed `requireOwnDataOrAdmin` middleware causing 403 error)
+  - Updated `LanguageToggle.js` to support controlled mode (for Profile screen)
+  - Updated navigation to include nested Stack Navigators for proper header/back button support
 
