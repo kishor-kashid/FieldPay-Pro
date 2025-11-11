@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
-const { requireAdmin, requireRole } = require('../middleware/roleCheck');
+const { requireAdmin, requireAdminOrManager, requireRole } = require('../middleware/roleCheck');
 const {
   getUsers,
   getUserById,
@@ -19,9 +19,9 @@ const {
 /**
  * GET /api/users
  * Get all users (with optional filters)
- * Admin only
+ * Admin and Manager only
  */
-router.get('/', authenticateToken, requireAdmin, async (req, res, next) => {
+router.get('/', authenticateToken, requireAdminOrManager, async (req, res, next) => {
   try {
     const { role, crew_id, search } = req.query;
 
@@ -47,9 +47,9 @@ router.get('/', authenticateToken, requireAdmin, async (req, res, next) => {
 /**
  * GET /api/users/stats
  * Get user statistics
- * Admin only
+ * Admin and Manager only
  */
-router.get('/stats', authenticateToken, requireAdmin, async (req, res, next) => {
+router.get('/stats', authenticateToken, requireAdminOrManager, async (req, res, next) => {
   try {
     const stats = await getUserStats();
 

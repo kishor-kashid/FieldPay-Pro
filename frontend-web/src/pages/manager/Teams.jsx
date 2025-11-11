@@ -1,75 +1,211 @@
 import React, { useState, useEffect } from 'react';
-import { Bar } from 'react-chartjs-2';
 import { payrollAPI, userAPI } from '../../services/api';
 
 const Teams = () => {
   const [selectedCrew, setSelectedCrew] = useState(null);
   const [crews, setCrews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState({
+    start: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0],
+  });
+  const [dateError, setDateError] = useState('');
 
   useEffect(() => {
     loadCrewsData();
-  }, []);
+  }, [dateRange]);
+
+  const validateDateRange = () => {
+    setDateError('');
+    if (!dateRange.start || !dateRange.end) {
+      setDateError('Please select both start and end dates');
+      return false;
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const startDate = new Date(dateRange.start);
+    const endDate = new Date(dateRange.end);
+    const todayDate = new Date(today);
+    if (startDate > todayDate || endDate > todayDate) {
+      setDateError('Dates cannot be in the future');
+      return false;
+    }
+    if (startDate > endDate) {
+      setDateError('Start date must be before or equal to end date');
+      return false;
+    }
+    return true;
+  };
 
   const loadCrewsData = async () => {
+    if (!validateDateRange()) {
+      return;
+    }
+
     try {
       setLoading(true);
-      
-      // Get yesterday's date
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      setDateError('');
 
       // Fetch all users to get crew information
       const usersResponse = await userAPI.getUsers();
-      const users = usersResponse.data?.users || [];
+      // API returns { success: true, count: number, data: users[] }
+      const users = usersResponse.data?.data || usersResponse.data || [];
 
       // Get all foremen (they represent crews)
       const foremen = users.filter(u => u.role === 'foreman');
       
-      // Fetch payroll records for yesterday
-      const recordsResponse = await payrollAPI.getRecords({ date: yesterdayStr });
+      // Fetch payroll records for the date range
+      const recordsResponse = await payrollAPI.getRecords({ 
+        start_date: dateRange.start,
+        end_date: dateRange.end
+      });
       const records = recordsResponse.data?.records || [];
 
       // Group records by crew_id
       const crewDataMap = {};
       
       foremen.forEach(foreman => {
-        const crewId = foreman.crew_id || foreman.id;
-        const crewRecords = records.filter(r => r.crew_id === crewId);
-        const crewMembers = users.filter(u => u.crew_id === crewId && u.role === 'crew_member');
+        // Normalize crew_id values for matching (handle strings, numbers, nulls)
+        const foremanCrewId = foreman.crew_id ? String(foreman.crew_id).trim() : null;
+        const foremanId = foreman.id ? String(foreman.id) : null;
         
-        if (crewRecords.length > 0 || crewMembers.length > 0) {
-          const avgEfficiency = crewRecords.length > 0
-            ? crewRecords.reduce((sum, r) => sum + (r.efficiency || 0), 0) / crewRecords.length * 100
-            : 0;
+        // Match records by crew_id - try multiple formats
+        const crewRecords = records.filter(r => {
+          const recordCrewId = r.crew_id ? String(r.crew_id).trim() : null;
           
+          // Try exact match with foreman's crew_id
+          if (foremanCrewId && recordCrewId === foremanCrewId) {
+            return true;
+          }
+          
+          // Try case-insensitive match
+          if (foremanCrewId && recordCrewId && 
+              foremanCrewId.toLowerCase() === recordCrewId.toLowerCase()) {
+            return true;
+          }
+          
+          // Try matching with foreman's id (if crew_id is not set)
+          if (!foremanCrewId && foremanId && recordCrewId === foremanId) {
+            return true;
+          }
+          
+          // Extract numbers from crew_id strings and match
+          // e.g., "CREW1" -> 1, "foreman1" -> 1, "CREW2" -> 2, "foreman2" -> 2
+          if (foremanCrewId && recordCrewId) {
+            const foremanNumMatch = foremanCrewId.match(/\d+/);
+            const recordNumMatch = recordCrewId.match(/\d+/);
+            if (foremanNumMatch && recordNumMatch) {
+              const foremanNum = parseInt(foremanNumMatch[0], 10);
+              const recordNum = parseInt(recordNumMatch[0], 10);
+              if (foremanNum === recordNum) {
+                return true;
+              }
+            }
+          }
+          
+          // Try numeric comparison if both are numeric
+          if (foremanCrewId && recordCrewId) {
+            const foremanNum = parseInt(foremanCrewId, 10);
+            const recordNum = parseInt(recordCrewId, 10);
+            if (!isNaN(foremanNum) && !isNaN(recordNum) && foremanNum === recordNum) {
+              return true;
+            }
+          }
+          
+          // Try matching patterns: CREW1/foreman1, CREW2/foreman2, etc.
+          // Extract the number and check if they match
+          if (foremanCrewId && recordCrewId) {
+            // Pattern: "CREW" + number or "foreman" + number
+            const foremanPattern = foremanCrewId.match(/^(?:crew|foreman)(\d+)$/i);
+            const recordPattern = recordCrewId.match(/^(?:crew|foreman)(\d+)$/i);
+            if (foremanPattern && recordPattern) {
+              if (foremanPattern[1] === recordPattern[1]) {
+                return true;
+              }
+            }
+          }
+          
+          return false;
+        });
+        
+        // Match crew members
+        const crewMembers = users.filter(u => {
+          if (u.role !== 'crew_member') return false;
+          const userCrewId = u.crew_id ? String(u.crew_id).trim() : null;
+          
+          if (foremanCrewId && userCrewId === foremanCrewId) {
+            return true;
+          }
+          if (!foremanCrewId && foremanId && userCrewId === foremanId) {
+            return true;
+          }
+          
+          return false;
+        });
+        
+        // Always create crew entry if there are members, even if no records
+        if (crewMembers.length > 0 || crewRecords.length > 0) {
+          // Calculate total payout across all dates in range
           const totalPayout = crewRecords.reduce((sum, r) => sum + (r.total_pay || 0), 0);
           
-          // Get top 3 performers
-          const topMembers = [...crewRecords]
-            .filter(r => r.efficiency !== null)
-            .sort((a, b) => (b.efficiency || 0) - (a.efficiency || 0))
+          // Aggregate top performers by total pay across all dates
+          // Group by employee and sum their pay
+          const employeePayMap = {};
+          crewRecords.forEach(r => {
+            const empName = r.employee_name || 'Unknown';
+            if (!employeePayMap[empName]) {
+              employeePayMap[empName] = {
+                name: empName,
+                totalPay: 0,
+                recordCount: 0
+              };
+            }
+            employeePayMap[empName].totalPay += r.total_pay || 0;
+            employeePayMap[empName].recordCount++;
+          });
+          
+          // Get top 3 performers by total pay across date range
+          const topMembers = Object.values(employeePayMap)
+            .sort((a, b) => b.totalPay - a.totalPay)
             .slice(0, 3)
-            .map(r => ({
-              name: r.employee_name || 'Unknown',
-              efficiency: Math.round((r.efficiency || 0) * 100),
-              pay: Math.round(r.total_pay || 0)
+            .map(emp => ({
+              name: emp.name,
+              pay: Math.round(emp.totalPay),
+              recordCount: emp.recordCount
             }));
 
-          let status = 'good';
-          if (avgEfficiency >= 95) status = 'excellent';
-          else if (avgEfficiency < 85) status = 'needs_improvement';
+          // Calculate average payout per record
+          const avgPayoutPerRecord = crewRecords.length > 0 
+            ? totalPayout / crewRecords.length 
+            : 0;
 
-          crewDataMap[crewId] = {
-            id: crewId,
-            name: `Crew ${crewId}`,
+          // Status based on anomalies, payout, or compliance
+          let status = 'good';
+          const hasAnomalies = crewRecords.some(r => r.has_anomalies);
+          const approvedCount = crewRecords.filter(r => r.approved).length;
+          const complianceRate = crewRecords.length > 0 
+            ? (approvedCount / crewRecords.length) * 100 
+            : 0;
+          
+          if (hasAnomalies) status = 'needs_improvement';
+          else if (complianceRate >= 90) status = 'excellent';
+          else if (complianceRate >= 80) status = 'good';
+
+          // Use a consistent key for the crew
+          const crewKey = foremanCrewId || foremanId || 'unknown';
+          
+          crewDataMap[crewKey] = {
+            id: crewKey,
+            name: foreman.crew_id ? `Crew ${foreman.crew_id}` : (foreman.id ? `Crew ${foreman.id}` : 'Unknown Crew'),
             foreman: foreman.name || 'Unknown',
             members: crewMembers.length,
-            avgEfficiency: Math.round(avgEfficiency),
             totalPayout: Math.round(totalPayout),
+            totalRecords: crewRecords.length,
+            avgPayoutPerRecord: Math.round(avgPayoutPerRecord),
             status: status,
-            topMembers: topMembers
+            topMembers: topMembers,
+            approvedCount: approvedCount,
+            anomalyCount: crewRecords.filter(r => r.has_anomalies).length,
+            crewId: foremanCrewId || foremanId // Store for reference
           };
         }
       });
@@ -83,18 +219,6 @@ const Teams = () => {
     }
   };
 
-  const comparisonData = crews.length > 0 ? {
-    labels: crews.map(c => c.name),
-    datasets: [
-      {
-        label: 'Average Efficiency (%)',
-        data: crews.map(c => c.avgEfficiency),
-        backgroundColor: 'rgba(59, 130, 246, 0.6)',
-        borderColor: 'rgb(59, 130, 246)',
-        borderWidth: 1,
-      },
-    ],
-  } : null;
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -130,31 +254,83 @@ const Teams = () => {
         <p className="text-gray-600 mt-1">View and compare crew performance</p>
       </div>
 
-      {/* Crew Comparison Chart */}
-      {comparisonData && crews.length > 0 ? (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Crew Efficiency Comparison</h3>
-          <Bar
-            data={comparisonData}
-            options={{
-              responsive: true,
-              plugins: {
-                legend: { position: 'top' },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: 100,
-                },
-              },
-            }}
-          />
+      {/* Date Range Selector */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Analysis Period</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+            <input
+              type="date"
+              value={dateRange.start}
+              onChange={(e) => {
+                const selectedDate = e.target.value;
+                const today = new Date().toISOString().split('T')[0];
+                if (selectedDate <= today) {
+                  setDateRange({ ...dateRange, start: selectedDate });
+                  setDateError('');
+                }
+              }}
+              max={dateRange.end || new Date().toISOString().split('T')[0]}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+            <input
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => {
+                const selectedDate = e.target.value;
+                const today = new Date().toISOString().split('T')[0];
+                if (selectedDate <= today) {
+                  setDateRange({ ...dateRange, end: selectedDate });
+                  setDateError('');
+                }
+              }}
+              min={dateRange.start}
+              max={new Date().toISOString().split('T')[0]}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                setDateRange({
+                  start: yesterday.toISOString().split('T')[0],
+                  end: yesterday.toISOString().split('T')[0]
+                });
+              }}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+            >
+              Yesterday
+            </button>
+          </div>
+          <div className="flex items-end">
+            <button
+              onClick={() => {
+                const today = new Date();
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                setDateRange({
+                  start: weekAgo.toISOString().split('T')[0],
+                  end: today.toISOString().split('T')[0]
+                });
+              }}
+              className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
+            >
+              Last 7 Days
+            </button>
+          </div>
         </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <p className="text-gray-500 text-center py-8">No crew data available</p>
-        </div>
-      )}
+        {dateError && (
+          <div className="mt-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <p className="text-sm">{dateError}</p>
+          </div>
+        )}
+      </div>
 
       {/* Crew Cards */}
       {crews.length > 0 ? (
@@ -183,12 +359,18 @@ const Teams = () => {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Avg Efficiency:</span>
-                <span className="font-medium text-blue-600">{crew.avgEfficiency}%</span>
+                <span className="font-medium text-blue-600">N/A</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-gray-600">Total Payout:</span>
                 <span className="font-medium text-green-600">${crew.totalPayout.toLocaleString()}</span>
               </div>
+              {crew.totalRecords > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Records:</span>
+                  <span className="font-medium text-gray-900">{crew.totalRecords}</span>
+                </div>
+              )}
             </div>
 
             <button className="mt-4 w-full px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium">
@@ -225,16 +407,50 @@ const Teams = () => {
               <div className="bg-blue-50 rounded-lg p-4">
                 <p className="text-sm text-gray-600">Members</p>
                 <p className="text-2xl font-bold text-blue-600 mt-1">{selectedCrew.members}</p>
+                {selectedCrew.totalRecords > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">{selectedCrew.totalRecords} records</p>
+                )}
               </div>
               <div className="bg-green-50 rounded-lg p-4">
-                <p className="text-sm text-gray-600">Avg Efficiency</p>
-                <p className="text-2xl font-bold text-green-600 mt-1">{selectedCrew.avgEfficiency}%</p>
+                <p className="text-sm text-gray-600">Avg Payout/Record</p>
+                <p className="text-2xl font-bold text-green-600 mt-1">
+                  ${selectedCrew.avgPayoutPerRecord?.toLocaleString() || '0'}
+                </p>
+                {selectedCrew.totalRecords > 0 && (
+                  <p className="text-xs text-gray-500 mt-1">Per record</p>
+                )}
               </div>
               <div className="bg-purple-50 rounded-lg p-4">
                 <p className="text-sm text-gray-600">Total Payout</p>
                 <p className="text-2xl font-bold text-purple-600 mt-1">${selectedCrew.totalPayout.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-1">Date range total</p>
               </div>
             </div>
+
+            {/* Additional Stats */}
+            {selectedCrew.totalRecords > 0 && (
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-green-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600">Approved</p>
+                  <p className="text-2xl font-bold text-green-600 mt-1">{selectedCrew.approvedCount || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {selectedCrew.totalRecords > 0 
+                      ? Math.round(((selectedCrew.approvedCount || 0) / selectedCrew.totalRecords) * 100) 
+                      : 0}% compliance
+                  </p>
+                </div>
+                <div className="bg-red-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600">Anomalies</p>
+                  <p className="text-2xl font-bold text-red-600 mt-1">{selectedCrew.anomalyCount || 0}</p>
+                  <p className="text-xs text-gray-500 mt-1">Need review</p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-sm text-gray-600">Total Records</p>
+                  <p className="text-2xl font-bold text-gray-600 mt-1">{selectedCrew.totalRecords}</p>
+                  <p className="text-xs text-gray-500 mt-1">In date range</p>
+                </div>
+              </div>
+            )}
 
             {/* Top Performers */}
             <div>
@@ -245,14 +461,27 @@ const Teams = () => {
                   <div key={index} className="flex items-center justify-between bg-gray-50 rounded-lg p-4">
                     <div>
                       <p className="font-medium text-gray-900">{member.name}</p>
-                      <p className="text-sm text-gray-600">Efficiency: {member.efficiency}%</p>
+                      {member.recordCount > 1 && (
+                        <p className="text-xs text-gray-500 mt-1">{member.recordCount} records</p>
+                      )}
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-green-600">${member.pay}</p>
-                      <p className="text-xs text-gray-500">Daily Pay</p>
+                      <p className="font-semibold text-green-600">${member.pay?.toLocaleString() || '0'}</p>
+                      <p className="text-xs text-gray-500">
+                        {member.recordCount > 1 ? 'Total Pay' : 'Daily Pay'}
+                      </p>
                     </div>
                   </div>
                   ))}
+                </div>
+              ) : selectedCrew.totalRecords === 0 ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-800 text-sm">
+                    No payroll records found for this crew in the selected date range ({dateRange.start} to {dateRange.end}).
+                  </p>
+                  <p className="text-yellow-700 text-xs mt-2">
+                    Try selecting a different date range or ensure payroll has been processed for this crew.
+                  </p>
                 </div>
               ) : (
                 <p className="text-gray-500 text-sm">No performance data available</p>
