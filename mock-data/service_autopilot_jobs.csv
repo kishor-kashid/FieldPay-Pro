@@ -1,0 +1,14 @@
+job_id,date,location,service_type,budgeted_hours,crew_id,status,notes
+JOB-2024-11-10-001,2024-11-10,Oak Park Plaza,Full Service,4.0,foreman1,completed,
+JOB-2024-11-10-002,2024-11-10,Riverside Mall,Mowing,2.0,foreman2,completed,
+JOB-2024-11-10-003,2024-11-10,Downtown Office Complex,Trimming & Edging,1.5,foreman1,completed,
+JOB-2024-11-10-004,2024-11-10,Sunset Apartments,Cleanup,1.0,foreman2,completed,
+JOB-2024-11-10-005,2024-11-10,Green Valley School,Landscaping,6.0,foreman1,completed,Required additional cleanup due to weather
+JOB-2024-11-10-006,2024-11-10,City Hall,Maintenance,3.0,foreman2,completed,
+JOB-2024-11-10-007,2024-11-10,Memorial Park,Full Service,4.0,foreman1,completed,
+JOB-2024-11-10-008,2024-11-10,Westside Shopping Center,Mowing,2.0,foreman2,completed,
+JOB-2024-11-10-009,2024-11-10,Lakeside Commons,Trimming & Edging,1.5,foreman1,completed,
+JOB-2024-11-10-010,2024-11-10,Highland Medical Center,Cleanup,1.0,foreman2,completed,Required additional cleanup due to weather
+JOB-2024-11-10-011,2024-11-10,Brookfield Business Park,Landscaping,6.0,foreman1,completed,
+JOB-2024-11-10-012,2024-11-10,Cedar Grove HOA,Maintenance,3.0,foreman2,completed,
+

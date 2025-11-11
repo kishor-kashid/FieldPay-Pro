@@ -1,0 +1,142 @@
+Description: P4P calculation engine rules and formulas
+Globs: backend/services/calculationService.js
+
+# P4P Calculation Engine Rules
+
+## Core Calculation Formula
+
+### Efficiency Score
+```
+Efficiency = Budgeted Hours / Actual Hours
+```
+- **Input**: Budgeted hours (from Service Autopilot), Actual hours (from Paychex)
+- **Output**: Decimal number (e.g., 0.85 = 85%, 1.15 = 115%)
+- **Edge Cases**:
+  - If actual_hours = 0, flag as error (division by zero)
+  - If budgeted_hours = 0, flag as error (missing data)
+  - Round to 2 decimal places
+
+### Base Pay Calculation
+```
+Base Pay = Hours Worked × Base Rate
+```
+- Base rate comes from user profile
+- Hours worked from timesheet data
+
+### Performance Bonus
+```
+If Efficiency >= 1.0 (100%):
+  Bonus = Base Pay × (Efficiency - 1.0) × Bonus Multiplier
+  
+If Efficiency >= 0.9 (90%) and < 1.0:
+  Bonus = Base Pay × (Efficiency - 0.9) × Reduced Multiplier
+  
+If Efficiency < 0.9:
+  Bonus = 0
+```
+- Bonus multipliers configured in `config/calculationRules.js`
+- Typical: 1.0x for 100%+, 0.5x for 90-99%
+
+### Penalties
+
+#### Late Clock-In Penalty
+```
+If clock_in_time > 7:00 AM:
+  Late Penalty = Base Pay × Late Penalty Percentage
+```
+- Late penalty percentage configured (e.g., 5%)
+- Applied once per day regardless of how late
+
+#### Long Lunch Penalty
+```
+Lunch Duration = lunch_end - lunch_start
+
+If Lunch Duration > 30 minutes:
+  Long Lunch Penalty = Base Pay × Long Lunch Penalty Percentage
+```
+- Long lunch penalty percentage configured (e.g., 2%)
+- Applied if lunch exceeds 30 minutes
+
+### Total Pay Calculation
+```
+Total Pay = Base Pay + Performance Bonus - Late Penalty - Long Lunch Penalty
+```
+- **Minimum**: Total pay cannot be negative (minimum = 0)
+- **Maximum**: No maximum cap (high performers can earn significantly more)
+
+## Anomaly Detection
+
+Flag payroll records as anomalies if:
+1. **Efficiency < 60%**: Extremely low performance
+2. **Efficiency > 120%**: Suspiciously high (possible data error)
+3. **Missing Data**: Required fields are null/empty
+4. **Negative Pay**: Total pay < 0 (should never happen after minimum check)
+5. **Zero Hours**: Actual hours = 0 (division by zero risk)
+
+## Multiple Jobs Per Employee
+
+When employee works multiple jobs in one day:
+1. Calculate efficiency for each job separately
+2. Sum all actual hours
+3. Sum all budgeted hours
+4. Calculate overall efficiency: `Total Budgeted / Total Actual`
+5. Apply bonuses/penalties based on overall efficiency
+6. Show job-by-job breakdown in details
+
+## Service Type Budgeted Hours
+
+Different service types have different budgeted hours:
+- Configured in `config/calculationRules.js`
+- Example:
+  - Mowing: 2 hours
+  - Trimming: 1.5 hours
+  - Cleanup: 1 hour
+  - Full Service: 4 hours
+
+## Calculation Flow
+
+```
+1. Fetch job data (Service Autopilot)
+2. Fetch timesheet data (Paychex)
+3. Match jobs to employees by date and crew
+4. For each employee:
+   a. Calculate efficiency per job
+   b. Calculate overall efficiency
+   c. Calculate base pay
+   d. Calculate performance bonus
+   e. Calculate penalties (late, long lunch)
+   f. Calculate total pay
+   g. Detect anomalies
+   h. Store payroll record
+5. Return summary with flags
+```
+
+## Validation Rules
+
+Before calculation:
+- Verify employee exists in database
+- Verify job data is valid (date, hours, service type)
+- Verify timesheet data is valid (clock in/out, lunch times)
+- Verify dates match (same day)
+- Verify crew assignments match
+
+## Error Handling
+
+- If calculation fails for one employee, log error and continue with others
+- Return partial results with error summary
+- Flag records that couldn't be calculated
+- Never crash the entire process due to one employee's data
+
+## Testing Requirements
+
+Must test:
+- Normal efficiency calculations (80-120%)
+- High efficiency (>120%) - should flag as anomaly
+- Low efficiency (<60%) - should flag as anomaly
+- Perfect efficiency (100%) - should get bonus
+- Late clock-in scenarios
+- Long lunch scenarios
+- Multiple jobs per employee
+- Missing data scenarios
+- Division by zero protection
+- Negative pay prevention

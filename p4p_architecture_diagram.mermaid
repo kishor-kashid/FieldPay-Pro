@@ -1,0 +1,158 @@
+graph TB
+    subgraph "Client Layer"
+        WebApp[Web Application<br/>React + Tailwind CSS]
+        MobileApp[Mobile Application<br/>React Native + Expo]
+    end
+
+    subgraph "Authentication"
+        FirebaseAuth[Firebase Auth<br/>User Authentication]
+    end
+
+    subgraph "Backend Server - Node.js + Express"
+        APIGateway[API Gateway<br/>Express Router]
+        
+        subgraph "Routes"
+            AuthRoutes[Auth Routes<br/>/api/auth/*]
+            PayrollRoutes[Payroll Routes<br/>/api/payroll/*]
+            UserRoutes[User Routes<br/>/api/users/*]
+            NotifRoutes[Notification Routes<br/>/api/notifications/*]
+            UploadRoutes[Upload Routes<br/>/api/upload/*]
+        end
+        
+        subgraph "Mock External APIs"
+            MockSA[Mock Service Autopilot<br/>/mock/service-autopilot/*]
+            MockPaychex[Mock Paychex<br/>/mock/paychex/*]
+        end
+        
+        subgraph "Services"
+            DataService[Data Service<br/>API Abstraction]
+            CalcService[Calculation Service<br/>P4P Logic Engine]
+            PayrollService[Payroll Service<br/>Orchestration]
+            NotifService[Notification Service<br/>Alert Management]
+            UserService[User Service<br/>User Management]
+            CronService[Cron Service<br/>Scheduled Jobs]
+        end
+        
+        subgraph "Middleware"
+            AuthMiddleware[Auth Middleware<br/>JWT Verification]
+            RoleMiddleware[Role Check Middleware<br/>RBAC]
+            ErrorMiddleware[Error Handler<br/>Global Error Handling]
+            ValidationMiddleware[Validation Middleware<br/>Request Validation]
+        end
+        
+        subgraph "Utilities"
+            CSVParser[CSV Parser<br/>File Processing]
+            CSVExporter[CSV Exporter<br/>Paychex Export]
+            MockDataGen[Mock Data Generator<br/>Test Data]
+        end
+    end
+
+    subgraph "Data Layer"
+        Supabase[(Supabase PostgreSQL<br/>Database)]
+        FirebaseStorage[Firebase Storage<br/>File Storage]
+        AsyncStorage[AsyncStorage<br/>Mobile Local Storage]
+    end
+
+    subgraph "Scheduled Tasks"
+        NodeCron[node-cron<br/>Job Scheduler]
+    end
+
+    subgraph "External Systems - Future"
+        RealSA[Service Autopilot API<br/>Real Integration]
+        RealPaychex[Paychex API<br/>Real Integration]
+    end
+
+    %% Client to Backend Connections
+    WebApp -->|HTTPS Requests| APIGateway
+    MobileApp -->|HTTPS Requests| APIGateway
+    
+    %% Authentication Flow
+    WebApp -->|Login/Logout| FirebaseAuth
+    MobileApp -->|Login/Logout| FirebaseAuth
+    FirebaseAuth -->|JWT Token| WebApp
+    FirebaseAuth -->|JWT Token| MobileApp
+    
+    %% API Gateway to Routes
+    APIGateway --> AuthRoutes
+    APIGateway --> PayrollRoutes
+    APIGateway --> UserRoutes
+    APIGateway --> NotifRoutes
+    APIGateway --> UploadRoutes
+    
+    %% Middleware Flow
+    APIGateway --> AuthMiddleware
+    AuthMiddleware --> RoleMiddleware
+    RoleMiddleware --> ValidationMiddleware
+    ValidationMiddleware --> ErrorMiddleware
+    
+    %% Routes to Services
+    AuthRoutes --> UserService
+    PayrollRoutes --> PayrollService
+    UserRoutes --> UserService
+    NotifRoutes --> NotifService
+    UploadRoutes --> CSVParser
+    
+    %% Payroll Processing Flow
+    PayrollService --> DataService
+    PayrollService --> CalcService
+    PayrollService --> NotifService
+    PayrollService --> CSVExporter
+    
+    %% Data Service to Mock APIs
+    DataService -->|GET /jobs| MockSA
+    DataService -->|GET /timesheets| MockPaychex
+    DataService -.->|Future Integration| RealSA
+    DataService -.->|Future Integration| RealPaychex
+    
+    %% Calculation Engine Flow
+    CalcService -->|Efficiency Calculation| CalcService
+    CalcService -->|Penalty Logic| CalcService
+    CalcService -->|Bonus Logic| CalcService
+    CalcService -->|Anomaly Detection| CalcService
+    
+    %% Services to Database
+    UserService -->|CRUD Operations| Supabase
+    PayrollService -->|Store Results| Supabase
+    NotifService -->|Create/Read/Update| Supabase
+    AuthRoutes -->|User Queries| Supabase
+    
+    %% Cron Integration
+    NodeCron -->|Trigger Daily 10:30 AM| CronService
+    CronService -->|Process Yesterday| PayrollService
+    
+    %% File Upload Flow
+    UploadRoutes --> CSVParser
+    CSVParser --> FirebaseStorage
+    CSVParser --> DataService
+    
+    %% CSV Export Flow
+    PayrollService --> CSVExporter
+    CSVExporter -->|Download File| WebApp
+    
+    %% Mobile Local Storage
+    MobileApp -->|Save Language/Token| AsyncStorage
+    AsyncStorage -->|Retrieve Data| MobileApp
+    
+    %% Notification Flow
+    NotifService -->|Create Notifications| Supabase
+    Supabase -->|Fetch Notifications| WebApp
+    Supabase -->|Fetch Notifications| MobileApp
+    
+    %% Mock Data Generation
+    MockDataGen -->|Generate Test Data| MockSA
+    MockDataGen -->|Generate Test Data| MockPaychex
+    
+    %% Styling
+    classDef clientStyle fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef backendStyle fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef dataStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef authStyle fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px
+    classDef mockStyle fill:#fff9c4,stroke:#f57f17,stroke-width:2px
+    classDef externalStyle fill:#fce4ec,stroke:#880e4f,stroke-width:2px,stroke-dasharray: 5 5
+    
+    class WebApp,MobileApp clientStyle
+    class APIGateway,AuthRoutes,PayrollRoutes,UserRoutes,NotifRoutes,UploadRoutes,DataService,CalcService,PayrollService,NotifService,UserService,CronService,AuthMiddleware,RoleMiddleware,ErrorMiddleware,ValidationMiddleware,CSVParser,CSVExporter,MockDataGen backendStyle
+    class Supabase,FirebaseStorage,AsyncStorage dataStyle
+    class FirebaseAuth authStyle
+    class MockSA,MockPaychex,NodeCron mockStyle
+    class RealSA,RealPaychex externalStyle
