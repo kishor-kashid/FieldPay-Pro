@@ -21,6 +21,11 @@ const {
   generateSummaryCSV,
   generateFilename
 } = require('../utils/csvExporter');
+const {
+  getExecutionLogs,
+  getExecutionLogById,
+  getExecutionStats
+} = require('../services/executionLogService');
 
 /**
  * POST /api/payroll/analyze
@@ -69,6 +74,7 @@ router.post('/analyze', authenticateToken, requireAdmin, async (req, res, next) 
 router.post('/process', authenticateToken, requireAdmin, async (req, res, next) => {
   try {
     const { date, reprocess } = req.body;
+    const triggeredBy = req.user.uid; // Get user ID from authenticated token
     
     // Default to yesterday if no date provided
     const targetDate = date || (() => {
@@ -79,7 +85,7 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
     
     console.log(`🚀 Admin ${req.user.uid} processing payroll for ${targetDate} (reprocess: ${reprocess || false})`);
     
-    const result = await processPayroll(targetDate, { reprocess: reprocess || false });
+    const result = await processPayroll(targetDate, triggeredBy, { reprocess: reprocess || false });
     
     if (!result.success) {
       return res.status(400).json({
@@ -363,6 +369,90 @@ router.get('/summary', authenticateToken, requireRole(['admin', 'manager']), asy
     
   } catch (error) {
     console.error('Error fetching payroll summary:', error);
+    next(error);
+  }
+});
+
+/**
+ * GET /api/payroll/executions
+ * Get execution logs with optional filters
+ * Admin only
+ */
+router.get('/executions', authenticateToken, requireAdmin, async (req, res, next) => {
+  try {
+    const {
+      execution_date,
+      status,
+      is_reprocess,
+      start_date,
+      end_date,
+      limit,
+      offset
+    } = req.query;
+    
+    const filters = {
+      execution_date,
+      status,
+      is_reprocess: is_reprocess === 'true' ? true : is_reprocess === 'false' ? false : undefined,
+      start_date,
+      end_date,
+      limit: limit ? parseInt(limit) : 50,
+      offset: offset ? parseInt(offset) : 0
+    };
+    
+    const logs = await getExecutionLogs(filters);
+    
+    res.json({
+      success: true,
+      count: logs.length,
+      data: logs
+    });
+    
+  } catch (error) {
+    console.error('Error fetching execution logs:', error);
+    next(error);
+  }
+});
+
+/**
+ * GET /api/payroll/executions/:id
+ * Get single execution log by ID
+ * Admin only
+ */
+router.get('/executions/:id', authenticateToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const log = await getExecutionLogById(id);
+    
+    res.json({
+      success: true,
+      data: log
+    });
+    
+  } catch (error) {
+    console.error('Error fetching execution log:', error);
+    next(error);
+  }
+});
+
+/**
+ * GET /api/payroll/executions/stats
+ * Get execution statistics
+ * Admin only
+ */
+router.get('/executions/stats', authenticateToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { start_date, end_date } = req.query;
+    
+    const stats = await getExecutionStats({ start_date, end_date });
+    
+    res.json({
+      success: true,
+      data: stats
+    });
+    
+  } catch (error) {
+    console.error('Error fetching execution stats:', error);
     next(error);
   }
 });

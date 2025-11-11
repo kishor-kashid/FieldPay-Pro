@@ -6,6 +6,8 @@
 const { getPayrollData } = require('./dataService');
 const { calculateBatchPayroll } = require('./calculationService');
 const { supabase } = require('../config/database');
+const { createExecutionLog, updateExecutionLog } = require('./executionLogService');
+const { createPayrollNotifications, createErrorNotification } = require('./notificationService');
 
 /**
  * Analyze payroll (Preview - no database writes)
@@ -188,12 +190,15 @@ async function savePayrollRecords(records, date) {
  * Process payroll (Commit - saves to database)
  * Calculates and saves payroll to database
  * @param {string} date - Date in YYYY-MM-DD format
+ * @param {string} triggeredBy - User ID who triggered the processing
  * @param {Object} options - Processing options
  * @param {boolean} options.reprocess - If true, delete existing records and reprocess
  * @returns {Promise<Object>} Processing results
  */
-async function processPayroll(date, options = {}) {
+async function processPayroll(date, triggeredBy, options = {}) {
   const startTime = Date.now();
+  let executionLog = null;
+  let originalExecutionId = null;
   
   try {
     console.log(`🚀 Processing payroll for ${date}...`);
@@ -211,6 +216,31 @@ async function processPayroll(date, options = {}) {
       };
     }
     
+    // If reprocessing, find the original execution ID
+    if (existingCheck.exists && options.reprocess) {
+      // Get the most recent execution log for this date
+      const { data: originalExecution } = await supabase
+        .from('execution_logs')
+        .select('id')
+        .eq('execution_date', date)
+        .eq('status', 'success')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (originalExecution) {
+        originalExecutionId = originalExecution.id;
+      }
+    }
+    
+    // Create execution log
+    executionLog = await createExecutionLog({
+      execution_date: date,
+      triggered_by: triggeredBy,
+      is_reprocess: options.reprocess || false,
+      original_execution_id: originalExecutionId
+    });
+    
     // Delete existing records if reprocessing
     if (existingCheck.exists && options.reprocess) {
       await deleteExistingPayroll(date);
@@ -220,6 +250,21 @@ async function processPayroll(date, options = {}) {
     const payrollData = await getPayrollData(date);
     
     if (!payrollData.timesheets || payrollData.timesheets.length === 0) {
+      // Update execution log with failure
+      if (executionLog) {
+        await updateExecutionLog(executionLog.id, {
+          records_processed: 0,
+          status: 'failed',
+          error_message: 'No timesheet data found for this date'
+        });
+      }
+      
+      // Create error notification for admins
+      await createErrorNotification(
+        `Payroll processing failed for ${date}: No timesheet data found`,
+        { link: `/admin/executions/${executionLog?.id}` }
+      );
+      
       return {
         success: false,
         error: 'No timesheet data found for this date',
@@ -235,6 +280,21 @@ async function processPayroll(date, options = {}) {
     );
     
     if (!calculations.success) {
+      // Update execution log with failure
+      if (executionLog) {
+        await updateExecutionLog(executionLog.id, {
+          records_processed: 0,
+          status: 'failed',
+          error_message: 'Payroll calculation failed'
+        });
+      }
+      
+      // Create error notification for admins
+      await createErrorNotification(
+        `Payroll processing failed for ${date}: Calculation error`,
+        { link: `/admin/executions/${executionLog?.id}` }
+      );
+      
       return {
         success: false,
         error: 'Payroll calculation failed',
@@ -248,16 +308,39 @@ async function processPayroll(date, options = {}) {
     const endTime = Date.now();
     const executionTime = (endTime - startTime) / 1000; // seconds
     
+    // Determine execution status
+    const status = calculations.summary.failed_calculations > 0 ? 'partial' : 'success';
+    
+    // Update execution log with success
+    if (executionLog) {
+      await updateExecutionLog(executionLog.id, {
+        records_processed: saveResult.saved_count,
+        status: status,
+        error_message: calculations.summary.failed_calculations > 0 
+          ? `${calculations.summary.failed_calculations} records failed to process` 
+          : null
+      });
+    }
+    
     console.log(`✅ Payroll processing complete in ${executionTime}s`);
     
-    // TODO: Create notifications (will be implemented in PR #8)
-    // await notificationService.createPayrollNotifications(date, calculations.summary);
+    // Create notifications for all users
+    await createPayrollNotifications(
+      {
+        date,
+        summary: calculations.summary,
+        results: calculations.results,
+        errors: calculations.errors
+      },
+      triggeredBy
+    );
     
     return {
       success: true,
       mode: 'committed',
       date: date,
       reprocessed: options.reprocess || false,
+      execution_log_id: executionLog?.id,
       summary: {
         ...calculations.summary,
         saved_records: saveResult.saved_count,
@@ -274,10 +357,34 @@ async function processPayroll(date, options = {}) {
     const endTime = Date.now();
     const executionTime = (endTime - startTime) / 1000;
     
+    // Update execution log with failure
+    if (executionLog) {
+      try {
+        await updateExecutionLog(executionLog.id, {
+          records_processed: 0,
+          status: 'failed',
+          error_message: error.message
+        });
+      } catch (logError) {
+        console.error('Error updating execution log:', logError);
+      }
+    }
+    
+    // Create error notification for admins
+    try {
+      await createErrorNotification(
+        `Payroll processing failed for ${date}: ${error.message}`,
+        { link: `/admin/executions/${executionLog?.id}` }
+      );
+    } catch (notifError) {
+      console.error('Error creating error notification:', notifError);
+    }
+    
     return {
       success: false,
       error: error.message,
       date: date,
+      execution_log_id: executionLog?.id,
       execution_time_seconds: parseFloat(executionTime.toFixed(2))
     };
   }

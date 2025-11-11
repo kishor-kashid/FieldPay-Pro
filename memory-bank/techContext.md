@@ -370,6 +370,46 @@ mobile/
 - GET `/api/payroll/export` - Export CSV (3 formats) - Admin/Manager only
 - GET `/api/payroll/summary` - Get summary statistics - Admin/Manager only
 - DELETE `/api/payroll/records/:id` - Delete record (for reprocessing) - Admin only
+- GET `/api/payroll/executions` - Get execution logs (with filters) - Admin only
+- GET `/api/payroll/executions/:id` - Get execution log details - Admin only
+- GET `/api/payroll/executions/stats` - Get execution statistics - Admin only
+
+### Execution Logging Service (`executionLogService.js`) ✅ **IMPLEMENTED**
+- `createExecutionLog()` - Create execution log entry at processing start
+- `updateExecutionLog()` - Update log with completion status and metrics
+- `getExecutionLogs()` - Retrieve execution logs with flexible filters
+- `getExecutionLogById()` - Get single execution log details
+- `getExecutionStats()` - Provide execution statistics and aggregates
+- `cleanupOldLogs()` - Remove old logs (configurable retention period)
+- Tracks: execution date, start/end times, records processed, status, errors, triggered_by, reprocess info
+
+### Optional Cron Service (`cronService.js`) ✅ **IMPLEMENTED (TESTING ONLY)**
+- `initializeCronService()` - Initialize cron jobs (only if ENABLE_CRON=true and NODE_ENV=development)
+- Payroll processing cron job (configurable schedule, default: 10:30 AM daily)
+- Log cleanup cron job (optional, disabled by default)
+- Notification cleanup cron job (optional, disabled by default)
+- **WARNING**: For development/testing only, NOT for production use
+
+### Notification Service (`notificationService.js`) ✅ **IMPLEMENTED**
+- `createNotification()` - Create single notification
+- `createBulkNotifications()` - Create multiple notifications efficiently
+- `getNotifications()` - Retrieve user notifications with filters
+- `getUnreadCount()` - Get unread notification count
+- `markAsRead()` - Mark notification as read
+- `markAllAsRead()` - Mark all notifications as read for user
+- `deleteNotification()` - Delete specific notification
+- `deleteReadNotifications()` - Cleanup read notifications
+- `cleanupOldNotifications()` - Remove old read notifications
+- `createPayrollNotifications()` - Role-specific payroll notifications (admin, manager, foreman, crew)
+- `createErrorNotification()` - Admin error notifications
+
+### Notification API Routes (`routes/notifications.js`) ✅ **IMPLEMENTED**
+- GET `/api/notifications` - Get all user notifications (with filters) - All roles
+- GET `/api/notifications/unread` - Get unread count - All roles
+- PATCH `/api/notifications/:id/read` - Mark as read - All roles
+- PATCH `/api/notifications/read-all` - Mark all as read - All roles
+- DELETE `/api/notifications/:id` - Delete notification - All roles
+- DELETE `/api/notifications/read` - Delete all read notifications - All roles
 
 ## Known Technical Decisions
 
@@ -384,4 +424,8 @@ mobile/
 9. **P4P Calculation Engine**: Rule-based with anomaly detection ✅ **IMPLEMENTED**
 10. **Two-Mode Payroll Processing**: Analyze (preview) vs Process (commit) for safety ✅ **IMPLEMENTED**
 11. **Role-Based Data Access**: Crew members see own data, foremen see crew, managers/admins see all ✅ **IMPLEMENTED**
+12. **Execution Logging**: Complete audit trail with performance metrics and error tracking ✅ **IMPLEMENTED**
+13. **Optional Cron Service**: Testing-only automated processing (development only, not for production) ✅ **IMPLEMENTED**
+14. **Notification System**: Role-based in-app notifications with web/mobile components ✅ **IMPLEMENTED**
+15. **Notification Delivery**: Only sent after "Process Payroll" (not "Analyze Payroll") ✅ **IMPLEMENTED**
 
