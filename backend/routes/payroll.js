@@ -7,6 +7,7 @@ const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const { requireAdmin, requireRole } = require('../middleware/roleCheck');
+const { supabase } = require('../config/database');
 const {
   analyzePayroll,
   processPayroll,
@@ -74,14 +75,52 @@ router.post('/analyze', authenticateToken, requireAdmin, async (req, res, next) 
 router.post('/process', authenticateToken, requireAdmin, async (req, res, next) => {
   try {
     const { date, reprocess } = req.body;
-    // Use database user ID (UUID) instead of Firebase UID
-    const triggeredBy = req.user.id; // Get database user ID (UUID) from authenticated user
     
+    // Log request details for debugging
+    console.log('📥 Process payroll request:', {
+      date,
+      reprocess,
+      userEmail: req.user?.email,
+      userId: req.user?.id,
+      userUid: req.user?.uid,
+      userRole: req.user?.role
+    });
+    
+    // Use database user ID (UUID) - the auth middleware spreads ...user which includes the database id field
+    // The database user object from Supabase has an 'id' field (UUID)
+    // Note: The spread order matters - ...user comes after uid/email, so user.id should be present
+    let triggeredBy = req.user.id;
+    
+    // Fallback: If id is not available, try to get it from the database using email
     if (!triggeredBy) {
-      return res.status(400).json({
-        success: false,
-        error: 'User ID not found. Please ensure user exists in database.'
-      });
+      console.warn('req.user.id not found, attempting to fetch from database...');
+      try {
+        const { data: user, error } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', req.user.email)
+          .single();
+        
+        if (user && user.id) {
+          triggeredBy = user.id;
+          console.log(`✅ Found user ID from database: ${triggeredBy}`);
+        } else {
+          throw new Error('User not found in database');
+        }
+      } catch (dbError) {
+        console.error('User ID not found in req.user:', {
+          hasId: !!req.user.id,
+          hasUid: !!req.user.uid,
+          userKeys: Object.keys(req.user),
+          email: req.user.email,
+          role: req.user.role,
+          dbError: dbError.message
+        });
+        return res.status(400).json({
+          success: false,
+          error: 'User ID not found. Please ensure user exists in database. Authentication may have failed.'
+        });
+      }
     }
     
     // Default to yesterday if no date provided
@@ -105,9 +144,12 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
       });
     }
     
+    // Transform response to match frontend expectations
     res.json({
       success: true,
-      ...result
+      ...result,
+      recordsProcessed: result.summary?.saved_records || result.summary?.successful_calculations || 0,
+      notificationsSent: result.notifications_sent || 0
     });
     
   } catch (error) {
@@ -212,18 +254,48 @@ router.get('/records/:id', authenticateToken, async (req, res, next) => {
     const record = result.record;
     
     // Check permissions
-    if (user.role === 'crew_member' && record.employee_id !== user.uid) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied'
-      });
+    if (user.role === 'crew_member') {
+      // Crew members can only see their own records
+      // Compare with user.id (database ID) or user.employee_id, not user.uid
+      const userEmployeeId = user.id || user.employee_id;
+      if (record.employee_id !== userEmployeeId) {
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied. You can only view your own records.'
+        });
+      }
     }
     
-    if (user.role === 'foreman' && record.crew_id !== user.uid) {
-      return res.status(403).json({
-        success: false,
-        error: 'Access denied'
-      });
+    if (user.role === 'foreman') {
+      // Foremen can only see their crew's records
+      // Use crew_id from user object, not uid
+      const foremanCrewId = user.crew_id || user.customClaims?.crew_id;
+      if (foremanCrewId && record.crew_id) {
+        // Flexible crew matching (handles CREW1/foreman1 mismatches)
+        const normalizedRecordCrew = String(record.crew_id).trim().toLowerCase();
+        const normalizedForemanCrew = String(foremanCrewId).trim().toLowerCase();
+        
+        // Extract numbers for matching (CREW1 vs foreman1)
+        const recordNumMatch = normalizedRecordCrew.match(/\d+/);
+        const foremanNumMatch = normalizedForemanCrew.match(/\d+/);
+        
+        const crewMatches = 
+          (recordNumMatch && foremanNumMatch && recordNumMatch[0] === foremanNumMatch[0]) ||
+          normalizedRecordCrew === normalizedForemanCrew;
+        
+        if (!crewMatches) {
+          return res.status(403).json({
+            success: false,
+            error: 'Access denied. You can only view records for your crew.'
+          });
+        }
+      } else if (foremanCrewId && !record.crew_id) {
+        // Record has no crew_id but foreman has one - deny access
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied. Record does not belong to your crew.'
+        });
+      }
     }
     
     res.json({
@@ -233,6 +305,43 @@ router.get('/records/:id', authenticateToken, async (req, res, next) => {
     
   } catch (error) {
     console.error('Error fetching payroll record:', error);
+    next(error);
+  }
+});
+
+/**
+ * DELETE /api/payroll/records/:id
+ * Delete a payroll record (for reprocessing)
+ * Admin only
+ */
+router.delete('/records/:id', authenticateToken, requireAdmin, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    
+    const { error } = await supabase
+      .from('payroll_records')
+      .delete()
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return res.status(404).json({
+          success: false,
+          error: 'Record not found'
+        });
+      }
+      throw error;
+    }
+    
+    res.json({
+      success: true,
+      message: 'Record deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error deleting payroll record:', error);
     next(error);
   }
 });

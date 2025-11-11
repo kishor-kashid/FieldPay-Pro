@@ -1,9 +1,12 @@
 /**
  * Notification Banner Component (Mobile)
- * Displays notification banner on home screen with tap to view details
+ * Clean Scapes P4P System - Mobile App
+ * 
+ * Displays notification banner on dashboard when new results are available.
+ * Shows at top of screen with tap to view details or dismiss.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,51 +15,39 @@ import {
   Animated,
   Platform
 } from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../context/AuthContext';
 import { useNavigation } from '@react-navigation/native';
+import { notificationAPI } from '../services/api';
 
 const NotificationBanner = () => {
-  const { user } = useAuth();
+  const { t } = useTranslation();
+  const { currentUser } = useAuth();
   const navigation = useNavigation();
   const [notification, setNotification] = useState(null);
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(-100));
 
-  // Fetch latest unread notification
-  const fetchLatestNotification = async () => {
-    if (!user) return;
-
-    try {
-      const token = await user.getIdToken();
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/notifications?read=false&limit=1`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.data && data.data.length > 0) {
-          const newNotification = data.data[0];
-          // Only show if it's a different notification
-          if (!notification || notification.id !== newNotification.id) {
-            setNotification(newNotification);
-            showBanner();
-          }
-        } else {
-          setNotification(null);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching notification:', error);
-    }
-  };
+  // Hide banner animation
+  const hideBanner = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true
+      }),
+      Animated.timing(slideAnim, {
+        toValue: -100,
+        duration: 200,
+        useNativeDriver: true
+      })
+    ]).start(() => {
+      setNotification(null);
+    });
+  }, [fadeAnim, slideAnim]);
 
   // Show banner animation
-  const showBanner = () => {
+  const showBanner = useCallback(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -73,76 +64,95 @@ const NotificationBanner = () => {
 
     // Auto-hide after 10 seconds
     setTimeout(hideBanner, 10000);
-  };
+  }, [fadeAnim, slideAnim, hideBanner]);
 
-  // Hide banner animation
-  const hideBanner = () => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true
-      }),
-      Animated.timing(slideAnim, {
-        toValue: -100,
-        duration: 200,
-        useNativeDriver: true
-      })
-    ]).start(() => {
-      setNotification(null);
-    });
-  };
-
-  // Mark notification as read
-  const markAsRead = async (notificationId) => {
-    if (!user) return;
+  // Fetch latest unread notification
+  const fetchLatestNotification = useCallback(async () => {
+    if (!currentUser) return;
 
     try {
-      const token = await user.getIdToken();
-      await fetch(
-        `${process.env.EXPO_PUBLIC_API_URL}/notifications/${notificationId}/read`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`
+      const response = await notificationAPI.getNotifications({ 
+        read: false, 
+        limit: 1 
+      });
+
+      // Backend returns: { success: true, data: [...] } or { success: true, notifications: [...] }
+      const notifications = response.data?.data || response.data?.notifications || [];
+      
+      if (notifications && notifications.length > 0) {
+        const newNotification = notifications[0];
+        // Only show if it's a different notification
+        setNotification((prev) => {
+          if (!prev || prev.id !== newNotification.id) {
+            return newNotification;
           }
-        }
-      );
+          return prev;
+        });
+      } else {
+        setNotification(null);
+      }
+    } catch (error) {
+      // Silently fail - don't show errors for notifications
+      console.error('Error fetching notification:', error);
+    }
+  }, [currentUser]);
+  
+  // Show banner when notification is set
+  useEffect(() => {
+    if (notification) {
+      showBanner();
+    }
+  }, [notification, showBanner]);
+
+  // Mark notification as read
+  const markAsRead = useCallback(async (notificationId) => {
+    if (!currentUser || !notificationId) return;
+
+    try {
+      await notificationAPI.markAsRead(notificationId);
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
-  };
+  }, [currentUser]);
 
   // Handle notification tap
-  const handleNotificationTap = () => {
+  const handleNotificationTap = useCallback(() => {
     if (notification) {
       markAsRead(notification.id);
       
-      // Navigate based on notification type
+      // Navigate based on notification link or type
       if (notification.link) {
         // Parse the link and navigate accordingly
-        // This is a simplified version - you may need more complex routing
-        if (notification.link.includes('dashboard')) {
-          navigation.navigate('Dashboard');
-        } else if (notification.link.includes('history')) {
-          navigation.navigate('History');
+        if (notification.link.includes('dashboard') || notification.link.includes('/dashboard')) {
+          navigation.navigate('Home', { screen: 'Dashboard' });
+        } else if (notification.link.includes('history') || notification.link.includes('/history')) {
+          navigation.navigate('History', { screen: 'History' });
+        } else if (notification.link.includes('breakdown') || notification.link.includes('/breakdown')) {
+          // Extract recordId or date from link if available
+          navigation.navigate('Home', { 
+            screen: 'Breakdown',
+            params: { recordId: notification.record_id || notification.data?.record_id }
+          });
         }
+      } else {
+        // Default: navigate to dashboard
+        navigation.navigate('Home', { screen: 'Dashboard' });
       }
       
       hideBanner();
     }
-  };
+  }, [notification, markAsRead, navigation]);
 
   // Handle dismiss
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     if (notification) {
       markAsRead(notification.id);
     }
     hideBanner();
-  };
+  }, [notification, markAsRead, hideBanner]);
 
   useEffect(() => {
-    if (user) {
+    if (currentUser) {
       fetchLatestNotification();
       
       // Poll for new notifications every 30 seconds
@@ -150,7 +160,7 @@ const NotificationBanner = () => {
       
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [currentUser, fetchLatestNotification]);
 
   // Get banner color based on notification type
   const getBannerColor = (type) => {
@@ -208,10 +218,10 @@ const NotificationBanner = () => {
         {/* Content */}
         <View style={styles.content}>
           <Text style={styles.title} numberOfLines={1}>
-            {notification.title}
+            {notification.title || t('notifications.newResults')}
           </Text>
           <Text style={styles.message} numberOfLines={2}>
-            {notification.message}
+            {notification.message || t('notifications.newResultsDescription')}
           </Text>
         </View>
 

@@ -6,11 +6,13 @@
  * with Stack Navigator for detail screens (Breakdown, Help).
  */
 
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { useTranslation } from 'react-i18next';
-import { Text } from 'react-native';
+import { Text, View, StyleSheet } from 'react-native';
+import { useAuth } from '../context/AuthContext';
+import { notificationAPI } from '../services/api';
 
 // Tab Screens
 import DashboardScreen from '../screens/DashboardScreen';
@@ -93,8 +95,53 @@ function ProfileStack() {
   );
 }
 
+// Notification Badge Component
+function NotificationBadge({ count }) {
+  if (!count || count === 0) return null;
+  
+  return (
+    <View style={styles.badge}>
+      <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
+    </View>
+  );
+}
+
 export default function MainNavigator() {
   const { t } = useTranslation();
+  const { currentUser } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch unread notification count
+  const fetchUnreadCount = useCallback(async () => {
+    if (!currentUser) {
+      setUnreadCount(0);
+      return;
+    }
+
+    try {
+      const response = await notificationAPI.getUnreadCount();
+      const count = response.data?.count || response.data?.unread_count || 0;
+      setUnreadCount(count);
+    } catch (error) {
+      // Silently fail - don't show errors for notification count
+      console.error('Error fetching unread count:', error);
+    }
+  }, [currentUser]);
+
+  // Fetch count on mount and when user changes
+  useEffect(() => {
+    fetchUnreadCount();
+    
+    // Poll for updates every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
+    
+    return () => clearInterval(interval);
+  }, [fetchUnreadCount]);
+
+  // Listen for navigation focus to refresh count
+  const handleTabFocus = useCallback(() => {
+    fetchUnreadCount();
+  }, [fetchUnreadCount]);
 
   return (
     <Tab.Navigator
@@ -116,8 +163,14 @@ export default function MainNavigator() {
           title: t('dashboard.title'),
           tabBarLabel: t('dashboard.title'),
           tabBarIcon: ({ color, size }) => (
-            <Text style={{ fontSize: size, color }}>🏠</Text>
+            <View style={styles.iconContainer}>
+              <Text style={{ fontSize: size, color }}>🏠</Text>
+              <NotificationBadge count={unreadCount} />
+            </View>
           ),
+        }}
+        listeners={{
+          tabPress: handleTabFocus,
         }}
       />
       <Tab.Screen
@@ -145,4 +198,31 @@ export default function MainNavigator() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  iconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    backgroundColor: '#EF4444',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+});
 

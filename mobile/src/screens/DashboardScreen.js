@@ -23,6 +23,7 @@ import ScoreCard from '../components/ScoreCard';
 import PayoutBreakdown from '../components/PayoutBreakdown';
 import QuickStats from '../components/QuickStats';
 import LoadingScreen from '../components/LoadingScreen';
+import NotificationBanner from '../components/NotificationBanner';
 
 export default function DashboardScreen() {
   const { t, i18n } = useTranslation();
@@ -108,15 +109,17 @@ export default function DashboardScreen() {
   const efficiency = payrollRecord ? calculateEfficiency(payrollRecord) : 0;
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      {/* Header */}
-      <View style={styles.header}>
+    <View style={styles.container}>
+      <NotificationBanner />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* Header */}
+        <View style={styles.header}>
         <Text style={styles.title}>{t('dashboard.title')}</Text>
         <Text style={styles.subtitle}>
           {t('dashboard.yesterday')} • {formatDate(payrollRecord?.date, i18n.language)}
@@ -157,7 +160,8 @@ export default function DashboardScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -194,6 +198,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 32,
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
     marginBottom: 24,

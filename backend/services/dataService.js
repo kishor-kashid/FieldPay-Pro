@@ -24,9 +24,9 @@ const {
  */
 async function getJobData(date, crewId = null) {
   try {
-    // If using mock APIs locally, generate mock data directly
-    if (isMockEnabled() && process.env.NODE_ENV === 'development') {
-      console.log('📦 Using local mock job data');
+    // If using mock APIs, generate mock data directly (works in any environment)
+    if (isMockEnabled()) {
+      console.log('📦 Using mock job data');
       const dateObj = new Date(date);
       let jobs = generateMockJobs(dateObj, 12);
       
@@ -68,9 +68,9 @@ async function getJobData(date, crewId = null) {
  */
 async function getTimesheetData(date, employeeId = null) {
   try {
-    // If using mock APIs locally, generate mock data directly
-    if (isMockEnabled() && process.env.NODE_ENV === 'development') {
-      console.log('📦 Using local mock timesheet data');
+    // If using mock APIs, generate mock data directly (works in any environment)
+    if (isMockEnabled()) {
+      console.log('📦 Using mock timesheet data');
       const dateObj = new Date(date);
       let timesheets = generateMockTimesheets(dateObj);
       
@@ -111,9 +111,9 @@ async function getTimesheetData(date, employeeId = null) {
  */
 async function getJobAssignments(date) {
   try {
-    // If using mock APIs locally, generate mock data directly
-    if (isMockEnabled() && process.env.NODE_ENV === 'development') {
-      console.log('📦 Using local mock assignment data');
+    // If using mock APIs, generate mock data directly (works in any environment)
+    if (isMockEnabled()) {
+      console.log('📦 Using mock assignment data');
       const dateObj = new Date(date);
       const jobs = generateMockJobs(dateObj, 12);
       const timesheets = generateMockTimesheets(dateObj);

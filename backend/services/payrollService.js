@@ -364,7 +364,7 @@ async function processPayroll(date, triggeredBy, options = {}) {
     console.log(`✅ Payroll processing complete in ${executionTime}s`);
     
     // Create notifications for all users
-    await createPayrollNotifications(
+    const notifications = await createPayrollNotifications(
       {
         date,
         summary: calculations.summary,
@@ -380,6 +380,7 @@ async function processPayroll(date, triggeredBy, options = {}) {
       date: date,
       reprocessed: options.reprocess || false,
       execution_log_id: executionLog?.id,
+      notifications_sent: notifications?.length || 0,
       summary: {
         ...calculations.summary,
         saved_records: saveResult.saved_count,

@@ -390,6 +390,17 @@ mobile/
 
 **Deployment Status**: Backend successfully deployed to Firebase Cloud Functions. Frontend deployment pending. Mobile app fully functional and connected to production API.
 
+## Recent Technical Fixes
+
+### Payroll Processing Endpoint Fixes
+- **400 Error Fix**: Added fallback to fetch `user.id` from database if missing from `req.user` (auth middleware issue)
+- **Response Structure Fix**: Added `recordsProcessed` and `notificationsSent` fields to match frontend expectations
+- **Mock Data Generation Fix**: Removed `NODE_ENV === 'development'` check so mock data works in any environment when `USE_MOCK=true`
+- **DELETE Endpoint Added**: `/api/payroll/records/:id` for individual record deletion (admin only)
+- **Notification Counting Fix**: Backend now returns notification count in `notifications_sent` field
+- **Frontend Fix**: Removed manual deletion attempt (backend handles deletion when `reprocess=true`)
+- **Error Logging Enhanced**: Added request details logging for debugging payroll processing issues
+
 ## External Integrations
 
 ### Current (Mock) ✅ IMPLEMENTED
@@ -570,4 +581,9 @@ mobile/
 45. **Backend Language Update Fix**: Removed unnecessary `requireOwnDataOrAdmin()` middleware from `/auth/language` endpoint (route already protected by `authenticateToken` and updates user's own data) ✅ **IMPLEMENTED**
 46. **Mobile App API Response Parsing**: Fixed to correctly extract records from `response.data.records` or `response.data.data` ✅ **IMPLEMENTED**
 47. **Mobile App Debug Logs**: Removed all console.log debug statements from production code ✅ **IMPLEMENTED**
+48. **Payroll Processing User ID Fallback**: Added database lookup for `user.id` if missing from auth middleware to prevent 400 errors ✅ **IMPLEMENTED**
+49. **Payroll Processing Response Structure**: Added `recordsProcessed` and `notificationsSent` fields to match frontend expectations ✅ **IMPLEMENTED**
+50. **Mock Data Generation Environment**: Removed NODE_ENV check so mock data works in any environment when `USE_MOCK=true` ✅ **IMPLEMENTED**
+51. **Payroll Record Deletion**: Added DELETE endpoint for individual record deletion (admin only) ✅ **IMPLEMENTED**
+52. **Notification Counting**: Backend now returns notification count in response for frontend display ✅ **IMPLEMENTED**
 
