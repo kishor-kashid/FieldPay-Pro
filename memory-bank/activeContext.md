@@ -1,11 +1,23 @@
 # Active Context: Clean Scapes P4P System
 
 ## Current Work Focus
-**Phase**: Mobile App Development & Production Integration  
-**Status**: Backend deployed to Firebase Cloud Functions, mobile app fully functional with all core screens, payroll processing fixes completed  
-**Date**: Post-PR #19 - Notifications implemented, payroll processing bugs fixed
+**Phase**: Feature Completion & Polish  
+**Status**: Backend deployed to Firebase Cloud Functions, mobile app fully functional, CSV upload functionality completed  
+**Date**: Post-PR #21 - CSV Upload & Processing implemented
 
 ## Recent Changes
+- ✅ **PR #21 Completed**: CSV Upload & Processing
+  - Created CSV parser utility (`backend/utils/csvParser.js`) for Service Autopilot and Paychex CSV files
+  - Created upload API routes (`backend/routes/upload.js`) with multer for file handling
+  - POST `/api/upload/service-autopilot` - Uploads job data to `jobs` table
+  - POST `/api/upload/paychex` - Uploads timesheet data to `timesheets` table, updates user base_rate
+  - Created FileUpload component with drag-and-drop support, file validation, visual feedback
+  - Created CSVPreview component to display first 10 rows of uploaded data
+  - Updated Upload page (`frontend-web/src/pages/admin/Upload.jsx`) with full integration
+  - Added uploadAPI methods to frontend services
+  - Installed multer dependency for multipart/form-data handling
+  - Registered upload routes in both Firebase Cloud Functions and local server
+  - Features: File validation (CSV only, 10MB limit), error handling, data preview, duplicate handling
 - ✅ **Payroll Processing Fixes**: Fixed 400 error and 0 records issue
   - Fixed `req.user.id` fallback: Added database lookup if user.id is missing from auth middleware
   - Fixed response structure: Added `recordsProcessed` and `notificationsSent` fields to match frontend expectations
@@ -217,13 +229,14 @@
 27. ✅ Backend Bug Fix: Language update endpoint (403 error resolved)
 28. ✅ PR #19: Mobile App - Notifications (NotificationBanner, NotificationBadge implemented)
 29. ✅ Payroll Processing Fixes: Fixed 400 error, 0 records issue, response structure, mock data generation
-30. ⏳ **NEXT**: PR #20-25: CSV upload, charts, testing, deployment, polish
+30. ✅ PR #21: CSV Upload & Processing (CSV parser, upload routes, FileUpload component, CSVPreview component, Upload page integration)
+31. ⏳ **NEXT**: PR #20, #22-25: Analytics enhancements, error handling, testing, deployment, polish
 
 ## Next Steps
 
-### Immediate (PR #20-25 - NEXT)
-1. ⏳ CSV upload functionality
-2. ⏳ Charts and data visualizations
+### Immediate (PR #20, #22-25 - NEXT)
+1. ⏳ Analytics enhancements (data-driven insights)
+2. ⏳ Error handling and validation improvements
 3. ⏳ Integration testing
 4. ⏳ Frontend deployment
 5. ⏳ Final polish and documentation
@@ -323,7 +336,14 @@ None at this time.
 - Test credentials: All users have password `password123` (see docs/TEST_CREDENTIALS.md)
 - Mock APIs available at `/mock/service-autopilot/*` and `/mock/paychex/*` when USE_MOCK=true
 - Data service (`dataService.js`) provides unified interface for fetching external data
-- Sample CSV files in `mock-data/` directory for testing CSV upload feature (PR #21)
+- **CSV Upload**: Complete CSV upload functionality implemented (PR #21)
+  - CSV parser utility for Service Autopilot and Paychex formats
+  - Upload API endpoints with multer file handling
+  - FileUpload component with drag-and-drop
+  - CSVPreview component for data validation
+  - Admin Upload page with full integration
+  - Data stored in `jobs` and `timesheets` tables
+  - User base_rate updates from Paychex CSV
 - **Calculation engine**: Efficiency, bonuses (100% & 50% multipliers), penalties (5% late, 2% long lunch)
 - **Anomaly detection**: Flags efficiency < 60% or > 120%, missing data, negative pay
 - **Payroll endpoints**: POST /analyze (preview), POST /process (commit), GET /records, GET /export

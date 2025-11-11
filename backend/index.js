@@ -38,7 +38,9 @@ app.get('/', (req, res) => {
       'GET  /auth/profile',
       'GET  /payroll/records',
       'GET  /notifications',
-      'GET  /users'
+      'GET  /users',
+      'POST /upload/service-autopilot',
+      'POST /upload/paychex'
     ]
   });
 });
@@ -58,6 +60,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/payroll', require('./routes/payroll'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/users', require('./routes/users'));
+app.use('/upload', require('./routes/upload'));
 
 // Mock API routes (development only)
 if (process.env.USE_MOCK === 'true') {

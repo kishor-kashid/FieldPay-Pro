@@ -81,5 +81,27 @@ export const notificationAPI = {
   deleteReadNotifications: () => api.delete('/notifications/read'),
 };
 
+// Upload APIs
+export const uploadAPI = {
+  uploadServiceAutopilot: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload/service-autopilot', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+  uploadPaychex: (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/upload/paychex', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  },
+};
+
 export default api;
 

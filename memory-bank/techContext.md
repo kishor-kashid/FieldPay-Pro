@@ -8,7 +8,7 @@
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Firebase Admin SDK
 - **Scheduling**: node-cron
-- **File Processing**: csv-parser
+- **File Processing**: csv-parser, multer
 - **Security**: bcrypt, jsonwebtoken
 - **Environment**: dotenv
 - **HTTP Client**: axios (for external API calls)
@@ -208,7 +208,9 @@ frontend-web/
 │   │       ├── ManagerLayout.jsx
 │   │       ├── ForemanLayout.jsx
 │   │       ├── AddUserModal.jsx
-│   │       └── EditUserModal.jsx
+│   │       ├── EditUserModal.jsx
+│   │       ├── FileUpload.jsx ✅
+│   │       └── CSVPreview.jsx ✅
 │   ├── config/
 │   │   └── firebase.js      # Firebase client SDK config
 │   ├── context/
@@ -217,7 +219,7 @@ frontend-web/
 │   │   ├── Login.jsx
 │   │   ├── admin/
 │   │   │   ├── Dashboard.jsx
-│   │   │   ├── Upload.jsx
+│   │   │   ├── Upload.jsx ✅ (CSV upload integration)
 │   │   │   ├── Review.jsx
 │   │   │   ├── Approve.jsx
 │   │   │   ├── Users.jsx
@@ -299,8 +301,9 @@ mobile/
   "@supabase/supabase-js": "^2.38.4",
   "csv-parser": "^3.0.0",
   "bcrypt": "^5.1.1",
-  "jsonwebtoken": "^9.0.2",
-  "axios": "^1.6.2"
+    "jsonwebtoken": "^9.0.2",
+    "axios": "^1.6.2",
+    "multer": "^2.0.2"
 }
 ```
 
@@ -517,6 +520,20 @@ mobile/
 - PATCH `/api/users/:id` - Update user - Admin (all fields) or own profile (limited fields)
 - DELETE `/api/users/:id` - Delete user - Admin only (cannot delete self)
 
+### CSV Upload API Routes (`routes/upload.js`) ✅ **IMPLEMENTED**
+- POST `/api/upload/service-autopilot` - Upload Service Autopilot CSV file - Admin only
+  - Accepts multipart/form-data with CSV file
+  - Parses and validates CSV (job_id, date, location, service_type, budgeted_hours, crew_id, status, notes)
+  - Stores data in `jobs` table
+  - Returns preview of first 10 rows and error report
+- POST `/api/upload/paychex` - Upload Paychex CSV file - Admin only
+  - Accepts multipart/form-data with CSV file
+  - Parses and validates CSV (employee_id, date, clock_in, clock_out, lunch_start, lunch_end, hours_worked, base_rate, crew_id, status)
+  - Matches employee_id to users in database
+  - Stores data in `timesheets` table
+  - Updates user `base_rate` if provided in CSV
+  - Returns preview of first 10 rows, error report, and missing employees list
+
 ### Unit Tests (`tests/`) ✅ **IMPLEMENTED**
 - **Test Framework**: Jest configured with Node test environment
 - **Total Tests**: 65 tests, all passing ✅
@@ -586,4 +603,12 @@ mobile/
 50. **Mock Data Generation Environment**: Removed NODE_ENV check so mock data works in any environment when `USE_MOCK=true` ✅ **IMPLEMENTED**
 51. **Payroll Record Deletion**: Added DELETE endpoint for individual record deletion (admin only) ✅ **IMPLEMENTED**
 52. **Notification Counting**: Backend now returns notification count in response for frontend display ✅ **IMPLEMENTED**
+53. **CSV Upload Functionality**: Complete CSV upload system implemented (PR #21) ✅ **IMPLEMENTED**
+  - CSV parser utility for Service Autopilot and Paychex formats
+  - Upload API routes with multer for file handling (10MB limit)
+  - FileUpload component with drag-and-drop support
+  - CSVPreview component for data validation
+  - Admin Upload page with full integration
+  - Data stored in `jobs` and `timesheets` tables
+  - User base_rate updates from Paychex CSV
 

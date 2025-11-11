@@ -104,7 +104,31 @@ Output: Payroll Record with flags
 
 **Rationale**: Keep all users informed without manual communication, but only when data is actually saved
 
-### 7. Payroll Processing Pattern ✅ **IMPLEMENTED**
+### 7. CSV Upload Pattern ✅ **IMPLEMENTED**
+**Pattern**: Manual CSV file upload for data import when APIs are unavailable
+- Admin uploads CSV files from Service Autopilot and Paychex
+- Files validated (CSV format, size limits, required columns)
+- CSV parsed and validated row-by-row
+- Data stored in database (`jobs` and `timesheets` tables)
+- Preview shown to admin before processing
+- Errors reported for invalid rows
+
+**Implementation:**
+- ✅ `csvParser.js` - CSV parsing utility with validation
+  - `parseServiceAutopilotCSV()` - Parses job data (job_id, date, location, service_type, budgeted_hours, crew_id, status, notes)
+  - `parsePaychexCSV()` - Parses timesheet data (employee_id, date, clock_in, clock_out, lunch_start, lunch_end, hours_worked, base_rate, crew_id, status)
+  - `validateCSVFile()` - File format validation
+- ✅ Upload routes (`routes/upload.js`) - 2 endpoints
+  - POST `/api/upload/service-autopilot` - Uploads job data (admin only)
+  - POST `/api/upload/paychex` - Uploads timesheet data, updates user base_rate (admin only)
+- ✅ FileUpload component - Drag-and-drop file upload with validation
+- ✅ CSVPreview component - Displays first 10 rows of uploaded data
+- ✅ Upload page integration - Full admin workflow for CSV upload
+- ✅ Multer middleware - Handles multipart/form-data file uploads (10MB limit)
+
+**Rationale**: Allows manual data import when external APIs are unavailable, with validation and preview before processing
+
+### 8. Payroll Processing Pattern ✅ **IMPLEMENTED**
 **Pattern**: Manual admin-triggered payroll processing (no automatic scheduling)
 - Two-button approach:
   - **Analyze Payroll**: Preview calculations without saving (safe to run multiple times)
@@ -126,7 +150,7 @@ Output: Payroll Record with flags
 - ✅ Execution logging integrated into `processPayroll()` with performance metrics
 - ✅ 3 execution history endpoints (list, get by ID, statistics) - admin only
 
-### 8. User Management Pattern ✅ **IMPLEMENTED**
+### 9. User Management Pattern ✅ **IMPLEMENTED**
 **Pattern**: Centralized user management with role-based access control
 - CRUD operations for users (create, read, update, delete)
 - Admin-only access for user creation, modification, and deletion
@@ -185,7 +209,7 @@ server.js
   │   ├── /api/payroll/*
   │   ├── /api/users/*
   │   ├── /api/notifications/*
-  │   ├── /api/upload/*
+  │   ├── /api/upload/* ✅
   │   └── /mock/* (development only)
   ├── Services
   │   ├── calculationService
@@ -195,7 +219,7 @@ server.js
   │   ├── userService
   │   └── cronService
   └── Utilities
-      ├── csvParser
+      ├── csvParser ✅
       ├── csvExporter
       └── mockDataGenerator
 ```
@@ -224,7 +248,7 @@ App.js
   │       ├── /foreman/schedule (Schedule page - date validation)
   │       └── /foreman/history (History page - simplified, dynamic data)
   └── Components
-      ├── Shared (NotificationBell, NotificationDropdown, Sidebar)
+      ├── Shared (NotificationBell, NotificationDropdown, Sidebar, FileUpload, CSVPreview)
       ├── Admin (AnalyzePayrollWidget, ProcessPayrollWidget, PayrollTable, etc.)
       ├── Manager (removed charts, simplified components)
       └── Foreman (MemberCard, ScheduleView, etc.)
@@ -284,12 +308,16 @@ App.js
 9. **Token Refresh**: `getToken()` refreshes token and updates localStorage
 10. **Logout**: Clears Firebase auth, removes tokens from localStorage, redirects to login
 
-### CSV Upload Flow
-1. **Upload**: Admin uploads CSV via web interface
-2. **Validation**: Backend validates file format and required columns
-3. **Parsing**: `csvParser` utility processes file
-4. **Storage**: Data stored temporarily or in database
-5. **Processing**: Used in next payroll processing run
+### CSV Upload Flow ✅ **IMPLEMENTED**
+1. **Upload**: Admin uploads CSV via web interface (drag-and-drop or file picker)
+2. **Validation**: Backend validates file format (CSV only), size (10MB limit), and required columns
+3. **Parsing**: `csvParser` utility processes file row-by-row with validation
+4. **Storage**: 
+   - Service Autopilot CSV → Data stored in `jobs` table
+   - Paychex CSV → Data stored in `timesheets` table, user `base_rate` updated if provided
+5. **Preview**: First 10 rows displayed to admin for verification
+6. **Error Reporting**: Invalid rows reported with row numbers and error messages
+7. **Processing**: Uploaded data used in next payroll processing run
 
 ## Database Schema Patterns
 
