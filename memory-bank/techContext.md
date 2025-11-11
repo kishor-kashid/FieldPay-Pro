@@ -11,6 +11,7 @@
 - **File Processing**: csv-parser
 - **Security**: bcrypt, jsonwebtoken
 - **Environment**: dotenv
+- **HTTP Client**: axios (for external API calls)
 
 ### Web Frontend
 - **Framework**: React
@@ -232,7 +233,8 @@ mobile/
   "@supabase/supabase-js": "^2.38.4",
   "csv-parser": "^3.0.0",
   "bcrypt": "^5.1.1",
-  "jsonwebtoken": "^9.0.2"
+  "jsonwebtoken": "^9.0.2",
+  "axios": "^1.6.2"
 }
 ```
 
@@ -316,20 +318,70 @@ mobile/
 
 ## External Integrations
 
-### Current (Mock)
-- **Service Autopilot**: Mock API at `/mock/service-autopilot/*`
-- **Paychex**: Mock API at `/mock/paychex/*`
+### Current (Mock) ✅ IMPLEMENTED
+- **Service Autopilot**: Mock API at `/mock/service-autopilot/*` (4 endpoints)
+  - GET `/mock/service-autopilot/jobs` - Fetch jobs by date
+  - GET `/mock/service-autopilot/jobs/:job_id` - Fetch specific job
+  - GET `/mock/service-autopilot/crews` - List all crews
+  - GET `/mock/service-autopilot/assignments` - Fetch job assignments
+- **Paychex**: Mock API at `/mock/paychex/*` (4 endpoints)
+  - GET `/mock/paychex/timesheets` - Fetch timesheets by date
+  - GET `/mock/paychex/timesheets/:employee_id` - Fetch employee timesheet
+  - GET `/mock/paychex/employees` - List all employees
+  - GET `/mock/paychex/pay-rates` - Fetch pay rates
+- **Data Service**: `dataService.js` provides unified interface for both APIs
+- **Mock Data Generator**: `mockDataGenerator.js` generates realistic test data
 
 ### Future (Production)
-- **Service Autopilot**: Real API integration
-- **Paychex**: Real API integration or CSV export
+- **Service Autopilot**: Real API integration (switch via USE_MOCK=false)
+- **Paychex**: Real API integration or CSV export (switch via USE_MOCK=false)
+
+## Implemented Backend Services ✅
+
+### Calculation Service (`calculationService.js`)
+- `calculateEfficiency()` - Compute efficiency percentage from budgeted vs actual hours
+- `calculateBasePay()` - Base pay from hours worked × rate
+- `applyBonuses()` - 100% bonus (>100% efficiency) + 50% bonus (95-100% efficiency)
+- `applyPenalties()` - 5% late penalty (after 7:00 AM), 2% long lunch penalty (>1 hour)
+- `detectAnomalies()` - Flag efficiency <60% or >120%, missing data, negative pay
+- `calculatePayroll()` - Orchestrates full calculation with job-by-job breakdown
+- **Testing**: 26 unit tests covering all scenarios
+
+### Payroll Service (`payrollService.js`)
+- `analyzePayroll(date)` - Preview calculations without saving (safe to run multiple times)
+- `processPayroll(date)` - Commit to database with duplicate prevention
+- `getPayrollRecords(filters)` - Retrieve records with role-based filtering
+- `approvePayroll(recordId)` - Mark record as approved
+- `getSummary(date)` - Aggregate statistics for a payroll date
+- **Features**: Duplicate detection, reprocess support, anomaly flagging
+
+### CSV Exporter (`csvExporter.js`)
+- `generatePaychexCSV(records, format)` - Export in 3 formats:
+  - `standard`: Paychex-compatible format (employee_id, date, total_pay)
+  - `detailed`: Full breakdown with efficiency, bonuses, penalties
+  - `summary`: Aggregated totals and statistics
+
+### Payroll API Routes (`routes/payroll.js`) ✅ **IMPLEMENTED**
+- POST `/api/payroll/analyze` - Preview payroll (no DB writes, no notifications) - Admin only
+- POST `/api/payroll/process` - Process payroll (commit to DB) - Admin only
+- GET `/api/payroll/records` - Get payroll records (role-based filtering) - All roles
+- GET `/api/payroll/records/:id` - Get specific record - Role-based
+- PUT `/api/payroll/records/:id/approve` - Approve record - Admin/Manager only
+- GET `/api/payroll/export` - Export CSV (3 formats) - Admin/Manager only
+- GET `/api/payroll/summary` - Get summary statistics - Admin/Manager only
+- DELETE `/api/payroll/records/:id` - Delete record (for reprocessing) - Admin only
 
 ## Known Technical Decisions
 
 1. **Supabase over Firebase Firestore**: Better SQL support for complex queries
 2. **Firebase Auth**: Industry standard, easy integration
 3. **Expo for Mobile**: Faster development, easier deployment
-4. **Mock APIs First**: Develop without external dependencies
+4. **Mock APIs First**: Develop without external dependencies ✅ **IMPLEMENTED**
 5. **RESTful API**: Simple, well-understood pattern
 6. **React Context over Redux**: Simpler state management for this use case
+7. **Data Service Abstraction**: Unified interface for external APIs, easy switching between mock/real ✅ **IMPLEMENTED**
+8. **Environment-Driven Configuration**: USE_MOCK flag controls API selection without code changes ✅ **IMPLEMENTED**
+9. **P4P Calculation Engine**: Rule-based with anomaly detection ✅ **IMPLEMENTED**
+10. **Two-Mode Payroll Processing**: Analyze (preview) vs Process (commit) for safety ✅ **IMPLEMENTED**
+11. **Role-Based Data Access**: Crew members see own data, foremen see crew, managers/admins see all ✅ **IMPLEMENTED**
 

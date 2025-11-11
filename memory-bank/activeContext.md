@@ -1,17 +1,28 @@
 # Active Context: Clean Scapes P4P System
 
 ## Current Work Focus
-**Phase**: Core Infrastructure Development  
-**Status**: Authentication and database setup complete, ready for mock APIs  
-**Date**: After PR #3 completion
+**Phase**: Core Business Logic Development  
+**Status**: Calculation engine and payroll processing complete, ready for execution logging  
+**Date**: After PR #5 & PR #6 completion
 
 ## Recent Changes
 - ✅ **PR #1 Completed**: Project setup (backend, web, mobile initialized)
 - ✅ **PR #2 Completed**: Database schema created (6 tables, migrations, seed data)
 - ✅ **PR #3 Completed**: Firebase Authentication (middleware, routes, contexts, RBAC)
+- ✅ **PR #4 Completed**: Mock External APIs (Service Autopilot, Paychex, data service abstraction)
+- ✅ **PR #5 Completed**: P4P Calculation Engine (efficiency, bonuses, penalties, anomaly detection)
+- ✅ **PR #6 Completed**: Payroll Processing Routes (analyze, process, approve, export)
 - ✅ Database users seeded (8 test users)
 - ✅ Firebase user creation automation script created
 - ✅ Authentication system fully functional
+- ✅ Mock API routes implemented (10 endpoints)
+- ✅ Data service abstraction layer created
+- ✅ Mock data generator utility created
+- ✅ Sample CSV files created for future CSV upload feature
+- ✅ Calculation service with unit tests (26 tests passing)
+- ✅ Payroll service with duplicate prevention and reprocess
+- ✅ 8 payroll API endpoints with role-based access control
+- ✅ CSV export functionality (3 formats)
 
 ## Current Tasks
 1. ✅ Read and understand project requirements
@@ -20,21 +31,25 @@
 4. ✅ PR #1: Project Setup & Initial Configuration
 5. ✅ PR #2: Database Schema & Configuration
 6. ✅ PR #3: Firebase Authentication Setup
-7. ⏳ **NEXT**: PR #4: Mock External APIs
+7. ✅ PR #4: Mock External APIs
+8. ✅ PR #5: P4P Calculation Engine
+9. ✅ PR #6: Payroll Processing Routes
+10. ⏳ **NEXT**: PR #7: Payroll Processing Execution & Logging
 
 ## Next Steps
 
-### Immediate (PR #4 - NEXT)
-1. Create mock Service Autopilot API routes
-2. Create mock Paychex API routes
-3. Implement data service abstraction layer
-4. Test mock API endpoints
+### Immediate (PR #7 - NEXT)
+1. Implement execution logging service
+2. Track payroll processing history
+3. Log execution results and errors
+4. Create execution log queries
+5. Optional: Add testing cron job (development only)
 
-### Short-term (PRs #5-8)
-1. ⏳ Implement P4P calculation engine
-2. ⏳ Build payroll processing routes (analyze & process)
-3. ⏳ Implement payroll execution logging
-4. ⏳ Build notifications system
+### Short-term (PRs #7-10)
+1. ⏳ **NEXT**: Implement payroll execution logging
+2. ⏳ Build notifications system
+3. ⏳ Create user management routes
+4. ⏳ Build admin dashboard (analyze & process widgets)
 
 ### Medium-term (PRs #9-15)
 1. ⏳ Create user management
@@ -60,6 +75,8 @@
 - ✅ Using React for web frontend
 - ✅ Using React Native + Expo for mobile
 - ✅ Mock APIs for development (switch to real APIs later)
+- ✅ Data service abstraction layer for seamless API switching
+- ✅ Environment-driven configuration (USE_MOCK flag)
 
 ### Development Approach
 - ✅ Breaking work into 25 focused PRs
@@ -110,6 +127,14 @@ None at this time.
 - Notifications only sent after "Process Payroll", not "Analyze Payroll"
 - Firebase users can be auto-created with `CREATE_FIREBASE_USERS=true` in backend/.env
 - Test credentials: All users have password `password123` (see docs/TEST_CREDENTIALS.md)
+- Mock APIs available at `/mock/service-autopilot/*` and `/mock/paychex/*` when USE_MOCK=true
+- Data service (`dataService.js`) provides unified interface for fetching external data
+- Sample CSV files in `mock-data/` directory for testing CSV upload feature (PR #21)
+- **Calculation engine**: Efficiency, bonuses (100% & 50% multipliers), penalties (5% late, 2% long lunch)
+- **Anomaly detection**: Flags efficiency < 60% or > 120%, missing data, negative pay
+- **Payroll endpoints**: POST /analyze (preview), POST /process (commit), GET /records, GET /export
+- **Unit tests**: 26 tests for calculation service, all passing
+- **CSV export**: 3 formats available (standard, detailed, summary)
 
 ## Communication Notes
 - Project is for Clean Scapes ($7M landscaping company)

@@ -37,11 +37,14 @@ Request → Auth Middleware → Role Check → Validation → Route Handler → 
 
 ### 3. Data Abstraction Layer
 **Pattern**: Service abstraction for external APIs
-- `dataService.js` provides unified interface
+- `dataService.js` provides unified interface ✅ **IMPLEMENTED**
 - Switches between mock and real APIs based on `USE_MOCK` environment variable
 - Handles API failures gracefully
+- Functions: `getJobData()`, `getTimesheetData()`, `getJobAssignments()`, `getPayrollData()`, `getEmployees()`, `getCrews()`
+- When `USE_MOCK=true`, uses local mock data generator or mock API routes
+- When `USE_MOCK=false`, fetches from real external APIs
 
-**Rationale**: Easy switching between development (mock) and production (real) APIs
+**Rationale**: Easy switching between development (mock) and production (real) APIs without code changes
 
 ### 4. Role-Based Access Control (RBAC)
 **Pattern**: Four-tier role system with middleware protection
@@ -57,7 +60,7 @@ Request → Auth Middleware → Role Check → Validation → Route Handler → 
 - Database users table stores role for server-side validation
 - Middleware checks user role before route access
 
-### 5. Calculation Engine Pattern
+### 5. Calculation Engine Pattern ✅ **IMPLEMENTED**
 **Pattern**: Rule-based calculation with anomaly detection
 ```
 Input: Job Data + Timesheet Data
@@ -75,6 +78,12 @@ Detect Anomalies (efficiency <60% or >120%, missing data, negative pay)
 Output: Payroll Record with flags
 ```
 
+**Implementation:**
+- `calculationRules.js` - Configuration for penalties (5% late, 2% long lunch), bonuses (100% & 50% multipliers)
+- `calculationService.js` - Core calculation logic with 6 main functions
+- 26 unit tests covering all scenarios and edge cases
+- Handles multiple jobs per employee with job-by-job breakdown
+
 **Rationale**: Consistent, auditable calculations with error detection
 
 ### 6. Notification Pattern
@@ -87,7 +96,7 @@ Output: Payroll Record with flags
 
 **Rationale**: Keep all users informed without manual communication, but only when data is actually saved
 
-### 7. Payroll Processing Pattern
+### 7. Payroll Processing Pattern ✅ **IMPLEMENTED**
 **Pattern**: Manual admin-triggered payroll processing (no automatic scheduling)
 - Two-button approach:
   - **Analyze Payroll**: Preview calculations without saving (safe to run multiple times)
@@ -98,11 +107,14 @@ Output: Payroll Record with flags
 - Optional testing cron: `node-cron` available for development testing (ENABLE_CRON=true)
 - Notifications: Only sent after "Process Payroll" completes, not after "Analyze Payroll"
 
-**Implementation**: 
-- `payrollService.analyzePayroll()` - Preview calculations
-- `payrollService.processPayroll()` - Commit to database
-- `executionLogService` - Track processing history
-- Optional `cronService.js` for development testing only
+**Implementation:** 
+- ✅ `payrollService.analyzePayroll()` - Preview calculations (no DB writes, no notifications)
+- ✅ `payrollService.processPayroll()` - Commit to database with duplicate detection
+- ✅ 8 API endpoints: analyze, process, get records, approve, export, summary
+- ✅ Role-based access: crew members see own, foremen see crew, managers/admins see all
+- ✅ CSV export in 3 formats (standard, detailed, summary)
+- 📋 `executionLogService` - Track processing history (PR #7)
+- 📋 Optional `cronService.js` for development testing only (PR #7)
 
 ## Component Relationships
 
@@ -254,16 +266,19 @@ App.js
 - Service interactions
 
 ### Mock Data
-- Mock Service Autopilot API
-- Mock Paychex API
+- ✅ Mock Service Autopilot API (`/mock/service-autopilot/*`) - 4 endpoints
+- ✅ Mock Paychex API (`/mock/paychex/*`) - 4 endpoints
+- ✅ Mock data generator (`mockDataGenerator.js`) - Generates realistic test data
+- ✅ Sample CSV files (`mock-data/`) - For CSV upload testing
 - Seed data for development
 
 ## Deployment Patterns
 
 ### Environment Configuration
-- Development: Mock APIs, local database, local Express server
-- Production: Real APIs, production database, Firebase Cloud Functions
+- Development: Mock APIs (USE_MOCK=true), local database, local Express server
+- Production: Real APIs (USE_MOCK=false), production database, Firebase Cloud Functions
 - Environment variables control behavior
+- Mock APIs automatically registered when `USE_MOCK=true` in server.js
 
 ### Build Process
 - **Backend**: Express.js adapted for Firebase Cloud Functions

@@ -7,24 +7,34 @@
 - ✅ Authentication middleware and role-based access control
 - ✅ Database seeding with test users
 - ✅ Firebase user creation automation
+- ✅ Mock External APIs (Service Autopilot, Paychex)
+- ✅ Data service abstraction layer
+- ✅ Mock data generator utility
+- ✅ Sample CSV files for testing
+- ✅ P4P Calculation Engine (efficiency, bonuses, penalties, anomalies)
+- ✅ Payroll Processing Service (analyze & process modes)
+- ✅ Payroll API Routes (8 endpoints with RBAC)
+- ✅ CSV Export Utility (3 formats)
+- ✅ Unit Tests (26 tests passing)
 
 ## What's Left to Build
 
-### Backend (30% Complete)
+### Backend (60% Complete)
 - [x] Project setup and configuration ✅
 - [x] Database schema and Supabase setup ✅
 - [x] Firebase Authentication integration ✅
 - [x] Authentication middleware and routes ✅
 - [x] Role-based access control ✅
-- [ ] Mock external APIs (Service Autopilot, Paychex)
-- [ ] P4P calculation engine
-- [ ] Payroll processing routes
-- [ ] Scheduled jobs (cron service)
+- [x] Mock external APIs (Service Autopilot, Paychex) ✅
+- [x] P4P calculation engine ✅
+- [x] Payroll processing routes ✅
+- [x] CSV export functionality ✅
+- [ ] Scheduled jobs (cron service / execution logging)
 - [ ] Notifications system
 - [ ] User management
-- [ ] CSV upload/export functionality
+- [ ] CSV upload functionality
 - [ ] Error handling and validation
-- [ ] Testing suite
+- [ ] Additional testing
 
 ### Web Frontend (15% Complete)
 - [x] Project setup (React + Tailwind) ✅
@@ -68,7 +78,7 @@
 
 ## Current Status
 
-### Phase: Core Infrastructure Development
+### Phase: Core Business Logic Development
 - ✅ Project requirements documented
 - ✅ Architecture designed
 - ✅ Task list created (25 PRs)
@@ -77,14 +87,20 @@
 - ✅ PR #1: Project Setup & Initial Configuration - **COMPLETED**
 - ✅ PR #2: Database Schema & Configuration - **COMPLETED**
 - ✅ PR #3: Firebase Authentication Setup - **COMPLETED**
-- ⏳ PR #4: Mock External APIs - **NEXT**
+- ✅ PR #4: Mock External APIs - **COMPLETED**
+- ✅ PR #5: P4P Calculation Engine - **COMPLETED**
+- ✅ PR #6: Payroll Processing Routes - **COMPLETED**
+- ⏳ PR #7: Payroll Processing Execution & Logging - **NEXT**
 
 ### PR Status
 - **PR #1**: ✅ **COMPLETED** - Project Setup & Initial Configuration
 - **PR #2**: ✅ **COMPLETED** - Database Schema & Configuration
 - **PR #3**: ✅ **COMPLETED** - Firebase Authentication Setup
-- **PR #4**: ⏳ **NEXT** - Mock External APIs
-- **PR #5-25**: Not started
+- **PR #4**: ✅ **COMPLETED** - Mock External APIs
+- **PR #5**: ✅ **COMPLETED** - P4P Calculation Engine
+- **PR #6**: ✅ **COMPLETED** - Payroll Processing Routes
+- **PR #7**: ⏳ **NEXT** - Payroll Processing Execution & Logging
+- **PR #8-25**: Not started
 
 ## Known Issues
 None yet - project just starting.
@@ -97,17 +113,21 @@ None yet - project just starting.
 5. ✅ **PR #1: Project Setup & Initial Configuration** (Backend, Web, Mobile project initialization)
 6. ✅ **PR #2: Database Schema & Configuration** (Supabase setup, tables, migrations, seed data)
 7. ✅ **PR #3: Firebase Authentication Setup** (Auth middleware, routes, contexts, RBAC)
+8. ✅ **PR #4: Mock External APIs** (Service Autopilot, Paychex mock APIs, data service abstraction, mock data generator)
+9. ✅ **PR #5: P4P Calculation Engine** (Calculation rules, efficiency/bonus/penalty logic, anomaly detection, 26 unit tests)
+10. ✅ **PR #6: Payroll Processing Routes** (Analyze/process endpoints, approval, CSV export, 8 API routes)
 
 ## Next Milestones
-1. ⏳ PR #4: Mock external APIs (Service Autopilot, Paychex)
-2. ⏳ PR #5: P4P calculation engine
-3. ⏳ PR #6: Payroll processing routes
-4. ⏳ PR #7: Payroll processing execution & logging
-5. ⏳ PR #8: Notifications system
+1. ⏳ PR #7: Payroll processing execution & logging
+2. ⏳ PR #8: Notifications system
+3. ⏳ PR #9: User management routes
+4. ⏳ PR #10: Admin dashboard
 
 ## Testing Status
-- No tests written yet
-- Testing framework to be set up in PR #23
+- ✅ Unit tests implemented for calculation service (26 tests, all passing)
+- ✅ Jest test framework configured
+- Tests cover: efficiency calculations, bonuses, penalties, anomaly detection, edge cases
+- Additional testing planned for PR #23 (integration tests)
 
 ## Deployment Status
 - Not deployed
@@ -131,11 +151,22 @@ None yet - project just starting.
 
 ## Notes
 - All development follows the 25 PR structure
-- Mock APIs will be used initially
-- Real API integration is future work
+- Mock APIs implemented and ready for use (set USE_MOCK=true in .env)
+- Real API integration is future work (switch by setting USE_MOCK=false)
 - Bilingual support is critical for mobile app success
 - Database users seeded: 8 test users (admin, manager, 2 foremen, 4 crew members)
 - Firebase users can be auto-created with `CREATE_FIREBASE_USERS=true` in .env
 - Default test password: `password123` (development only)
 - Authentication fully functional: JWT verification, role-based access, profile management
+- Mock APIs available at `/mock/service-autopilot/*` and `/mock/paychex/*` (10 endpoints total)
+- Data service (`dataService.js`) provides unified interface for fetching external data
+- Sample CSV files in `mock-data/` directory for testing CSV upload feature (PR #21)
+- Mock data generator creates realistic data with performance variations and penalty scenarios
+- **Calculation engine implemented**: Efficiency (budgeted/actual), bonuses (100% & 50%), penalties (5% late, 2% long lunch)
+- **Anomaly detection**: Flags efficiency < 60% or > 120%, missing data, negative pay
+- **Payroll API routes**: 8 endpoints (analyze, process, get records, approve, export, summary)
+- **Two-mode processing**: Analyze (preview, no DB) vs Process (commit to DB with duplicate prevention)
+- **CSV export**: 3 formats available (standard Paychex-compatible, detailed, summary)
+- **Role-based access**: Crew members see own data, foremen see crew, managers/admins see all
+- **Unit tests**: 26 tests covering all calculation scenarios, edge cases, and error handling
 
