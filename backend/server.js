@@ -26,15 +26,16 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', require('./routes/auth'));
-// app.use('/api/payroll', require('./routes/payroll'));
-// app.use('/api/users', require('./routes/users'));
-// app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/payroll', require('./routes/payroll'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/users', require('./routes/users'));
 // app.use('/api/upload', require('./routes/upload'));
 
 // Mock API routes (development only)
 if (process.env.USE_MOCK === 'true') {
-  // app.use('/mock/service-autopilot', require('./routes/mock/serviceAutopilot'));
-  // app.use('/mock/paychex', require('./routes/mock/paychex'));
+  app.use('/mock/service-autopilot', require('./routes/mock/serviceAutopilot'));
+  app.use('/mock/paychex', require('./routes/mock/paychex'));
+  console.log('🎭 Mock API routes registered');
 }
 
 // Error handling middleware (will be implemented in PR #22)
@@ -67,6 +68,9 @@ try {
   console.log('   This is OK if you haven\'t set up Firebase yet.');
 }
 
+// Initialize cron service (optional, for testing only)
+const { initializeCronService } = require('./services/cronService');
+
 // Start server
 app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
@@ -79,6 +83,13 @@ app.listen(PORT, async () => {
     console.log(`✅ Database connection: Connected`);
   } else {
     console.log(`⚠️  Database connection: Check configuration (tables may not exist yet)`);
+  }
+  
+  // Initialize cron service (optional)
+  try {
+    initializeCronService();
+  } catch (error) {
+    console.error('⚠️  Failed to initialize cron service:', error.message);
   }
 });
 

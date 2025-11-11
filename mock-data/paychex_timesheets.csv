@@ -1,0 +1,6 @@
+employee_id,employee_name,date,clock_in,clock_out,lunch_start,lunch_end,hours_worked,base_rate,crew_id,status
+crew1,Juan Garcia,2024-11-10,2024-11-10T07:15:00Z,2024-11-10T16:15:00Z,2024-11-10T12:00:00Z,2024-11-10T12:45:00Z,9,18.00,foreman1,approved
+crew2,Maria Lopez,2024-11-10,2024-11-10T06:45:00Z,2024-11-10T14:45:00Z,2024-11-10T12:00:00Z,2024-11-10T12:30:00Z,8,17.50,foreman1,approved
+crew3,Carlos Rodriguez,2024-11-10,2024-11-10T06:45:00Z,2024-11-10T14:45:00Z,2024-11-10T12:00:00Z,2024-11-10T12:30:00Z,8,19.00,foreman2,approved
+crew4,Ana Martinez,2024-11-10,2024-11-10T07:15:00Z,2024-11-10T16:15:00Z,2024-11-10T12:00:00Z,2024-11-10T12:45:00Z,9,18.50,foreman2,approved
+
