@@ -127,6 +127,53 @@ Output: Payroll Record with flags
 - ✅ Execution logging integrated into `processPayroll()` with performance metrics
 - ✅ 3 execution history endpoints (list, get by ID, statistics) - admin only
 
+### 8. User Management Pattern ✅ **IMPLEMENTED**
+**Pattern**: Centralized user management with role-based access control
+- CRUD operations for users (create, read, update, delete)
+- Admin-only access for user creation, modification, and deletion
+- Self-service profile updates (limited fields for non-admins)
+- Password management via Firebase Authentication (no password storage in database)
+- Role assignment and crew association
+- Duplicate prevention (email, employee_id)
+- Search and filtering (by role, crew, name, email, employee_id)
+- User statistics dashboard
+
+**Implementation:**
+- ✅ `userService.js` - 10 functions for complete user management:
+  - `getUsers(filters)` - List with optional filtering (role, crew_id, search)
+  - `getUserById(userId)` - Single user details
+  - `getUserByEmail(email)` - Duplicate checking
+  - `getUserByEmployeeId(employeeId)` - Duplicate checking
+  - `createUser(userData)` - Create with validation and duplicate prevention
+  - `updateUser(userId, updateData)` - Update with validation
+  - `deleteUser(userId)` - Hard delete (could be changed to soft delete)
+  - `getUsersByRole(role)` - Filter by role
+  - `getUsersByCrew(crewId)` - Filter by crew
+  - `getUserStats()` - Statistics (total, by role)
+  
+- ✅ 6 API endpoints with role-based access control:
+  - GET `/api/users` - List all users with filters (admin only)
+  - GET `/api/users/stats` - User statistics (admin only)
+  - GET `/api/users/:id` - Get user details (admin or own profile)
+  - POST `/api/users` - Create new user (admin only)
+  - PATCH `/api/users/:id` - Update user (admin all fields, users own limited fields)
+  - DELETE `/api/users/:id` - Delete user (admin only, cannot delete self)
+  
+- ✅ Admin web UI components:
+  - `Users.jsx` - Users list page with statistics dashboard
+    - 5 statistics cards (total, admins, managers, foremen, crew members)
+    - Search input and role filter dropdown
+    - Users table with CRUD actions
+    - Role-based color coding
+  - `AddUserModal.jsx` - Create new user form with validation
+  - `EditUserModal.jsx` - Edit existing user form with validation
+  
+**Access Control:**
+- Admins: Full access to all user operations
+- Non-admins: Can view and update their own profiles (limited fields: name, phone_number, preferred_language)
+- Admin Protection: Admins cannot delete themselves
+- Duplicate Prevention: Email and employee_id must be unique
+
 ## Component Relationships
 
 ### Backend Structure
@@ -266,22 +313,30 @@ App.js
 
 ## Testing Patterns
 
-### Unit Tests
-- Calculation service logic
-- Utility functions
-- Data transformations
+### Unit Tests ✅ **IMPLEMENTED**
+- **Test Framework**: Jest with Node test environment
+- **Total Tests**: 65 tests, all passing
+- **Coverage**:
+  - ✅ Calculation service logic (26 tests - full coverage)
+  - ✅ CSV export utilities (23 tests - all formats)
+  - ✅ User service operations (13 tests - basic CRUD)
+  - ✅ Data service fallbacks (2 tests)
+  - ✅ Notification service (1 test - module loading)
+- **Mock Strategy**: All external dependencies (Supabase, axios, Firebase) are mocked
+- **Console Suppression**: console.error and console.warn suppressed for cleaner test output
+- **Test Quality**: Focused on testable business logic, avoiding overly complex mocking
 
 ### Integration Tests
-- API route testing
-- Database operations
-- Service interactions
+- ⏳ API route testing (planned for PR #23)
+- ⏳ Database operations (planned)
+- ⏳ Service interactions (planned)
 
 ### Mock Data
 - ✅ Mock Service Autopilot API (`/mock/service-autopilot/*`) - 4 endpoints
 - ✅ Mock Paychex API (`/mock/paychex/*`) - 4 endpoints
 - ✅ Mock data generator (`mockDataGenerator.js`) - Generates realistic test data
 - ✅ Sample CSV files (`mock-data/`) - For CSV upload testing
-- Seed data for development
+- ✅ Seed data for development
 
 ## Deployment Patterns
 

@@ -13,6 +13,18 @@ const {
 } = require('../services/calculationService');
 
 describe('Calculation Service', () => {
+  let originalConsoleWarn;
+
+  beforeEach(() => {
+    // Suppress console.warn during tests (optional - remove if you want to see warnings)
+    originalConsoleWarn = console.warn;
+    console.warn = jest.fn();
+  });
+
+  afterEach(() => {
+    // Restore console.warn after tests
+    console.warn = originalConsoleWarn;
+  });
   
   describe('calculateEfficiency', () => {
     test('should calculate efficiency correctly for exact match', () => {

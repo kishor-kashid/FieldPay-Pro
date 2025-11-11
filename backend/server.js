@@ -28,7 +28,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/payroll', require('./routes/payroll'));
 app.use('/api/notifications', require('./routes/notifications'));
-// app.use('/api/users', require('./routes/users'));
+app.use('/api/users', require('./routes/users'));
 // app.use('/api/upload', require('./routes/upload'));
 
 // Mock API routes (development only)

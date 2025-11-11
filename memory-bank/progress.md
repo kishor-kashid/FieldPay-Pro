@@ -15,17 +15,21 @@
 - ✅ Payroll Processing Service (analyze & process modes)
 - ✅ Payroll API Routes (8 endpoints with RBAC)
 - ✅ CSV Export Utility (3 formats)
-- ✅ Unit Tests (26 tests passing)
+- ✅ Unit Tests (65 tests passing - calculation, user, data, notification, CSV export)
 - ✅ Execution Logging Service (audit trail, performance metrics)
 - ✅ Optional Cron Service (testing only, development)
 - ✅ Notification Service (role-based delivery)
 - ✅ Notification API Routes (6 endpoints)
 - ✅ Web Notification Components (bell + dropdown)
 - ✅ Mobile Notification Banner Component
+- ✅ User Service (CRUD operations, search, statistics)
+- ✅ User Management API Routes (6 endpoints)
+- ✅ Admin Users Page (statistics, search, filtering)
+- ✅ Add/Edit User Modals
 
 ## What's Left to Build
 
-### Backend (70% Complete)
+### Backend (80% Complete)
 - [x] Project setup and configuration ✅
 - [x] Database schema and Supabase setup ✅
 - [x] Firebase Authentication integration ✅
@@ -38,19 +42,22 @@
 - [x] Execution logging service ✅
 - [x] Optional cron service (testing only) ✅
 - [x] Notifications system ✅
-- [ ] User management
+- [x] User management ✅
+- [x] Unit tests for critical services ✅
 - [ ] CSV upload functionality
 - [ ] Error handling and validation
-- [ ] Additional testing
+- [ ] Integration tests
 
-### Web Frontend (20% Complete)
+### Web Frontend (25% Complete)
 - [x] Project setup (React + Tailwind) ✅
 - [x] Firebase client SDK configuration ✅
 - [x] Authentication context and hooks ✅
 - [x] Notification components (bell + dropdown) ✅
+- [x] Admin Users page (CRUD, search, stats) ✅
+- [x] Add/Edit User modals ✅
 - [ ] Authentication UI (login/logout pages)
 - [ ] Routing setup
-- [ ] Admin dashboard (upload, review, approve, users, reports, settings)
+- [ ] Admin dashboard (analyze & process widgets)
 - [ ] Manager dashboard (analytics, teams, reports)
 - [ ] Foreman dashboard (team overview, members, schedule, history)
 - [ ] Charts and data visualizations
@@ -86,7 +93,7 @@
 
 ## Current Status
 
-### Phase: Core Business Logic Development
+### Phase: Frontend Dashboard Development
 - ✅ Project requirements documented
 - ✅ Architecture designed
 - ✅ Task list created (25 PRs)
@@ -100,7 +107,8 @@
 - ✅ PR #6: Payroll Processing Routes - **COMPLETED**
 - ✅ PR #7: Payroll Processing Execution & Logging - **COMPLETED**
 - ✅ PR #8: Notifications System - **COMPLETED**
-- ⏳ PR #9: User Management Routes - **NEXT**
+- ✅ PR #9: User Management Routes - **COMPLETED**
+- ⏳ PR #10: Admin Dashboard - **NEXT**
 
 ### PR Status
 - **PR #1**: ✅ **COMPLETED** - Project Setup & Initial Configuration
@@ -111,8 +119,9 @@
 - **PR #6**: ✅ **COMPLETED** - Payroll Processing Routes
 - **PR #7**: ✅ **COMPLETED** - Payroll Processing Execution & Logging
 - **PR #8**: ✅ **COMPLETED** - Notifications System
-- **PR #9**: ⏳ **NEXT** - User Management Routes
-- **PR #10-25**: Not started
+- **PR #9**: ✅ **COMPLETED** - User Management Routes
+- **PR #10**: ⏳ **NEXT** - Admin Dashboard
+- **PR #11-25**: Not started
 
 ## Known Issues
 None yet - project just starting.
@@ -130,18 +139,26 @@ None yet - project just starting.
 10. ✅ **PR #6: Payroll Processing Routes** (Analyze/process endpoints, approval, CSV export, 8 API routes)
 11. ✅ **PR #7: Execution Logging & Cron Service** (Execution logging service, optional testing cron, 3 execution endpoints, audit trail)
 12. ✅ **PR #8: Notifications System** (Notification service, 6 API endpoints, web/mobile components, role-based delivery)
+13. ✅ **PR #9: User Management** (User service, 6 API endpoints, admin Users page, Add/Edit modals, search/filtering)
 
 ## Next Milestones
-1. ⏳ PR #9: User management routes
-2. ⏳ PR #10: Admin dashboard
-3. ⏳ PR #11: Manager dashboard
-4. ⏳ PR #12: Foreman dashboard
+1. ⏳ PR #10: Admin dashboard (analyze & process widgets)
+2. ⏳ PR #11: Manager dashboard
+3. ⏳ PR #12: Foreman dashboard
+4. ⏳ PR #13: Crew member mobile screens
 
 ## Testing Status
-- ✅ Unit tests implemented for calculation service (26 tests, all passing)
+- ✅ **Unit Tests**: 65 tests passing across 5 test files
+  - `calculationService.test.js` - 26 tests (full coverage of P4P engine)
+  - `csvExporter.test.js` - 23 tests (all CSV formats)
+  - `userService.test.js` - 13 tests (basic operations)
+  - `dataService.test.js` - 2 tests (fallback behavior)
+  - `notificationService.test.js` - 1 test (module loading)
 - ✅ Jest test framework configured
-- Tests cover: efficiency calculations, bonuses, penalties, anomaly detection, edge cases
-- Additional testing planned for PR #23 (integration tests)
+- ✅ Console output suppressed for cleaner test runs
+- ✅ Tests cover: efficiency calculations, bonuses, penalties, anomaly detection, CSV generation, user operations
+- ⏳ Integration tests planned for PR #23
+- ⏳ E2E tests planned for future
 
 ## Deployment Status
 - Not deployed
@@ -191,4 +208,11 @@ None yet - project just starting.
 - **Web notifications**: NotificationBell component with unread badge + NotificationDropdown with auto-refresh
 - **Mobile notifications**: NotificationBanner component with animations and auto-show/hide
 - **Notification delivery**: Only sent after "Process Payroll" completes (not after "Analyze Payroll")
+- **User service**: 10 functions for CRUD operations, search by role/crew, statistics, duplicate prevention
+- **User management API**: 6 endpoints (list, get, create, update, delete, stats) with role-based access
+- **Admin Users page**: Statistics dashboard (5 cards), search/filter, users table, CRUD operations
+- **User modals**: AddUserModal and EditUserModal with validation, error handling, loading states
+- **Unit tests**: 65 tests covering critical business logic (calculation engine, CSV export, user operations)
+- **Test coverage**: Core P4P calculation engine fully tested, CSV export fully tested, basic user operations tested
+- **Test quality**: All tests passing, console output suppressed for readability
 
