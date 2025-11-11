@@ -1,0 +1,105 @@
+{
+  "users": [
+    {
+      "id": "admin1",
+      "email": "admin@cleanscapes.com",
+      "role": "admin",
+      "name": "Admin User",
+      "employee_id": "EMP-ADMIN-001",
+      "crew_id": null,
+      "preferred_language": "en",
+      "base_rate": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "manager1",
+      "email": "manager@cleanscapes.com",
+      "role": "manager",
+      "name": "Michael Johnson",
+      "employee_id": "EMP-MGR-001",
+      "crew_id": null,
+      "preferred_language": "en",
+      "base_rate": null,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "foreman1",
+      "email": "foreman1@cleanscapes.com",
+      "role": "foreman",
+      "name": "Roberto Santos",
+      "employee_id": "EMP-FORE-001",
+      "crew_id": "foreman1",
+      "preferred_language": "en",
+      "base_rate": 22.00,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "foreman2",
+      "email": "foreman2@cleanscapes.com",
+      "role": "foreman",
+      "name": "David Chen",
+      "employee_id": "EMP-FORE-002",
+      "crew_id": "foreman2",
+      "preferred_language": "en",
+      "base_rate": 22.00,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew1",
+      "email": "crew1@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Juan Garcia",
+      "employee_id": "EMP-CREW-001",
+      "crew_id": "foreman1",
+      "preferred_language": "es",
+      "base_rate": 18.00,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew2",
+      "email": "crew2@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Maria Lopez",
+      "employee_id": "EMP-CREW-002",
+      "crew_id": "foreman1",
+      "preferred_language": "es",
+      "base_rate": 17.50,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew3",
+      "email": "crew3@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Carlos Rodriguez",
+      "employee_id": "EMP-CREW-003",
+      "crew_id": "foreman2",
+      "preferred_language": "es",
+      "base_rate": 19.00,
+      "created_at": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "crew4",
+      "email": "crew4@cleanscapes.com",
+      "role": "crew_member",
+      "name": "Ana Martinez",
+      "employee_id": "EMP-CREW-004",
+      "crew_id": "foreman2",
+      "preferred_language": "es",
+      "base_rate": 18.50,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "metadata": {
+    "description": "Mock user data for Clean Scapes P4P system development",
+    "total_users": 8,
+    "roles": {
+      "admin": 1,
+      "manager": 1,
+      "foreman": 2,
+      "crew_member": 4
+    },
+    "default_password": "password123",
+    "notes": "All users can authenticate with their email and the default password. In production, users should be required to change their password on first login."
+  }
+}
+

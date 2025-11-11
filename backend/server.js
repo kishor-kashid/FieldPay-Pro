@@ -33,8 +33,9 @@ app.use('/api/auth', require('./routes/auth'));
 
 // Mock API routes (development only)
 if (process.env.USE_MOCK === 'true') {
-  // app.use('/mock/service-autopilot', require('./routes/mock/serviceAutopilot'));
-  // app.use('/mock/paychex', require('./routes/mock/paychex'));
+  app.use('/mock/service-autopilot', require('./routes/mock/serviceAutopilot'));
+  app.use('/mock/paychex', require('./routes/mock/paychex'));
+  console.log('🎭 Mock API routes registered');
 }
 
 // Error handling middleware (will be implemented in PR #22)
