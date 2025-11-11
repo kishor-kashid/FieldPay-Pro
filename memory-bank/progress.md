@@ -28,6 +28,14 @@
 - ✅ Add/Edit User Modals
 - ✅ Review Payroll Page (crew column, dynamic crew filter, sorting)
 - ✅ Reports Page (dynamic data generation, date range filtering)
+- ✅ Manager Dashboard (comprehensive compliance and performance overview)
+- ✅ Manager Teams Page (enhanced crew data calculation, date range support)
+- ✅ Manager Analytics Page (simplified, dynamic data)
+- ✅ Foreman Dashboard (comprehensive compliance and performance overview, date range support)
+- ✅ Foreman TeamMembers Page (real data from API, date range support)
+- ✅ Foreman History Page (simplified, dynamic data, charts removed)
+- ✅ Foreman Schedule Page (date validation added)
+- ✅ MemberDetailModal (Chart.js removed, real data display)
 
 ## What's Left to Build
 
@@ -50,7 +58,7 @@
 - [ ] Error handling and validation
 - [ ] Integration tests
 
-### Web Frontend (70% Complete)
+### Web Frontend (80% Complete)
 - [x] Project setup (React + Tailwind) ✅
 - [x] Firebase client SDK configuration ✅
 - [x] Authentication context and hooks ✅
@@ -63,8 +71,14 @@
 - [x] Admin pages (Upload, Review, Approve, Reports, Settings) ✅
 - [x] Review Payroll page enhancements (crew column, dynamic filters) ✅
 - [x] Reports page enhancements (dynamic data, date range filtering) ✅
-- [x] Manager dashboard (dashboard page, teams page, analytics page) ✅
-- [x] Foreman dashboard (dashboard, team members, schedule, history pages) ✅
+- [x] Manager dashboard (dashboard page with compliance metrics, teams page with enhanced calculations, analytics page) ✅
+- [x] Manager dashboard enhancements (date range selector, compliance metrics, alerts, anomaly breakdown, crew comparison) ✅
+- [x] Manager Teams page enhancements (date range support, improved crew matching, aggregated metrics) ✅
+- [x] Foreman dashboard (dashboard with compliance metrics, team members with real data, schedule with validation, history with real data) ✅
+- [x] Foreman dashboard enhancements (date range selector, compliance metrics, alerts, member cards with real data) ✅
+- [x] Foreman TeamMembers page (real data from API, date range support, member detail modal) ✅
+- [x] Foreman History page (charts removed, real data, date range validation) ✅
+- [x] MemberDetailModal fix (Chart.js removed, real data display) ✅
 - [x] Role-based access control (crew members restricted from web app) ✅
 - [x] Token management (Firebase token stored for axios interceptor) ✅
 - [x] Charts removed from Reports page (simplified UI) ✅
@@ -245,4 +259,16 @@
 - **Reports Section**: Dynamic report generation from database with date range filtering, charts removed
 - **Review Payroll Page**: Crew column added with sorting, dynamic crew filter dropdown from database
 - **Backend API**: Payroll records endpoint supports date range filtering (start_date, end_date parameters)
+- **Manager Dashboard**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics (pending, approved, anomalies, rejected), compliance rate calculation, real-time alerts from compliance data, anomaly breakdown by type, crew performance comparison table
+- **Manager Teams Page**: Date range selector, improved crew_id matching (handles CREW1/foreman1, CREW2/foreman2), total payout aggregation across date ranges, top performers aggregation, additional metrics (approved count, anomaly count, compliance rate, avg payout/record), better empty state handling
+- **Manager Analytics Page**: Charts removed, date range validation added, dynamic data generation from database
+- **Backend API Access**: User management endpoints (`/api/users`, `/api/users/stats`) now accessible to managers and foremen (expanded from admin-only)
+- **Data Setup Script**: Consolidated `setupDatabase.js` script for comprehensive database initialization (delete all data, seed users, process payroll for date range, mark previous as approved)
+- **Foreman Dashboard**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics (pending, approved, anomalies, rejected), compliance rate calculation, real-time alerts from compliance data, member cards with aggregated performance data (total payout, records, approved, anomalies, hours)
+- **Foreman TeamMembers Page**: Date range selector, real data from API (userAPI and payrollAPI), member cards with performance metrics, MemberDetailModal integration
+- **Foreman History Page**: Charts removed, dynamic data generation from database, date range validation, groups records by date, shows summary stats (avg payout, total payout, total records, best day)
+- **Foreman Schedule Page**: Date validation added (max = today)
+- **MemberDetailModal**: Chart.js dependency removed (fixes "linear scale not registered" error), uses real performance data, dynamic strengths/weaknesses based on actual metrics, contact information display
+- **Backend Crew Matching**: Enhanced crew_id matching in payroll service to handle CREW1/foreman1, CREW2/foreman2 mismatches using number extraction and case-insensitive matching
+- **Backend Foreman Access**: Updated payroll routes to use `user.crew_id` instead of `user.uid` for foremen filtering
 

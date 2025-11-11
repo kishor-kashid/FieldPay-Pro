@@ -457,8 +457,8 @@ mobile/
 - **Features**: Role validation, duplicate prevention, search across name/email/employee_id
 
 ### User Management API Routes (`routes/users.js`) ✅ **IMPLEMENTED**
-- GET `/api/users` - List all users (with filters) - Admin only
-- GET `/api/users/stats` - Get user statistics - Admin only
+- GET `/api/users` - List all users (with filters) - Admin, Manager, and Foreman (foremen see only their crew)
+- GET `/api/users/stats` - Get user statistics - Admin and Manager only
 - GET `/api/users/:id` - Get user details - Admin or own profile
 - POST `/api/users` - Create new user - Admin only
 - PATCH `/api/users/:id` - Update user - Admin (all fields) or own profile (limited fields)
@@ -513,4 +513,16 @@ mobile/
 30. **Reset-Seed Script**: `npm run reset-seed` script to delete all data and regenerate users + payroll data in one go ✅ **IMPLEMENTED**
 31. **Crew Members Expanded**: 10 crew members total (expanded from 4), divided into 2 groups (4 and 6 members) ✅ **IMPLEMENTED**
 32. **Total Penalties Mapping**: Fixed to ensure `total_penalties` is properly mapped from database `penalties` field ✅ **IMPLEMENTED**
+33. **Manager Dashboard Enhancement**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics, real-time alerts, anomaly breakdown, and crew comparison table ✅ **IMPLEMENTED**
+34. **Manager Teams Page Enhancement**: Date range support, improved crew_id matching (CREW1/foreman1), aggregated metrics, better empty states ✅ **IMPLEMENTED**
+35. **Manager Analytics Simplification**: Charts removed, dynamic data generation, date range validation ✅ **IMPLEMENTED**
+36. **Backend API Access Expansion**: User management endpoints now accessible to managers and foremen (not just admins) ✅ **IMPLEMENTED**
+37. **Data Setup Consolidation**: Single comprehensive `setupDatabase.js` script for database initialization ✅ **IMPLEMENTED**
+38. **Foreman Dashboard Enhancement**: Comprehensive team performance and payroll compliance overview with date range analysis, compliance metrics, real-time alerts, member cards with aggregated data ✅ **IMPLEMENTED**
+39. **Foreman Teams Page Enhancement**: Real data from API, date range support, MemberDetailModal integration ✅ **IMPLEMENTED**
+40. **Foreman History Simplification**: Charts removed, dynamic data generation, date range validation ✅ **IMPLEMENTED**
+41. **Foreman Schedule Enhancement**: Date validation added ✅ **IMPLEMENTED**
+42. **MemberDetailModal Fix**: Chart.js dependency removed, uses real performance data, dynamic strengths/weaknesses ✅ **IMPLEMENTED**
+43. **Backend Crew Matching Enhancement**: Flexible crew_id matching (CREW1/foreman1, CREW2/foreman2) using number extraction and case-insensitive matching ✅ **IMPLEMENTED**
+44. **Backend Foreman Filtering Fix**: Updated payroll routes to use `user.crew_id` instead of `user.uid` for foremen ✅ **IMPLEMENTED**
 

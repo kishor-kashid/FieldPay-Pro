@@ -469,7 +469,20 @@ async function getPayrollRecords(filters = {}) {
     }
     
     if (filters.crew_id) {
-      query = query.eq('crew_id', filters.crew_id);
+      const crewIdFilter = String(filters.crew_id).trim();
+      
+      // Extract number from crew_id for flexible matching (CREW1 vs foreman1)
+      const numMatch = crewIdFilter.match(/\d+/);
+      
+      if (numMatch) {
+        const num = numMatch[0];
+        // Use case-insensitive like to match patterns containing the number
+        // This handles: CREW1, foreman1, crew1, etc.
+        query = query.ilike('crew_id', `%${num}%`);
+      } else {
+        // No number found, use case-insensitive exact match
+        query = query.ilike('crew_id', crewIdFilter);
+      }
     }
     
     if (filters.status) {

@@ -1,11 +1,65 @@
 # Active Context: Clean Scapes P4P System
 
 ## Current Work Focus
-**Phase**: Frontend Dashboard Development  
-**Status**: PR10-PR12 completed - Admin, Manager, and Foreman dashboards implemented  
-**Date**: After frontend dashboard implementation and authentication fixes
+**Phase**: Frontend Dashboard Enhancement & UI Completion  
+**Status**: PR10-PR12 completed - Admin, Manager, and Foreman dashboards implemented and enhanced  
+**Date**: After foreman dashboard enhancements and UI consistency fixes
 
 ## Recent Changes
+- ✅ **Foreman Dashboard Enhancement**: Added comprehensive team performance and payroll compliance overview
+  - Date range selector with quick buttons (Yesterday, Last 7 Days)
+  - Compliance metrics section (Total, Approved, Pending, Rejected, Anomalies)
+  - Compliance rate calculation with status indicators (Excellent/Good/Fair/Needs Attention)
+  - Real-time alerts generated from compliance data (pending approvals, anomalies, low compliance rates)
+  - Top performer based on total payout (not efficiency)
+  - Member cards show: Total Payout, Records Count, Approved Count, Anomaly Count, Hours
+  - Quick actions buttons navigate to correct pages
+  - Fixed crew_id matching in backend (handles CREW1/foreman1, CREW2/foreman2 mismatches)
+  - Fixed "View Details" button to open MemberDetailModal with real data
+- ✅ **Foreman TeamMembers Page**: Replaced mock data with API calls
+  - Fetches crew members from userAPI
+  - Fetches payroll records for selected date
+  - Shows real stats: Total Members, Avg Payout, Total Payout, Needs Attention
+  - Member cards display real data: payout, hours, records, approved, anomalies
+- ✅ **Foreman History Page**: Removed charts, fetches real data
+  - Removed Line charts for efficiency and payout trends
+  - Fetches real data from database with date range validation
+  - Groups records by date
+  - Shows summary stats: Avg Daily Payout, Total Payout, Total Records, Best Day
+- ✅ **Foreman Schedule Page**: Added date validation (max = today)
+- ✅ **MemberDetailModal Fix**: Removed Chart.js dependency
+  - Removed 7-day performance chart (was causing "linear scale not registered" error)
+  - Updated to use real data: Total Payout, Records, Approved, Anomalies, Hours
+  - Dynamic strengths/weaknesses based on actual performance data
+  - Added contact information display
+- ✅ **Backend API Enhancement**: Updated user management endpoints
+  - `/api/users` now accessible to foremen (with automatic crew filtering)
+  - Foremen can only see their own crew members
+  - Changed from `requireAdminOrManager` to `requireAdminManagerOrForeman`
+- ✅ **Backend Payroll Service**: Enhanced crew_id matching
+  - Fixed foreman filtering to use `user.crew_id` instead of `user.uid`
+  - Added flexible crew_id matching (CREW1 ↔ foreman1, CREW2 ↔ foreman2)
+  - Uses `.ilike()` with number extraction for pattern matching
+- ✅ **Manager Dashboard Enhancement**: Added comprehensive team performance and payroll compliance overview
+  - Date range selector with quick buttons (Yesterday, Last 7 Days)
+  - Compliance metrics section (Pending Approval, Approved, Anomalies Detected, Rejected)
+  - Compliance rate calculation with status indicators (Excellent/Good/Fair/Needs Attention)
+  - Real-time alerts generated from compliance data (pending approvals, anomalies, low compliance rates)
+  - Anomaly breakdown by type (shows count per anomaly flag)
+  - Crew performance comparison table (Records, Payout, Approved, Anomalies, Compliance per crew)
+  - Fixed API response structure for user stats (accessing `response.data.data`)
+  - Fixed total employees count (using `crew_members` from stats)
+- ✅ **Manager Teams Page Enhancement**: Enhanced crew data calculation and display
+  - Date range selector with validation
+  - Improved crew_id matching logic (handles CREW1/foreman1, CREW2/foreman2 mismatches)
+  - Total payout aggregation across date ranges
+  - Top performers aggregation (sums pay across multiple days)
+  - Additional metrics in crew modal (Approved count, Anomaly count, Compliance rate, Avg Payout/Record)
+  - Better empty state handling with helpful messages
+- ✅ **Manager Analytics Page**: Removed all charts, added date range validation, dynamic data from database
+- ✅ **Backend API Access**: Updated user management endpoints to allow manager access
+  - `/api/users/stats` now accessible to managers (changed from admin-only)
+  - `/api/users` now accessible to managers (changed from admin-only)
 - ✅ **UI Simplification**: Removed status columns from all payroll tables (PayrollTable, AnalyzePayrollWidget, Approve, History pages)
 - ✅ **Approve & Export Page**: Removed Summary Stats section and payroll records table, keeping only Analyze/Process widgets and Export functionality
 - ✅ **Reports Section**: Removed hard-coded data, now generates reports dynamically from database based on selected date range
@@ -79,6 +133,12 @@
 1. ⏳ Build crew member mobile screens (dashboard, breakdown, history, profile, help)
 2. ⏳ Implement bilingual support (EN/ES) for mobile app
 3. ⏳ Add navigation setup for mobile app
+
+### Recent Completions
+- ✅ Manager dashboard with team performance and payroll compliance overview
+- ✅ Manager Teams page with enhanced crew data calculation
+- ✅ Manager Analytics page simplified (charts removed, dynamic data)
+- ✅ Backend API access expanded for managers (user stats and user list)
 
 ### Short-term (PRs #13-15)
 1. ⏳ **NEXT**: Build crew member mobile screens
@@ -201,6 +261,17 @@ None at this time.
 - **Reports Section**: Dynamic report generation from database with date range filtering, charts removed for simplicity
 - **Review Payroll Page**: Crew column added with sorting, dynamic crew filter dropdown populated from database
 - **Backend API Enhancement**: Payroll records endpoint now supports date range filtering (start_date, end_date query parameters)
+- **Manager Dashboard**: Comprehensive compliance and performance overview with date range analysis, real-time alerts, anomaly breakdown, and crew comparison
+- **Manager Teams Page**: Enhanced crew data calculation with date range support, improved crew_id matching (CREW1/foreman1), aggregated metrics, and better empty states
+- **Manager Analytics Page**: Simplified UI (charts removed), dynamic data generation, date range validation
+- **Backend API Access**: User management endpoints (`/api/users`, `/api/users/stats`) now accessible to managers and foremen (not just admins)
+- **Data Generation Script**: Consolidated setup script (`setupDatabase.js`) for comprehensive database initialization (delete, seed users, process payroll, mark previous as approved)
+- **Foreman Dashboard**: Comprehensive compliance and performance overview with date range analysis, real-time alerts, anomaly breakdown, member cards with real data
+- **Foreman Teams Page**: Real data from API, date range support, member cards with performance metrics
+- **Foreman History Page**: Simplified UI (charts removed), dynamic data generation, date range validation
+- **Foreman Schedule Page**: Date validation added
+- **MemberDetailModal**: Chart.js removed, uses real performance data, dynamic strengths/weaknesses
+- **Backend Crew Matching**: Enhanced crew_id matching logic to handle CREW1/foreman1, CREW2/foreman2 mismatches using number extraction
 
 ## Communication Notes
 - Project is for Clean Scapes ($7M landscaping company)

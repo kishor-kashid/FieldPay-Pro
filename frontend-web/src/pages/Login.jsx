@@ -141,10 +141,6 @@ const Login = () => {
             {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
-
-        <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Default test password: <code className="bg-gray-100 px-2 py-1 rounded">password123</code></p>
-        </div>
       </div>
     </div>
   );

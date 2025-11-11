@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
-const { requireAdmin, requireAdminOrManager, requireRole } = require('../middleware/roleCheck');
+const { requireAdmin, requireAdminOrManager, requireAdminManagerOrForeman, requireRole } = require('../middleware/roleCheck');
 const {
   getUsers,
   getUserById,
@@ -19,11 +19,21 @@ const {
 /**
  * GET /api/users
  * Get all users (with optional filters)
- * Admin and Manager only
+ * Admin, Manager, and Foreman (foremen can only see their own crew)
  */
-router.get('/', authenticateToken, requireAdminOrManager, async (req, res, next) => {
+router.get('/', authenticateToken, requireAdminManagerOrForeman, async (req, res, next) => {
   try {
-    const { role, crew_id, search } = req.query;
+    const userRole = req.user.customClaims?.role || req.user.role;
+    let { role, crew_id, search } = req.query;
+    
+    // Foremen can only see their own crew members
+    if (userRole === 'foreman') {
+      const foremanCrewId = req.user.crew_id || req.user.customClaims?.crew_id;
+      if (foremanCrewId) {
+        // Override crew_id filter to only show foreman's crew
+        crew_id = foremanCrewId;
+      }
+    }
 
     const filters = {
       role,

@@ -138,13 +138,38 @@ router.get('/records', authenticateToken, async (req, res, next) => {
     // Role-based filtering
     if (user.role === 'crew_member') {
       // Crew members can only see their own records
-      filters.employee_id = user.uid;
+      filters.employee_id = user.id || user.uid;
     } else if (user.role === 'foreman') {
       // Foremen can see their crew's records
       if (employee_id) {
         filters.employee_id = employee_id;
       } else {
-        filters.crew_id = user.uid; // Foreman's crew
+        // Use foreman's crew_id from user object, not uid
+        const foremanCrewId = user.crew_id || user.customClaims?.crew_id;
+        if (foremanCrewId) {
+          filters.crew_id = foremanCrewId;
+        }
+        // If crew_id is provided in query, use it (but still restricted to foreman's crew)
+        if (crew_id && foremanCrewId) {
+          // Allow if it matches foreman's crew (with flexible matching)
+          const normalizedQueryCrew = String(crew_id).trim().toLowerCase();
+          const normalizedForemanCrew = String(foremanCrewId).trim().toLowerCase();
+          
+          // Extract numbers for matching (CREW1 vs foreman1)
+          const queryNumMatch = normalizedQueryCrew.match(/\d+/);
+          const foremanNumMatch = normalizedForemanCrew.match(/\d+/);
+          
+          if (queryNumMatch && foremanNumMatch && queryNumMatch[0] === foremanNumMatch[0]) {
+            // Numbers match, use the query crew_id
+            filters.crew_id = crew_id;
+          } else if (normalizedQueryCrew === normalizedForemanCrew) {
+            // Exact match
+            filters.crew_id = crew_id;
+          } else {
+            // Use foreman's crew_id
+            filters.crew_id = foremanCrewId;
+          }
+        }
       }
     } else if (user.role === 'manager' || user.role === 'admin') {
       // Managers and admins can see all, with optional filtering

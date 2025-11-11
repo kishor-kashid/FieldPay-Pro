@@ -151,8 +151,8 @@ Output: Payroll Record with flags
   - `getUserStats()` - Statistics (total, by role)
   
 - ✅ 6 API endpoints with role-based access control:
-  - GET `/api/users` - List all users with filters (admin only)
-  - GET `/api/users/stats` - User statistics (admin only)
+  - GET `/api/users` - List all users with filters (admin, manager, and foreman - foremen see only their crew)
+  - GET `/api/users/stats` - User statistics (admin and manager only)
   - GET `/api/users/:id` - Get user details (admin or own profile)
   - POST `/api/users` - Create new user (admin only)
   - PATCH `/api/users/:id` - Update user (admin all fields, users own limited fields)
@@ -215,18 +215,18 @@ App.js
   │   │   ├── /admin/reports (Reports page)
   │   │   └── /admin/settings (Settings page)
   │   ├── /manager/* (ManagerLayout)
-  │   │   ├── /manager/dashboard (ManagerDashboard)
-  │   │   ├── /manager/teams (Teams page)
-  │   │   └── /manager/analytics (Analytics page)
+  │   │   ├── /manager/dashboard (ManagerDashboard - compliance & performance overview)
+  │   │   ├── /manager/teams (Teams page - crew comparison with date range)
+  │   │   └── /manager/analytics (Analytics page - simplified, dynamic data)
   │   └── /foreman/* (ForemanLayout)
-  │       ├── /foreman/dashboard (ForemanDashboard)
-  │       ├── /foreman/members (TeamMembers page)
-  │       ├── /foreman/schedule (Schedule page)
-  │       └── /foreman/history (History page)
+  │       ├── /foreman/dashboard (ForemanDashboard - compliance & performance overview)
+  │       ├── /foreman/members (TeamMembers page - real data, date range support)
+  │       ├── /foreman/schedule (Schedule page - date validation)
+  │       └── /foreman/history (History page - simplified, dynamic data)
   └── Components
       ├── Shared (NotificationBell, NotificationDropdown, Sidebar)
       ├── Admin (AnalyzePayrollWidget, ProcessPayrollWidget, PayrollTable, etc.)
-      ├── Manager (PerformanceChart, TeamCard, etc.)
+      ├── Manager (removed charts, simplified components)
       └── Foreman (MemberCard, ScheduleView, etc.)
 ```
 
