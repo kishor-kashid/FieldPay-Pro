@@ -6,7 +6,7 @@
  * Run this after creating the database tables.
  */
 
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const { supabase } = require('../config/database');
 
 // Sample users data

@@ -5,10 +5,37 @@
  * Initializes Firebase Admin SDK for server-side authentication operations.
  */
 
-require('dotenv').config();
+// Load environment variables (for local testing only, ignore errors in Cloud Functions)
+try {
+  require('dotenv').config({ path: '.env.local' });
+} catch (error) {
+  // Ignore dotenv errors in Cloud Functions environment
+}
+
 const admin = require('firebase-admin');
 
 let firebaseApp = null;
+
+/**
+ * Get environment variables from Firebase Functions config or process.env
+ * This allows the code to work both locally and in Firebase Cloud Functions
+ */
+function getEnvConfig() {
+  // Try to load Firebase Functions config (only available in Cloud Functions)
+  let functionsConfig = {};
+  try {
+    const functions = require('firebase-functions');
+    functionsConfig = functions.config();
+  } catch (error) {
+    // Not in Cloud Functions environment, use process.env
+  }
+
+  return {
+    projectId: functionsConfig.env?.firebase_project_id || process.env.FIREBASE_PROJECT_ID,
+    privateKey: functionsConfig.env?.firebase_private_key || process.env.FIREBASE_PRIVATE_KEY,
+    clientEmail: functionsConfig.env?.firebase_client_email || process.env.FIREBASE_CLIENT_EMAIL,
+  };
+}
 
 /**
  * Initialize Firebase Admin SDK
@@ -18,18 +45,20 @@ function initializeFirebase() {
     return firebaseApp;
   }
 
-  // Validate required environment variables
-  if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_PRIVATE_KEY || !process.env.FIREBASE_CLIENT_EMAIL) {
-    throw new Error('Firebase Admin SDK credentials not configured. Please set FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL in .env');
+  const config = getEnvConfig();
+
+  // Validate required configuration
+  if (!config.projectId || !config.privateKey || !config.clientEmail) {
+    throw new Error('Firebase Admin SDK credentials not configured. Please set FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, and FIREBASE_CLIENT_EMAIL in .env or Firebase config');
   }
 
   try {
     // Initialize Firebase Admin
     firebaseApp = admin.initializeApp({
       credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL
+        projectId: config.projectId,
+        privateKey: config.privateKey.replace(/\\n/g, '\n'),
+        clientEmail: config.clientEmail
       })
     });
 

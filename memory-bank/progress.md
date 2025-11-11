@@ -87,20 +87,34 @@
 - [ ] Error handling and validation (enhancements)
 - [ ] Responsive design (polish)
 
-### Mobile App (15% Complete)
+### Mobile App (85% Complete)
 - [x] Project setup (React Native + Expo) ✅
 - [x] Firebase client SDK configuration ✅
 - [x] Authentication context with AsyncStorage ✅
 - [x] Notification banner component ✅
-- [ ] Internationalization (i18n) setup (EN/ES)
-- [ ] Authentication UI (login/logout screens)
-- [ ] Navigation setup
-- [ ] Dashboard screen (yesterday's performance)
-- [ ] Breakdown screen (detailed pay calculation)
-- [ ] History screen (30-day performance)
-- [ ] Profile screen (settings, language toggle)
-- [ ] Help/FAQ screen
-- [ ] Bilingual content
+- [x] Internationalization (i18n) setup (EN/ES) ✅
+- [x] Translation files (en.json, es.json) ✅
+- [x] Language context and storage utilities ✅
+- [x] Language toggle component ✅
+- [x] Authentication UI (login screen) ✅
+- [x] Navigation setup (Stack Navigator, Bottom Tab Navigator) ✅
+- [x] Auth Navigator (login screen) ✅
+- [x] Main Navigator (Home, History, Profile tabs) ✅
+- [x] API service with authentication headers ✅
+- [x] Auth service for Firebase integration ✅
+- [x] Expo SDK upgrade (49 → 54) ✅
+- [x] App.js with proper providers (ErrorBoundary, LanguageProvider, AuthProvider) ✅
+- [x] Formatters utility (currency, date, percentage, hours) ✅
+- [x] ScoreCard component (star rating, motivational messages) ✅
+- [x] PayoutBreakdown component (base pay, penalties, total) ✅
+- [x] QuickStats component (hours, jobs, on time, lunch) ✅
+- [x] Dashboard screen (yesterday's performance with full functionality) ✅
+- [x] Breakdown screen (detailed pay calculation, base pay, penalties, job breakdown) ✅
+- [x] History screen (30-day performance trend, statistics, history cards) ✅
+- [x] Profile screen (user info, language toggle, settings) ✅
+- [x] Help/FAQ screen (collapsible sections, bilingual content) ✅
+- [x] Full bilingual content implementation (EN/ES translations complete) ✅
+- [ ] Notifications screen (in-app notifications)
 
 ### Infrastructure (60% Complete)
 - [x] Supabase database setup ✅
@@ -133,7 +147,9 @@
 - ✅ PR #10: Admin Dashboard - **COMPLETED**
 - ✅ PR #11: Manager Dashboard - **COMPLETED**
 - ✅ PR #12: Foreman Dashboard - **COMPLETED**
-- ⏳ PR #13: Crew Member Mobile Screens - **NEXT**
+- ✅ PR #13: Mobile App i18n Setup - **COMPLETED**
+- ✅ PR #14: Mobile App Authentication & Navigation - **COMPLETED**
+- ⏳ PR #15: Mobile App - Crew Member Dashboard - **NEXT**
 
 ### PR Status
 - **PR #1**: ✅ **COMPLETED** - Project Setup & Initial Configuration
@@ -148,13 +164,26 @@
 - **PR #10**: ✅ **COMPLETED** - Admin Dashboard
 - **PR #11**: ✅ **COMPLETED** - Manager Dashboard
 - **PR #12**: ✅ **COMPLETED** - Foreman Dashboard
-- **PR #13**: ⏳ **NEXT** - Crew Member Mobile Screens
-- **PR #14-25**: Not started
+- **PR #13**: ✅ **COMPLETED** - Mobile App i18n Setup
+- **PR #14**: ✅ **COMPLETED** - Mobile App Authentication & Navigation
+- **PR #15**: ✅ **COMPLETED** - Mobile App - Crew Member Dashboard
+- **PR #16**: ✅ **COMPLETED** - Mobile App - Breakdown Screen
+- **PR #17**: ✅ **COMPLETED** - Mobile App - History Screen
+- **PR #18**: ✅ **COMPLETED** - Mobile App - Profile & Settings Screen
+- **PR #19**: ✅ **COMPLETED** - Mobile App - Notifications (NotificationBanner, NotificationBadge)
+- **PR #17-23**: Not started
+- **PR #24**: ✅ **COMPLETED** - Deployment Setup (Backend deployed to Firebase Cloud Functions)
+- **PR #25**: Not started
 
 ## Known Issues
 - ✅ **RESOLVED**: Admin login logout issue - Fixed by storing Firebase token as `authToken` in localStorage for axios interceptor
 - ✅ **RESOLVED**: Crew member web access - Restricted with invalid credentials message
 - ✅ **RESOLVED**: Notification API errors - Fixed by using `req.user.id` instead of `req.user.uid` in backend routes
+- ✅ **RESOLVED**: Language update 403 error - Fixed by removing unnecessary `requireOwnDataOrAdmin()` middleware from `/auth/language` endpoint
+- ✅ **RESOLVED**: Mobile app data parsing - Fixed API response parsing to correctly extract records from `response.data.records` or `response.data.data`
+- ✅ **RESOLVED**: Payroll processing 400 error - Fixed by adding fallback to fetch `user.id` from database if missing from auth middleware
+- ✅ **RESOLVED**: Payroll processing 0 records - Fixed mock data generation to work in any environment (removed NODE_ENV check)
+- ✅ **RESOLVED**: Payroll processing response mismatch - Fixed by adding `recordsProcessed` and `notificationsSent` fields to match frontend expectations
 
 ## Completed Milestones
 1. ✅ Project requirements gathering and documentation
@@ -173,12 +202,24 @@
 14. ✅ **PR #10: Admin Dashboard** (Dashboard page, Analyze/Process widgets, quick actions, stats, all admin pages)
 15. ✅ **PR #11: Manager Dashboard** (Dashboard page, Teams page, Analytics page)
 16. ✅ **PR #12: Foreman Dashboard** (Dashboard page, Team Members page, Schedule page, History page)
+17. ✅ **PR #13: Mobile App i18n Setup** (Translation files, react-i18next config, LanguageContext, LanguageToggle)
+18. ✅ **PR #14: Mobile App Authentication & Navigation** (React Navigation, LoginScreen, AuthContext, API service)
+19. ✅ **PR #15: Mobile App - Crew Member Dashboard** (ScoreCard, PayoutBreakdown, QuickStats, formatters utility, DashboardScreen)
+20. ✅ **PR #16: Mobile App - Breakdown Screen** (detailed pay calculation, base pay, penalties, job breakdown, JobBreakdownCard component)
+21. ✅ **PR #17: Mobile App - History Screen** (30-day performance trend, PerformanceTrendChart, HistoryCard, statistics)
+22. ✅ **PR #18: Mobile App - Profile & Settings Screen** (user profile, language toggle, help screen, FAQ with collapsible sections)
+23. ✅ **PR #24: Deployment Setup** (Firebase config, Cloud Functions adaptation, deployment scripts, comprehensive documentation)
+24. ✅ **PR #19: Mobile App - Notifications** (NotificationBanner component, NotificationBadge in MainNavigator, notification polling, navigation integration)
+25. ✅ **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
+26. ✅ **Payroll Processing Fixes**: Fixed 400 error (user.id fallback), 0 records issue (mock data generation), response structure (recordsProcessed, notificationsSent), notification counting
+    - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+    - Fixed route paths (removed double `/api` prefix)
+    - Environment variables configured (env.*, supabase.* namespaces)
+    - Local development uses `.env.local` (ignored by Firebase)
+    - Runtime: Node.js 20
 
 ## Next Milestones
-1. ⏳ PR #13: Crew member mobile screens (dashboard, breakdown, history, profile, help)
-2. ⏳ PR #14: CSV upload functionality
-3. ⏳ PR #15: Charts and analytics enhancements
-4. ⏳ PR #16-25: Testing, deployment, polish
+1. ⏳ PR #20-25: CSV upload, charts, testing, deployment, polish
 
 ## Testing Status
 - ✅ **Unit Tests**: 65 tests passing across 5 test files
@@ -194,8 +235,14 @@
 - ⏳ E2E tests planned for future
 
 ## Deployment Status
-- Not deployed
-- Deployment setup planned for PR #24
+- ✅ **Backend Deployed**: Firebase Cloud Functions
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Runtime: Node.js 20
+  - Routes fixed: Removed double `/api` prefix (routes now: `/auth`, `/payroll`, `/notifications`, `/users`)
+  - Environment variables: Using Firebase Functions config (env.*, supabase.* namespaces)
+  - Local development: Uses `.env.local` file (ignored by Firebase deployment)
+- ⏳ **Frontend**: Not yet deployed (Firebase Hosting ready)
+- ⏳ **Mobile App**: Development only (Expo Go testing)
 
 ## Performance Metrics
 - Target: Process ~50 employees in <10 minutes
@@ -215,11 +262,14 @@
 
 ## Notes
 - All development follows the 25 PR structure
-- Mock APIs implemented and ready for use (set USE_MOCK=true in .env)
+- Mock APIs implemented and ready for use (set USE_MOCK=true in .env.local)
+- **Backend Deployment**: Successfully deployed to Firebase Cloud Functions at `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+- **Environment Variables**: Local development uses `.env.local` (ignored by Firebase deployment), production uses Firebase Functions config
+- **Route Paths**: Fixed double `/api` prefix issue (routes: `/auth`, `/payroll`, `/notifications`, `/users`)
 - Real API integration is future work (switch by setting USE_MOCK=false)
 - Bilingual support is critical for mobile app success
 - Database users seeded: 8 test users (admin, manager, 2 foremen, 4 crew members)
-- Firebase users can be auto-created with `CREATE_FIREBASE_USERS=true` in .env
+- Firebase users can be auto-created with `CREATE_FIREBASE_USERS=true` in .env.local
 - Default test password: `password123` (development only)
 - Authentication fully functional: JWT verification, role-based access, profile management
 - Mock APIs available at `/mock/service-autopilot/*` and `/mock/paychex/*` (10 endpoints total)
@@ -271,4 +321,41 @@
 - **MemberDetailModal**: Chart.js dependency removed (fixes "linear scale not registered" error), uses real performance data, dynamic strengths/weaknesses based on actual metrics, contact information display
 - **Backend Crew Matching**: Enhanced crew_id matching in payroll service to handle CREW1/foreman1, CREW2/foreman2 mismatches using number extraction and case-insensitive matching
 - **Backend Foreman Access**: Updated payroll routes to use `user.crew_id` instead of `user.uid` for foremen filtering
+- **Mobile App i18n Setup (PR #13)**: English and Spanish translation files, react-i18next configuration, LanguageContext, LanguageToggle component, AsyncStorage persistence
+- **Mobile App Authentication & Navigation (PR #14)**: React Navigation setup, AuthNavigator, MainNavigator with bottom tabs, LoginScreen, AuthContext, API service, auth service
+- **Mobile App SDK Upgrade**: Upgraded from Expo SDK 49 to SDK 54, removed webpack (uses Metro), updated all dependencies, fixed babel-preset-expo
+- **Mobile App Documentation**: Created COMMANDS.md with comprehensive command reference for mobile development
+- **Mobile App Cleanup**: Removed test files, restored App.js with proper provider structure
+- **Mobile App Dashboard (PR #15)**: Full crew member dashboard implementation
+  - Created `formatters.js` utility with currency, date, percentage, and hours formatters
+  - Created `ScoreCard.js` component with 1-5 star rating based on efficiency (retention percentage)
+  - Created `PayoutBreakdown.js` component displaying base pay, penalties, and total with currency formatting
+  - Created `QuickStats.js` component showing hours worked, jobs completed, on-time status, and lunch compliance
+  - Updated `DashboardScreen.js` with full functionality: fetch yesterday's payroll data, pull-to-refresh, error handling, loading states
+  - Updated translations (en.json, es.json) with motivational messages: excellent, greatJob, goodWork, keepTrying, needsImprovement
+  - Efficiency calculation: (Total Pay / Base Pay) × 100 (shows retention percentage, capped at 100%)
+  - API integration: Uses existing `payrollAPI.getYesterdayRecord()` method
+  - Star rating thresholds: 5★ (≥100%), 4★ (≥90%), 3★ (≥75%), 2★ (≥60%), 1★ (<60%)
+  - Fixed API response parsing: Correctly extracts records from `response.data.records` or `response.data.data`
+  - Updated dashboard message: "No performance data available for yesterday"
+- **Mobile App Breakdown Screen (PR #16)**: Detailed pay calculation screen
+  - Created `BreakdownScreen.js` with base pay calculation, penalties section, job breakdown
+  - Created `JobBreakdownCard.js` component for individual job details (budgeted vs actual hours, efficiency)
+  - Navigation from Dashboard and History screens
+  - Supports fetching by recordId, date, or defaults to yesterday
+  - Full bilingual support with translations
+- **Mobile App History Screen (PR #17)**: 30-day performance history
+  - Created `HistoryScreen.js` with performance trend chart and history list
+  - Created `PerformanceTrendChart.js` component (bar chart showing last 7 days)
+  - Created `HistoryCard.js` component for individual day's performance
+  - Statistics: Average, best day, total earned
+  - Sort by date descending (most recent first)
+  - Navigation to Breakdown screen from history cards
+- **Mobile App Profile & Settings (PR #18)**: User profile and help screen
+  - Created `ProfileScreen.js` with user info, language toggle, settings, logout
+  - Created `HelpScreen.js` with collapsible FAQ sections (bilingual)
+  - Language toggle integrated with backend API (updates user preference)
+  - Fixed language update endpoint (removed `requireOwnDataOrAdmin` middleware causing 403 error)
+  - Updated `LanguageToggle.js` to support controlled mode (for Profile screen)
+  - Updated navigation to include nested Stack Navigators for proper header/back button support
 

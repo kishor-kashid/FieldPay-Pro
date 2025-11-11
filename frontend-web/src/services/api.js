@@ -49,7 +49,7 @@ export const authAPI = {
 // Payroll APIs
 export const payrollAPI = {
   analyze: (date) => api.post('/payroll/analyze', { date }),
-  process: (date) => api.post('/payroll/process', { date }),
+  process: (date, reprocess = false) => api.post('/payroll/process', { date, reprocess }),
   getRecords: (params) => api.get('/payroll/records', { params }),
   getRecord: (id) => api.get(`/payroll/records/${id}`),
   approveRecord: (id, notes) => api.put(`/payroll/records/${id}/approve`, { admin_notes: notes }),

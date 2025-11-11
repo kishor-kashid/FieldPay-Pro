@@ -15,6 +15,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth } from '../config/firebase';
 import axios from 'axios';
+import { setAuthToken } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -93,12 +94,25 @@ export function AuthProvider({ children }) {
    * Login with email and password
    */
   async function login(email, password) {
+    if (!auth) {
+      const errorMessage = 'Firebase authentication is not configured. Please check your .env file.';
+      setError(errorMessage);
+      throw new Error(errorMessage);
+    }
+
     try {
       setError(null);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       
       // Get user profile from backend
       const idToken = await getIdToken(userCredential.user);
+      
+      // Set token for API requests
+      setAuthToken(idToken);
+      
+      // Store token
+      await AsyncStorage.setItem(AUTH_TOKEN_KEY, idToken);
+      
       await fetchUserProfile(idToken);
       
       return userCredential.user;
@@ -113,10 +127,22 @@ export function AuthProvider({ children }) {
    * Logout current user
    */
   async function logout() {
+    if (!auth) {
+      // If auth is not configured, just clear local state
+      setUserProfile(null);
+      setAuthToken(null);
+      await clearStoredProfile();
+      return;
+    }
+
     try {
       setError(null);
       await signOut(auth);
       setUserProfile(null);
+      
+      // Clear API token
+      setAuthToken(null);
+      
       await clearStoredProfile();
     } catch (error) {
       const errorMessage = error.message || 'Logout failed';
@@ -181,22 +207,41 @@ export function AuthProvider({ children }) {
    * Get current user's ID token
    */
   async function getToken() {
-    if (!currentUser) return null;
+    if (!currentUser) {
+      // Try to get stored token
+      const storedToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      if (storedToken) {
+        setAuthToken(storedToken);
+      }
+      return storedToken;
+    }
     try {
       const token = await getIdToken(currentUser);
       // Store token for offline use
       await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+      // Set token for API requests
+      setAuthToken(token);
       return token;
     } catch (error) {
       console.error('Failed to get ID token:', error);
       // Try to get stored token
       const storedToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      if (storedToken) {
+        setAuthToken(storedToken);
+      }
       return storedToken;
     }
   }
 
   // Listen to auth state changes
   useEffect(() => {
+    // If Firebase auth is not configured, skip auth state listener
+    if (!auth) {
+      console.warn('⚠️ Firebase auth not configured. Skipping auth state listener.');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       
@@ -204,6 +249,9 @@ export function AuthProvider({ children }) {
         // Fetch user profile when user logs in
         try {
           const idToken = await getIdToken(user);
+          // Set token for API requests
+          setAuthToken(idToken);
+          await AsyncStorage.setItem(AUTH_TOKEN_KEY, idToken);
           await fetchUserProfile(idToken);
         } catch (error) {
           console.error('Failed to fetch profile on auth state change:', error);
@@ -212,6 +260,8 @@ export function AuthProvider({ children }) {
         }
       } else {
         setUserProfile(null);
+        // Clear API token
+        setAuthToken(null);
         await clearStoredProfile();
       }
       

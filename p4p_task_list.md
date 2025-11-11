@@ -1089,39 +1089,23 @@ Enhance all dashboards with interactive charts and data visualizations.
 
 ### Tasks
 
-#### Chart Components
-- [ ] Create performance trend chart
-  - **Files**: `frontend-web/src/components/PerformanceTrendChart.jsx`
-  - Line chart showing performance over time
-  - Use Chart.js and react-chartjs-2
-  - Responsive design
-  
-- [ ] Create crew comparison chart
-  - **Files**: `frontend-web/src/components/CrewComparisonChart.jsx`
-  - Bar chart comparing crews
-  - Show efficiency, total pay, etc.
-  
-- [ ] Create efficiency distribution chart
-  - **Files**: `frontend-web/src/components/EfficiencyDistributionChart.jsx`
-  - Histogram of efficiency scores
-  - Show distribution across company
-
 #### Analytics Integration
-- [ ] Add charts to admin dashboard
+- [ ] Add data-driven analytics to admin dashboard
   - **Files**: `frontend-web/src/pages/admin/Dashboard.jsx`
-  - Performance trend (last 7 days)
-  - Today's summary stats
+  - Enhanced summary stats based on real data
+  - Data-driven insights
   
-- [ ] Add charts to manager analytics
+- [ ] Add data-driven analytics to manager analytics
   - **Files**: `frontend-web/src/pages/manager/Analytics.jsx`
-  - Multiple chart types
-  - Crew comparisons
-  - Performance heatmaps
+  - Data-driven insights and metrics
+  - Real-time data analysis
   
-- [ ] Add charts to foreman history
+- [ ] Add data-driven analytics to foreman history
   - **Files**: `frontend-web/src/pages/foreman/History.jsx`
-  - Team performance trend
-  - Individual member comparisons
+  - Data-driven performance metrics
+  - Real-time historical data analysis
+
+**Note**: Chart components (PerformanceTrendChart, CrewComparisonChart, EfficiencyDistributionChart) were removed. All analytics should be data-driven using real data from APIs.
 
 ---
 

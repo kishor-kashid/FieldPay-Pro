@@ -2,10 +2,16 @@
   "name": "fieldpay-pro-backend",
   "version": "1.0.0",
   "description": "Clean Scapes P4P System - Backend API",
-  "main": "server.js",
+  "main": "index.js",
+  "engines": {
+    "node": "20"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
+    "serve": "firebase emulators:start --only functions",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
     "test": "jest",
     "seed": "node utils/seedData.js",
     "create-firebase-users": "node utils/createFirebaseUsers.js",
@@ -24,6 +30,7 @@
     "dotenv": "^16.3.1",
     "node-cron": "^3.0.2",
     "firebase-admin": "^11.11.0",
+    "firebase-functions": "^4.5.0",
     "@supabase/supabase-js": "^2.38.4",
     "csv-parser": "^3.0.0",
     "bcrypt": "^5.1.1",
