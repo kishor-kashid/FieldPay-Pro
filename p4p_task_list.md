@@ -169,6 +169,21 @@ Implement Firebase Authentication for user login and role-based access control.
   - GET /api/auth/profile
   - PATCH /api/auth/language
 
+#### Firebase User Creation Script
+- [ ] Create Firebase user creation script
+  - **Files**: `backend/utils/createFirebaseUsers.js`
+  - Read users from database
+  - Create Firebase Auth accounts for each user
+  - Set default password: "password123" (for development/testing)
+  - Link Firebase UID to database user record
+  - Handle existing users gracefully (skip if already exists)
+  
+- [ ] Add Firebase user creation to seed script
+  - **Files**: `backend/utils/seedData.js`
+  - Optionally create Firebase users after seeding database
+  - Use environment variable to enable/disable: CREATE_FIREBASE_USERS=true
+  - Document default password in script comments
+
 #### Authentication Context
 - [ ] Create auth context for web
   - **Files**: `frontend-web/src/context/AuthContext.js`

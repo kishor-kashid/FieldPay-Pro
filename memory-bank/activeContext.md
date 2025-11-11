@@ -1,43 +1,46 @@
 # Active Context: Clean Scapes P4P System
 
 ## Current Work Focus
-**Phase**: Project Initialization  
-**Status**: Setting up project structure and documentation  
-**Date**: Initial setup
+**Phase**: Core Infrastructure Development  
+**Status**: Authentication and database setup complete, ready for mock APIs  
+**Date**: After PR #3 completion
 
 ## Recent Changes
-- Created Memory Bank structure
-- Set up project documentation (PRD, task list, architecture diagram)
-- Established project rules and patterns
+- ✅ **PR #1 Completed**: Project setup (backend, web, mobile initialized)
+- ✅ **PR #2 Completed**: Database schema created (6 tables, migrations, seed data)
+- ✅ **PR #3 Completed**: Firebase Authentication (middleware, routes, contexts, RBAC)
+- ✅ Database users seeded (8 test users)
+- ✅ Firebase user creation automation script created
+- ✅ Authentication system fully functional
 
 ## Current Tasks
 1. ✅ Read and understand project requirements
 2. ✅ Create Memory Bank structure
-3. 🔄 Set up .cursor/rules/ files
-4. ⏳ Begin PR #1: Project Setup & Initial Configuration
+3. ✅ Set up .cursor/rules/ files
+4. ✅ PR #1: Project Setup & Initial Configuration
+5. ✅ PR #2: Database Schema & Configuration
+6. ✅ PR #3: Firebase Authentication Setup
+7. ⏳ **NEXT**: PR #4: Mock External APIs
 
 ## Next Steps
 
-### Immediate (PR #1)
-1. Initialize Node.js backend project
-2. Initialize React web frontend project
-3. Initialize React Native mobile app with Expo
-4. Set up project folder structures
-5. Create .gitignore files
-6. Initialize Git repository
+### Immediate (PR #4 - NEXT)
+1. Create mock Service Autopilot API routes
+2. Create mock Paychex API routes
+3. Implement data service abstraction layer
+4. Test mock API endpoints
 
-### Short-term (PRs #2-5)
-1. Set up Supabase database schema
-2. Configure Firebase Authentication
-3. Create mock external APIs
-4. Implement P4P calculation engine
-5. Build payroll processing routes
+### Short-term (PRs #5-8)
+1. ⏳ Implement P4P calculation engine
+2. ⏳ Build payroll processing routes (analyze & process)
+3. ⏳ Implement payroll execution logging
+4. ⏳ Build notifications system
 
-### Medium-term (PRs #6-12)
-1. Implement scheduled jobs (cron)
-2. Build notifications system
-3. Create user management
-4. Build web dashboards (Admin, Manager, Foreman)
+### Medium-term (PRs #9-15)
+1. ⏳ Create user management
+2. ⏳ Build web dashboards (Admin, Manager, Foreman)
+3. ⏳ Implement payroll processing widgets (Analyze & Process)
+4. ⏳ Add CSV upload functionality
 
 ### Long-term (PRs #13-25)
 1. Build mobile app (bilingual)
@@ -72,15 +75,20 @@
 - **Backend Deployment**: Firebase Cloud Functions
 - **Frontend Deployment**: Firebase Hosting
 - **Payroll Processing**: Manual trigger by admins (no automatic scheduling)
+  - Two-button approach: "Analyze Payroll" (preview) and "Process Payroll" (commit)
+  - Duplicate prevention with reprocess option
 - **Mobile**: Development only - tested on Expo Go (no production build)
 - **Deployment Timeline**: After full development and local testing complete
+- **Database**: Supabase PostgreSQL with 6 tables (users, jobs, timesheets, payroll_records, notifications, execution_logs)
+- **Authentication**: Firebase Auth with JWT tokens, role-based access control
+- **Test Users**: 8 users seeded (admin, manager, 2 foremen, 4 crew) with default password `password123`
 
 ## Current Blockers
 None at this time.
 
 ## Active Questions
-1. What hosting solution for backend? (Heroku, AWS, Railway, etc.)
-2. When to switch from mock to real APIs?
+1. ✅ **RESOLVED**: Backend hosting - Firebase Cloud Functions
+2. When to switch from mock to real APIs? (After MVP)
 3. What level of analytics is needed for MVP?
 4. Should we implement offline support in mobile app (v2)?
 
@@ -96,7 +104,12 @@ None at this time.
 - Each PR should be focused and testable
 - Mock APIs should be used until real integrations are ready
 - Bilingual support (EN/ES) is critical for mobile app
-- Daily cron job at 10:30 AM is a core requirement
+- Payroll processing is manual (admin-triggered), not automatic
+- Two-button payroll approach: Analyze (preview) and Process (commit)
+- Duplicate payroll prevention with UNIQUE constraint on (employee_id, date)
+- Notifications only sent after "Process Payroll", not "Analyze Payroll"
+- Firebase users can be auto-created with `CREATE_FIREBASE_USERS=true` in backend/.env
+- Test credentials: All users have password `password123` (see docs/TEST_CREDENTIALS.md)
 
 ## Communication Notes
 - Project is for Clean Scapes ($7M landscaping company)

@@ -31,11 +31,13 @@
 - **State Management**: React Context API
 
 ### Infrastructure
-- **Database Hosting**: Supabase
-- **Authentication Service**: Firebase Authentication
-- **File Storage**: Firebase Storage (for CSV uploads)
+- **Database Hosting**: Supabase (PostgreSQL)
+- **Database Schema**: 6 tables (users, jobs, timesheets, payroll_records, notifications, execution_logs)
+- **Authentication Service**: Firebase Authentication (Email/Password)
+- **Authentication Backend**: Firebase Admin SDK
+- **File Storage**: Firebase Storage (for CSV uploads, planned)
 - **Web Hosting**: Firebase Hosting (planned)
-- **Backend Hosting**: TBD (Node.js server)
+- **Backend Hosting**: Firebase Cloud Functions (planned)
 
 ## Development Setup
 
@@ -57,12 +59,16 @@ NODE_ENV=development
 
 # Database
 SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_key
+SUPABASE_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Firebase
+# Firebase Admin SDK
 FIREBASE_PROJECT_ID=your_project_id
-FIREBASE_PRIVATE_KEY=your_private_key
-FIREBASE_CLIENT_EMAIL=your_client_email
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com
+
+# Firebase User Creation (optional, for development)
+CREATE_FIREBASE_USERS=true
 
 # External APIs
 USE_MOCK=true
@@ -71,9 +77,9 @@ PAYCHEX_API_URL=
 SERVICE_AUTOPILOT_API_KEY=
 PAYCHEX_API_KEY=
 
-# Cron
-ENABLE_CRON=true
-CRON_SCHEDULE="30 10 * * *"  # 10:30 AM daily
+# Optional Testing Cron (development only)
+ENABLE_CRON=false
+CRON_SCHEDULE="30 10 * * *"  # 10:30 AM daily (for testing only)
 ```
 
 #### Web Frontend (.env)
@@ -87,9 +93,12 @@ REACT_APP_FIREBASE_PROJECT_ID=
 #### Mobile App (.env)
 ```env
 EXPO_PUBLIC_API_URL=http://localhost:3000/api
-EXPO_PUBLIC_FIREBASE_API_KEY=
-EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=
-EXPO_PUBLIC_FIREBASE_PROJECT_ID=
+EXPO_PUBLIC_FIREBASE_API_KEY=your_firebase_api_key
+EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789
+EXPO_PUBLIC_FIREBASE_APP_ID=1:123456789:web:abc123
 ```
 
 ## Project Structure

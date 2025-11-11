@@ -44,13 +44,18 @@ Request → Auth Middleware → Role Check → Validation → Route Handler → 
 **Rationale**: Easy switching between development (mock) and production (real) APIs
 
 ### 4. Role-Based Access Control (RBAC)
-**Pattern**: Four-tier role system
+**Pattern**: Four-tier role system with middleware protection
 - **admin**: Full system access, approve payroll, manage users
 - **manager**: Analytics and reports, company-wide view
 - **foreman**: Team management, crew member details
 - **crew_member**: Own performance data only (mobile app)
 
-**Implementation**: Middleware checks user role before route access
+**Implementation**:
+- `authenticateToken` middleware verifies Firebase JWT tokens
+- `roleCheck.js` provides role-based middleware (`requireAdmin`, `requireRole`, etc.)
+- Custom claims in Firebase tokens store role information
+- Database users table stores role for server-side validation
+- Middleware checks user role before route access
 
 ### 5. Calculation Engine Pattern
 **Pattern**: Rule-based calculation with anomaly detection
@@ -82,14 +87,22 @@ Output: Payroll Record with flags
 
 **Rationale**: Keep all users informed without manual communication, but only when data is actually saved
 
-### 7. Scheduled Job Pattern
-**Pattern**: Cron-based automated processing
-- Daily execution at 10:30 AM
-- Processes yesterday's payroll data
-- Error handling and logging
-- Can be disabled via environment variable
+### 7. Payroll Processing Pattern
+**Pattern**: Manual admin-triggered payroll processing (no automatic scheduling)
+- Two-button approach:
+  - **Analyze Payroll**: Preview calculations without saving (safe to run multiple times)
+  - **Process Payroll**: Commit to database (with duplicate prevention)
+- Duplicate prevention: UNIQUE constraint on `(employee_id, date)` in `payroll_records` table
+- Reprocess functionality: Admin can delete existing records and reprocess
+- Execution logging: All executions logged in `execution_logs` table
+- Optional testing cron: `node-cron` available for development testing (ENABLE_CRON=true)
+- Notifications: Only sent after "Process Payroll" completes, not after "Analyze Payroll"
 
-**Implementation**: `node-cron` library with `cronService.js`
+**Implementation**: 
+- `payrollService.analyzePayroll()` - Preview calculations
+- `payrollService.processPayroll()` - Commit to database
+- `executionLogService` - Track processing history
+- Optional `cronService.js` for development testing only
 
 ## Component Relationships
 
@@ -157,12 +170,16 @@ App.js
 ## Data Flow Patterns
 
 ### Payroll Processing Flow
-1. **Trigger**: Cron job (10:30 AM) or manual API call
-2. **Data Collection**: `dataService` fetches from Service Autopilot and Paychex
-3. **Calculation**: `calculationService` processes each employee
-4. **Storage**: `payrollService` saves results to Supabase
-5. **Notifications**: `notificationService` creates role-specific notifications
-6. **Response**: API returns processing summary
+1. **Trigger**: Admin clicks "Process Payroll" button (manual, no automatic scheduling)
+2. **Analyze Step** (optional preview): `payrollService.analyzePayroll()` calculates without saving
+3. **Process Step**: `payrollService.processPayroll()` commits to database
+4. **Data Collection**: `dataService` fetches from Service Autopilot and Paychex
+5. **Calculation**: `calculationService` processes each employee
+6. **Duplicate Check**: Verify no existing records for date (UNIQUE constraint)
+7. **Storage**: `payrollService` saves results to Supabase
+8. **Execution Logging**: Log execution to `execution_logs` table
+9. **Notifications**: `notificationService` creates role-specific notifications (only after Process, not Analyze)
+10. **Response**: API returns processing summary
 
 ### User Authentication Flow
 1. **Login**: User authenticates via Firebase Auth

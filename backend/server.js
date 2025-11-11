@@ -24,8 +24,8 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes will be added here
-// app.use('/api/auth', require('./routes/auth'));
+// API routes
+app.use('/api/auth', require('./routes/auth'));
 // app.use('/api/payroll', require('./routes/payroll'));
 // app.use('/api/users', require('./routes/users'));
 // app.use('/api/notifications', require('./routes/notifications'));
@@ -55,11 +55,31 @@ app.use((req, res) => {
   });
 });
 
+// Test database connection on startup
+const { testConnection } = require('./config/database');
+
+// Initialize Firebase Admin SDK on startup
+try {
+  const { initializeFirebase } = require('./config/firebase');
+  initializeFirebase();
+} catch (error) {
+  console.log('⚠️  Firebase Admin SDK: Not initialized (credentials may be missing)');
+  console.log('   This is OK if you haven\'t set up Firebase yet.');
+}
+
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔧 Mock APIs: ${process.env.USE_MOCK === 'true' ? 'Enabled' : 'Disabled'}`);
+  
+  // Test database connection
+  const dbConnected = await testConnection();
+  if (dbConnected) {
+    console.log(`✅ Database connection: Connected`);
+  } else {
+    console.log(`⚠️  Database connection: Check configuration (tables may not exist yet)`);
+  }
 });
 
 module.exports = app;
