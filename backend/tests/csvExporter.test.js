@@ -99,9 +99,10 @@ describe('CSV Exporter', () => {
       expect(csv).toContain('Employee Name');
       expect(csv).toContain('Date');
       expect(csv).toContain('Base Pay');
-      expect(csv).toContain('Efficiency');
-      expect(csv).toContain('Performance Bonus');
       expect(csv).toContain('Late Penalty');
+      expect(csv).toContain('Long Lunch Penalty');
+      expect(csv).toContain('Total Penalties');
+      expect(csv).toContain('Total Pay');
     });
 
     test('should include data rows', () => {

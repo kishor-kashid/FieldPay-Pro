@@ -185,11 +185,22 @@ function calculateEmployeePayroll(employee, jobs) {
     const totalPenalties = latePenalty.amount + longLunchPenalty.amount;
     
     // Calculate total pay (base pay minus penalties only)
+    // 
+    // BUSINESS RULE: Simplified P4P Formula
     // Formula: totalPay = basePay - totalPenalties
-    // NO bonuses, NO efficiency calculations, NO other additions
+    // 
+    // This is a simplified calculation that:
+    // - NO bonuses (efficiency bonuses removed)
+    // - NO efficiency multipliers
+    // - Only applies penalties for:
+    //   - Late clock-in (>7:00 AM): 5% of base pay
+    //   - Long lunch (>1 hour): 2% of base pay
+    // 
+    // The total pay can never be negative (minimum is 0)
     let totalPay = basePay - totalPenalties;
     
     // Ensure total pay is not negative (minimum is 0)
+    // This prevents negative payouts even if penalties exceed base pay
     if (totalPay < 0) {
       totalPay = 0;
     }
@@ -257,13 +268,16 @@ function calculateBatchPayroll(employees, jobs, assignments) {
   let anomalyCount = 0;
   
   // Group assignments by employee
+  // This creates a mapping of employee_id -> array of jobs they worked on
+  // This allows us to calculate payroll per employee with their job breakdown
   const assignmentsByEmployee = {};
   if (assignments && assignments.length > 0) {
     assignments.forEach(assignment => {
       if (!assignmentsByEmployee[assignment.employee_id]) {
         assignmentsByEmployee[assignment.employee_id] = [];
       }
-      // Find the full job data
+      // Find the full job data from the jobs array
+      // This links the assignment to the complete job details (location, service_type, etc.)
       const job = jobs.find(j => j.job_id === assignment.job_id);
       if (job) {
         assignmentsByEmployee[assignment.employee_id].push(job);

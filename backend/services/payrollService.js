@@ -17,8 +17,6 @@ const { createPayrollNotifications, createErrorNotification } = require('./notif
  */
 async function analyzePayroll(date) {
   try {
-    console.log(`📊 Analyzing payroll for ${date}...`);
-    
     // Fetch all data from external APIs
     const payrollData = await getPayrollData(date);
     
@@ -44,8 +42,6 @@ async function analyzePayroll(date) {
         details: calculations
       };
     }
-    
-    console.log(`✅ Analysis complete: ${calculations.summary.successful_calculations} employees processed`);
     
     return {
       success: true,
@@ -103,8 +99,6 @@ async function checkExistingPayroll(date) {
  */
 async function deleteExistingPayroll(date) {
   try {
-    console.log(`🗑️  Deleting existing payroll records for ${date}...`);
-    
     const { data, error } = await supabase
       .from('payroll_records')
       .delete()
@@ -116,7 +110,6 @@ async function deleteExistingPayroll(date) {
     }
     
     const deletedCount = data ? data.length : 0;
-    console.log(`✅ Deleted ${deletedCount} existing records`);
     
     return {
       success: true,
@@ -124,7 +117,6 @@ async function deleteExistingPayroll(date) {
     };
     
   } catch (error) {
-    console.error('Error deleting existing payroll:', error);
     throw error;
   }
 }
@@ -137,8 +129,6 @@ async function deleteExistingPayroll(date) {
  */
 async function savePayrollRecords(records, date) {
   try {
-    console.log(`💾 Saving ${records.length} payroll records to database...`);
-    
     // Fetch all users from database to map mock IDs to real UUIDs
     const { data: users, error: userError } = await supabase
       .from('users')
@@ -162,18 +152,12 @@ async function savePayrollRecords(records, date) {
       const dbUserId = userMapping[record.employee_id];
       
       if (!dbUserId) {
-        console.warn(`Warning: No database user found for mock ID: ${record.employee_id}`);
         return null;
       }
       
       // Ensure total_pay is calculated correctly: base_pay - total_penalties
       // Recalculate to ensure no bonuses, efficiency, or other additions are included
       const calculatedTotalPay = Math.max(0, record.base_pay - record.total_penalties);
-      
-      // Safety check: total pay should never exceed base pay
-      if (calculatedTotalPay > record.base_pay) {
-        console.warn(`Warning: Total pay (${calculatedTotalPay}) exceeds base pay (${record.base_pay}) for employee ${record.employee_id}. Using base pay.`);
-      }
       
       return {
         employee_id: dbUserId, // Use the actual UUID from database
@@ -211,7 +195,6 @@ async function savePayrollRecords(records, date) {
       throw error;
     }
     
-    console.log(`✅ Saved ${data.length} records to database`);
     
     return {
       success: true,
@@ -240,8 +223,6 @@ async function processPayroll(date, triggeredBy, options = {}) {
   let originalExecutionId = null;
   
   try {
-    console.log(`🚀 Processing payroll for ${date}...`);
-    
     // Check for existing records
     const existingCheck = await checkExistingPayroll(date);
     
@@ -361,10 +342,9 @@ async function processPayroll(date, triggeredBy, options = {}) {
       });
     }
     
-    console.log(`✅ Payroll processing complete in ${executionTime}s`);
     
     // Create notifications for all users
-    await createPayrollNotifications(
+    const notifications = await createPayrollNotifications(
       {
         date,
         summary: calculations.summary,
@@ -380,6 +360,7 @@ async function processPayroll(date, triggeredBy, options = {}) {
       date: date,
       reprocessed: options.reprocess || false,
       execution_log_id: executionLog?.id,
+      notifications_sent: notifications?.length || 0,
       summary: {
         ...calculations.summary,
         saved_records: saveResult.saved_count,

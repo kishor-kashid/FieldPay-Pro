@@ -12,7 +12,7 @@
  * - FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL (Firebase Admin SDK)
  */
 
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const admin = require('firebase-admin');
 const { supabase } = require('../config/database');
 

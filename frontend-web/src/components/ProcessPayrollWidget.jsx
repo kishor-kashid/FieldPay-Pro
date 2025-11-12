@@ -45,14 +45,9 @@ const ProcessPayrollWidget = () => {
     setResults(null);
 
     try {
-      // If reprocessing, delete existing records first
-      if (reprocess && results?.existingRecords) {
-        for (const record of results.existingRecords) {
-          await payrollAPI.deleteRecord(record.id);
-        }
-      }
-
-      const response = await payrollAPI.process(date);
+      // Note: Backend handles deletion of existing records when reprocess=true
+      // No need to manually delete records here
+      const response = await payrollAPI.process(date, reprocess);
       setResults(response.data);
       setStatus('success');
       setShowReprocessModal(false);

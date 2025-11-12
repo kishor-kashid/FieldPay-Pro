@@ -3,7 +3,7 @@
  * Express.js API server for Pay-for-Performance system
  */
 
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 const express = require('express');
 const cors = require('cors');
 
@@ -29,7 +29,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/payroll', require('./routes/payroll'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/users', require('./routes/users'));
-// app.use('/api/upload', require('./routes/upload'));
+app.use('/api/upload', require('./routes/upload'));
 
 // Mock API routes (development only)
 if (process.env.USE_MOCK === 'true') {
@@ -38,15 +38,9 @@ if (process.env.USE_MOCK === 'true') {
   console.log('🎭 Mock API routes registered');
 }
 
-// Error handling middleware (will be implemented in PR #22)
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
+// Error handling middleware
+const { errorHandler } = require('./middleware/errorHandler');
+app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {

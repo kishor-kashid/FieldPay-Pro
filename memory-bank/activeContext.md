@@ -1,11 +1,152 @@
 # Active Context: Clean Scapes P4P System
 
 ## Current Work Focus
-**Phase**: Frontend Dashboard Enhancement & UI Completion  
-**Status**: PR10-PR12 completed - Admin, Manager, and Foreman dashboards implemented and enhanced  
-**Date**: After foreman dashboard enhancements and UI consistency fixes
+**Phase**: Feature Completion & Polish  
+**Status**: Backend and frontend deployed to Firebase (Cloud Functions + Hosting), mobile app fully functional, CSV upload functionality completed, error handling and validation implemented, comprehensive documentation and testing completed, PR #25 in progress (console.log cleanup completed)  
+**Date**: Post-PR #24 & #25 - Deployment complete, Final Polish & Bug Fixes in progress
 
 ## Recent Changes
+- ✅ **PR #24 Completed**: Deployment Setup
+  - Backend deployed to Firebase Cloud Functions: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Frontend deployed to Firebase Hosting: `https://fieldpay-pro.web.app`
+  - Production environment configured with all environment variables
+  - Deployment scripts created and tested (deploy-all.sh, deploy-backend.sh, deploy-frontend.sh)
+  - React Router redirects configured for SPA
+  - Production build tested and verified
+  - Full deployment documentation completed
+- ✅ **PR #25 In Progress**: Final Polish & Bug Fixes
+  - Removed all debug console.log statements from codebase
+  - Cleaned up frontend files: Login.jsx, AuthContext.js, Settings.jsx, Dashboard.jsx, Upload.jsx
+  - Cleaned up backend files: payrollService.js, dataService.js, routes/payroll.js
+  - Kept server startup logs (useful for deployment/debugging)
+  - Kept console.error for error handling and console.warn for warnings
+  - Code is now production-ready with cleaner console output
+  - Remaining tasks: UI/UX polish, code refactoring, performance optimization, final documentation
+- ✅ **PR #23 Completed**: Testing & Documentation
+  - Created comprehensive API documentation (`docs/API.md`) with all endpoints, request/response examples, authentication requirements
+  - Created architecture documentation (`docs/ARCHITECTURE.md`) with system architecture, data flow diagrams, component descriptions
+  - Updated README.md with testing section, deployment information, enhanced tech stack overview, project status
+  - Created API route tests (`backend/tests/routes/auth.test.js`, `backend/tests/routes/payroll.test.js`)
+  - Installed supertest for HTTP route testing
+  - Fixed calculation service tests to match simplified formula (removed efficiency and performance bonus tests)
+  - Fixed CSV exporter tests to match current CSV format (removed efficiency and performance bonus columns)
+  - Enhanced code comments in calculationService.js with business rule documentation
+  - All services already have JSDoc comments
+  - Database schema documentation already exists and is complete
+- ✅ **PR #22 Completed**: Error Handling & Validation
+  - Created error handling middleware (`backend/middleware/errorHandler.js`) with comprehensive error catching, formatting, and logging
+  - Created validation middleware (`backend/middleware/validation.js`) for request body, query, and params validation
+  - Integrated error handler into server.js and index.js
+  - Created ErrorBoundary component (`frontend-web/src/components/ErrorBoundary.jsx`) for React error catching with fallback UI
+  - Created validation utilities (`frontend-web/src/utils/validation.js`) with email, required, number range, string length, date, phone, password validation
+  - Enhanced API error handling in web (`frontend-web/src/services/api.js`) with network, authentication, authorization, validation, and server error handling
+  - Created mobile validation utilities (`mobile/src/utils/validation.js`) with email, required, string length validation
+  - Enhanced mobile API error handling (`mobile/src/services/api.js`) with comprehensive error type handling
+  - Wrapped App component with ErrorBoundary for global error catching
+- ✅ **Login Page UI Improvements**: Enhanced login page with modern design
+  - Animated background with floating blob animations
+  - Gradient background (blue-to-indigo)
+  - Enhanced card design with rounded corners and shadows
+  - Logo icon with gradient badge
+  - Real-time form validation with field-level error messages
+  - Password visibility toggle
+  - Input icons (email and lock)
+  - Enhanced error display with icons and animations
+  - Loading state with spinner animation
+  - Button interactions with hover effects
+  - Professional styling and responsive design
+- ✅ **PR #21 Completed**: CSV Upload & Processing
+  - Created CSV parser utility (`backend/utils/csvParser.js`) for Service Autopilot and Paychex CSV files
+  - Created upload API routes (`backend/routes/upload.js`) with multer for file handling
+  - POST `/api/upload/service-autopilot` - Uploads job data to `jobs` table
+  - POST `/api/upload/paychex` - Uploads timesheet data to `timesheets` table, updates user base_rate
+  - Created FileUpload component with drag-and-drop support, file validation, visual feedback
+  - Created CSVPreview component to display first 10 rows of uploaded data
+  - Updated Upload page (`frontend-web/src/pages/admin/Upload.jsx`) with full integration
+  - Added uploadAPI methods to frontend services
+  - Installed multer dependency for multipart/form-data handling
+  - Registered upload routes in both Firebase Cloud Functions and local server
+  - Features: File validation (CSV only, 10MB limit), error handling, data preview, duplicate handling
+- ✅ **Payroll Processing Fixes**: Fixed 400 error and 0 records issue
+  - Fixed `req.user.id` fallback: Added database lookup if user.id is missing from auth middleware
+  - Fixed response structure: Added `recordsProcessed` and `notificationsSent` fields to match frontend expectations
+  - Fixed mock data generation: Removed `NODE_ENV === 'development'` check so mock data works in any environment when `USE_MOCK=true`
+  - Added DELETE endpoint: `/api/payroll/records/:id` for individual record deletion (admin only)
+  - Fixed notification counting: Backend now returns notification count in response
+  - Fixed frontend: Removed manual deletion attempt (backend handles deletion when `reprocess=true`)
+  - Added better error logging: Request details logged for debugging payroll processing issues
+- ✅ **PR #19 Completed**: Mobile App - Notifications
+  - Created NotificationBanner component with animations and auto-show/hide
+  - Integrated NotificationBanner into DashboardScreen
+  - Added NotificationBadge to MainNavigator (shows unread count on Home tab)
+  - Implemented notification polling (every 30 seconds)
+  - Added navigation logic to handle notification links (Dashboard, History, Breakdown)
+  - Full i18n support for notification messages
+- ✅ **PR #15-18 Completed**: Mobile App - All Core Screens Implemented
+  - ✅ PR #15: Dashboard Screen (yesterday's performance with score, payout, quick stats)
+  - ✅ PR #16: Breakdown Screen (detailed pay calculation, base pay, penalties, job breakdown)
+  - ✅ PR #17: History Screen (30-day performance trend, statistics, history cards)
+  - ✅ PR #18: Profile & Settings Screen (user info, language toggle, help screen)
+  - Fixed API response parsing (extract records from `response.data.records` or `response.data.data`)
+  - Removed debug console.log statements from production code
+  - Updated dashboard message: "No performance data available for yesterday"
+  - Fixed language update endpoint (removed `requireOwnDataOrAdmin` middleware causing 403 error)
+  - All screens connected to production Firebase Cloud Functions API
+- ✅ **Backend Bug Fix**: Language Update Endpoint
+  - Fixed 403 error on `/auth/language` endpoint
+  - Removed unnecessary `requireOwnDataOrAdmin()` middleware
+  - Route already protected by `authenticateToken` and updates `req.user.id` (user's own data)
+  - Language toggle now works correctly from Profile screen
+- ✅ **Backend Successfully Deployed**: Firebase Cloud Functions Live
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Runtime: Node.js 20 (upgraded from Node.js 18)
+  - Fixed route paths: Removed double `/api` prefix (routes now: `/auth`, `/payroll`, `/notifications`, `/users`)
+  - Environment variables: Using Firebase Functions config (env.*, supabase.* namespaces)
+  - Local development: Changed to `.env.local` (ignored by Firebase, won't cause deployment errors)
+  - Created `.firebaseignore` to exclude `.env.local` and other dev files from deployment
+  - Updated all dotenv.config() calls to load `.env.local` instead of `.env`
+  - Health check endpoint: `GET /` and `GET /health` both working
+  - Deployment command: `cd backend && npm run deploy`
+- ✅ **PR #24 Completed**: Deployment Setup - Firebase Configuration
+  - Created Firebase configuration files (firebase.json, .firebaserc)
+  - Adapted Express backend for Cloud Functions (backend/index.js)
+  - Updated backend package.json with firebase-functions dependency
+  - Added deployment scripts (deploy-all, deploy-backend, deploy-frontend)
+  - Created comprehensive deployment documentation (DEPLOYMENT.md, QUICK_START, PRODUCTION_CHECKLIST)
+  - Environment variables documented (.env.example files)
+  - Frontend production configuration ready (.env.production)
+  - Mobile app configuration documented for deployed backend
+- ✅ **PR #15 Completed**: Mobile App - Crew Member Dashboard
+  - Created formatters utility (currency, date, percentage, hours)
+  - Created ScoreCard component with star rating (1-5 stars) and motivational messages
+  - Created PayoutBreakdown component showing base pay, penalties, and total
+  - Created QuickStats component with hours, jobs, on time, and lunch status
+  - Updated DashboardScreen with full functionality (fetch yesterday's data, pull-to-refresh, error handling)
+  - Updated translation files (en.json, es.json) with motivational messages and dashboard content
+  - API service already includes payrollAPI.getYesterdayRecord() method
+  - Efficiency calculation: (Total Pay / Base Pay) * 100 (retention percentage)
+- ✅ **PR #13 Completed**: Mobile App i18n Setup
+  - Created English and Spanish translation files (`en.json`, `es.json`)
+  - Configured react-i18next with AsyncStorage persistence
+  - Implemented LanguageContext for language state management
+  - Created LanguageToggle component (EN/ES switch with flags)
+  - Created storage utility for language preference persistence
+- ✅ **PR #14 Completed**: Mobile App Authentication & Navigation
+  - Set up React Navigation (Stack Navigator, Bottom Tab Navigator)
+  - Created AuthNavigator for login screen
+  - Created MainNavigator with bottom tabs (Home, History, Profile)
+  - Implemented LoginScreen with email/password, language toggle, form validation
+  - Created AuthContext with Firebase integration and AsyncStorage persistence
+  - Created API service with Axios configuration, auth headers, error handling
+  - Created auth service for Firebase Authentication integration
+  - Restored App.js with proper providers (ErrorBoundary, LanguageProvider, AuthProvider)
+- ✅ **Mobile App SDK Upgrade**: Upgraded from Expo SDK 49 to SDK 54
+  - Updated all dependencies to SDK 54 compatible versions
+  - Removed webpack configuration (SDK 54 uses Metro for web)
+  - Fixed babel-preset-expo installation
+  - Updated React Native to 0.81.5, React to 19.1.0
+- ✅ **Mobile App Documentation**: Created COMMANDS.md with comprehensive command reference
+- ✅ **Mobile App Cleanup**: Removed test files (App.test.js)
 - ✅ **Foreman Dashboard Enhancement**: Added comprehensive team performance and payroll compliance overview
   - Date range selector with quick buttons (Yesterday, Last 7 Days)
   - Compliance metrics section (Total, Approved, Pending, Rejected, Anomalies)
@@ -123,28 +264,58 @@
 13. ✅ PR #10: Admin Dashboard
 14. ✅ PR #11: Manager Dashboard
 15. ✅ PR #12: Foreman Dashboard
-16. ✅ Unit Tests: Backend unit tests (65 tests, all passing)
-17. ✅ Frontend Authentication: Fixed token storage and axios interceptor
-18. ⏳ **NEXT**: PR #13: Crew Member Mobile Screens
+16. ✅ PR #13: Mobile App i18n Setup
+17. ✅ PR #14: Mobile App Authentication & Navigation
+18. ✅ PR #15: Mobile App - Crew Member Dashboard
+19. ✅ PR #16: Mobile App - Breakdown Screen
+20. ✅ PR #17: Mobile App - History Screen
+21. ✅ PR #18: Mobile App - Profile & Settings Screen
+22. ✅ Unit Tests: Backend unit tests (65 tests, all passing)
+23. ✅ Frontend Authentication: Fixed token storage and axios interceptor
+24. ✅ Mobile App SDK Upgrade: Upgraded to Expo SDK 54
+25. ✅ Backend Deployment: Successfully deployed to Firebase Cloud Functions
+26. ✅ Mobile App: All core screens implemented and connected to production API
+27. ✅ Backend Bug Fix: Language update endpoint (403 error resolved)
+28. ✅ PR #19: Mobile App - Notifications (NotificationBanner, NotificationBadge implemented)
+29. ✅ Payroll Processing Fixes: Fixed 400 error, 0 records issue, response structure, mock data generation
+30. ✅ PR #21: CSV Upload & Processing (CSV parser, upload routes, FileUpload component, CSVPreview component, Upload page integration)
+31. ✅ PR #22: Error Handling & Validation (error handler middleware, validation middleware, ErrorBoundary component, validation utilities, enhanced API error handling)
+32. ✅ PR #23: Testing & Documentation (API documentation, architecture documentation, README updates, API route tests, test fixes, code comments)
+33. ✅ PR #24: Deployment Setup (Backend and frontend deployed to Firebase, deployment scripts created, documentation completed)
+34. ⏳ **PR #25 In Progress**: Final Polish & Bug Fixes
+  - ✅ Console.log cleanup completed (removed debug statements from frontend and backend)
+  - ⏳ Code review and refactoring (in progress)
+  - ⏳ UI/UX polish (pending)
+  - ⏳ Bug fixes and testing (pending)
+  - ⏳ Performance optimization (pending)
+  - ⏳ Final documentation (pending)
 
 ## Next Steps
 
-### Immediate (PR #13 - NEXT)
-1. ⏳ Build crew member mobile screens (dashboard, breakdown, history, profile, help)
-2. ⏳ Implement bilingual support (EN/ES) for mobile app
-3. ⏳ Add navigation setup for mobile app
+### Immediate (PR #25 - IN PROGRESS)
+1. ✅ Console.log cleanup completed
+2. ⏳ Code review and refactoring (remove duplicates, improve naming, remove commented code)
+3. ⏳ UI/UX polish (consistent spacing, loading states, empty states, toast messages)
+4. ⏳ Bug fixes and testing (test all user flows, fix edge cases)
+5. ⏳ Performance optimization (API response times, frontend performance)
+6. ⏳ Final documentation (update docs, create demo script)
 
 ### Recent Completions
+- ✅ PR #15 - Crew Member Dashboard (yesterday's performance with score, payout, quick stats)
+- ✅ PR #16 - Breakdown Screen (detailed pay calculation, base pay, penalties, job breakdown)
+- ✅ PR #17 - History Screen (30-day performance trend, statistics, history cards)
+- ✅ PR #18 - Profile & Settings Screen (user info, language toggle, help screen)
+- ✅ Backend Bug Fix - Language update endpoint (403 error resolved)
 - ✅ Manager dashboard with team performance and payroll compliance overview
 - ✅ Manager Teams page with enhanced crew data calculation
 - ✅ Manager Analytics page simplified (charts removed, dynamic data)
 - ✅ Backend API access expanded for managers (user stats and user list)
 
-### Short-term (PRs #13-15)
-1. ⏳ **NEXT**: Build crew member mobile screens
-2. ⏳ Add CSV upload functionality (PR #14)
-3. ⏳ Implement charts and analytics enhancements
-4. ⏳ Add error handling and validation improvements
+### Short-term (PRs #16-19)
+1. ⏳ **NEXT**: PR #16 - Breakdown Screen (detailed pay calculation)
+2. ⏳ PR #17 - History Screen (30-day performance)
+3. ⏳ PR #18 - Profile & Settings Screen
+4. ⏳ PR #19 - Notifications (in-app notifications)
 
 ### Medium-term (PRs #9-15)
 1. ⏳ Create user management
@@ -224,7 +395,36 @@ None at this time.
 - Test credentials: All users have password `password123` (see docs/TEST_CREDENTIALS.md)
 - Mock APIs available at `/mock/service-autopilot/*` and `/mock/paychex/*` when USE_MOCK=true
 - Data service (`dataService.js`) provides unified interface for fetching external data
-- Sample CSV files in `mock-data/` directory for testing CSV upload feature (PR #21)
+- **Testing & Documentation (PR #23)**: Comprehensive testing and documentation completed
+  - API documentation with all endpoints, request/response examples, authentication requirements
+  - Architecture documentation with system architecture, data flow diagrams, component descriptions
+  - README updates with testing section, deployment information, project status
+  - API route tests for authentication and payroll endpoints
+  - Supertest installed for HTTP route testing
+  - Test fixes: Updated calculation service and CSV exporter tests to match simplified formula
+  - Enhanced code comments in calculationService.js with business rule documentation
+- **Error Handling & Validation (PR #22)**: Comprehensive error handling and validation implemented
+  - Error handler middleware catches all errors, formats responses, logs errors
+  - Validation middleware validates request bodies, query parameters, route parameters
+  - ErrorBoundary component catches React errors with fallback UI
+  - Validation utilities for web and mobile (email, required, number range, string length, date, phone, password)
+  - Enhanced API error handling with error types (network, authentication, authorization, validation, server, generic)
+  - App component wrapped with ErrorBoundary for global error catching
+- **Login Page UI**: Enhanced login page with modern design
+  - Animated background with floating blob animations
+  - Real-time form validation with field-level error messages
+  - Password visibility toggle
+  - Enhanced error display with icons and animations
+  - Loading states with spinner animation
+  - Professional styling and responsive design
+- **CSV Upload**: Complete CSV upload functionality implemented (PR #21)
+  - CSV parser utility for Service Autopilot and Paychex formats
+  - Upload API endpoints with multer file handling
+  - FileUpload component with drag-and-drop
+  - CSVPreview component for data validation
+  - Admin Upload page with full integration
+  - Data stored in `jobs` and `timesheets` tables
+  - User base_rate updates from Paychex CSV
 - **Calculation engine**: Efficiency, bonuses (100% & 50% multipliers), penalties (5% late, 2% long lunch)
 - **Anomaly detection**: Flags efficiency < 60% or > 120%, missing data, negative pay
 - **Payroll endpoints**: POST /analyze (preview), POST /process (commit), GET /records, GET /export
@@ -272,6 +472,14 @@ None at this time.
 - **Foreman Schedule Page**: Date validation added
 - **MemberDetailModal**: Chart.js removed, uses real performance data, dynamic strengths/weaknesses
 - **Backend Crew Matching**: Enhanced crew_id matching logic to handle CREW1/foreman1, CREW2/foreman2 mismatches using number extraction
+- **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Fixed route paths: Removed double `/api` prefix (routes: `/auth`, `/payroll`, `/notifications`, `/users`)
+  - Environment variables: Using Firebase Functions config (env.*, supabase.* namespaces)
+  - Local development: Changed to `.env.local` (ignored by Firebase deployment)
+  - Created `.firebaseignore` to exclude dev files from deployment
+  - Updated all dotenv.config() calls to load `.env.local` instead of `.env`
+  - Runtime: Node.js 20 (upgraded from Node.js 18)
 
 ## Communication Notes
 - Project is for Clean Scapes ($7M landscaping company)

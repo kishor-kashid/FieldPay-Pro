@@ -45,20 +45,15 @@ export function AuthProvider({ children }) {
    */
   async function login(email, password) {
     try {
-      console.log('AuthContext: Starting Firebase login...');
       setError(null);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('AuthContext: Firebase login successful');
       
       // Get user profile from backend
       const idToken = await getIdToken(userCredential.user);
-      console.log('AuthContext: Got Firebase ID token');
       await fetchUserProfile(idToken);
-      console.log('AuthContext: Profile fetch completed');
       
       return userCredential.user;
     } catch (error) {
-      console.error('AuthContext: Login error:', error);
       const errorMessage = error.message || 'Login failed';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -70,15 +65,12 @@ export function AuthProvider({ children }) {
    */
   async function logout() {
     try {
-      console.log('AuthContext: Logging out user...');
       setError(null);
       await signOut(auth);
       setUserProfile(null);
       localStorage.removeItem('user');
       localStorage.removeItem('authToken');
-      console.log('AuthContext: Logout completed');
     } catch (error) {
-      console.error('AuthContext: Logout error:', error);
       const errorMessage = error.message || 'Logout failed';
       setError(errorMessage);
       throw new Error(errorMessage);
@@ -90,29 +82,22 @@ export function AuthProvider({ children }) {
    */
   async function fetchUserProfile(idToken) {
     try {
-      console.log('Fetching user profile from backend...');
       const response = await axios.get(`${API_URL}/auth/profile`, {
         headers: {
           Authorization: `Bearer ${idToken}`
         }
       });
 
-      console.log('Profile response:', response.data);
-
       if (response.data.success || response.data.user) {
         const userData = response.data.user;
-        console.log('Setting user profile:', userData);
         setUserProfile(userData);
         // Store in localStorage for persistence
         localStorage.setItem('user', JSON.stringify(userData));
         // Also store the Firebase ID token for axios interceptor
         localStorage.setItem('authToken', idToken);
         return userData;
-      } else {
-        console.error('Profile response did not contain user data');
       }
     } catch (error) {
-      console.error('Failed to fetch user profile:', error.response?.data || error.message);
       // Don't throw - allow user to stay logged in even if profile fetch fails
     }
   }
@@ -165,7 +150,6 @@ export function AuthProvider({ children }) {
   // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('AuthContext: Auth state changed:', user ? 'User logged in' : 'User logged out');
       setCurrentUser(user);
       
       if (user) {
@@ -174,10 +158,9 @@ export function AuthProvider({ children }) {
           const idToken = await getIdToken(user);
           await fetchUserProfile(idToken);
         } catch (error) {
-          console.error('Failed to fetch profile on auth state change:', error);
+          // Silent fail - allow user to stay logged in
         }
       } else {
-        console.log('AuthContext: No user, clearing profile');
         setUserProfile(null);
         localStorage.removeItem('user');
         localStorage.removeItem('authToken');

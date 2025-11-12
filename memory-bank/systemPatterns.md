@@ -30,8 +30,8 @@ Request → Auth Middleware → Role Check → Validation → Route Handler → 
 **Components**:
 - `auth.js` - JWT token verification
 - `roleCheck.js` - Role-based access control (RBAC)
-- `validation.js` - Request body validation
-- `errorHandler.js` - Global error handling
+- `validation.js` - Request body, query, and params validation ✅ **IMPLEMENTED**
+- `errorHandler.js` - Global error handling ✅ **IMPLEMENTED**
 
 **Rationale**: Security, validation, and error handling centralized
 
@@ -104,7 +104,96 @@ Output: Payroll Record with flags
 
 **Rationale**: Keep all users informed without manual communication, but only when data is actually saved
 
-### 7. Payroll Processing Pattern ✅ **IMPLEMENTED**
+### 7. CSV Upload Pattern ✅ **IMPLEMENTED**
+**Pattern**: Manual CSV file upload for data import when APIs are unavailable
+- Admin uploads CSV files from Service Autopilot and Paychex
+- Files validated (CSV format, size limits, required columns)
+- CSV parsed and validated row-by-row
+- Data stored in database (`jobs` and `timesheets` tables)
+- Preview shown to admin before processing
+- Errors reported for invalid rows
+
+**Implementation:**
+- ✅ `csvParser.js` - CSV parsing utility with validation
+  - `parseServiceAutopilotCSV()` - Parses job data (job_id, date, location, service_type, budgeted_hours, crew_id, status, notes)
+  - `parsePaychexCSV()` - Parses timesheet data (employee_id, date, clock_in, clock_out, lunch_start, lunch_end, hours_worked, base_rate, crew_id, status)
+  - `validateCSVFile()` - File format validation
+- ✅ Upload routes (`routes/upload.js`) - 2 endpoints
+  - POST `/api/upload/service-autopilot` - Uploads job data (admin only)
+  - POST `/api/upload/paychex` - Uploads timesheet data, updates user base_rate (admin only)
+- ✅ FileUpload component - Drag-and-drop file upload with validation
+- ✅ CSVPreview component - Displays first 10 rows of uploaded data
+- ✅ Upload page integration - Full admin workflow for CSV upload
+- ✅ Multer middleware - Handles multipart/form-data file uploads (10MB limit)
+
+**Rationale**: Allows manual data import when external APIs are unavailable, with validation and preview before processing
+
+### 8. Error Handling & Validation Pattern ✅ **IMPLEMENTED**
+**Pattern**: Comprehensive error handling and validation across backend and frontend
+- Backend: Global error handler middleware catches all errors, formats responses, logs errors
+- Backend: Validation middleware validates request bodies, query parameters, and route parameters
+- Frontend: ErrorBoundary component catches React errors and displays fallback UI
+- Frontend: Validation utilities for form validation (email, required, number range, string length, date, phone, password)
+- API: Enhanced error handling with error types (network, authentication, authorization, validation, server, generic)
+
+**Implementation:**
+- ✅ `errorHandler.js` - Global error handler middleware
+  - Catches all errors from route handlers
+  - Formats error responses with appropriate status codes
+  - Logs errors with context (path, method, timestamp)
+  - Handles PostgreSQL errors, network errors, custom errors
+  - Provides `asyncHandler` wrapper for async route handlers
+  - Provides `createError` helper for custom errors
+- ✅ `validation.js` - Request validation middleware
+  - `validateBody()` - Validates request body against schema
+  - `validateQuery()` - Validates query parameters
+  - `validateParams()` - Validates route parameters
+  - Supports required fields, data types, string length, number ranges, custom validation functions
+  - Common validation schemas (email, UUID, role, language)
+- ✅ `ErrorBoundary.jsx` - React error boundary component
+  - Catches React errors in component tree
+  - Displays fallback UI with error details (development only)
+  - Provides "Try Again" and "Refresh Page" options
+  - Wrapped around App component for global error catching
+- ✅ `validation.js` (frontend-web) - Form validation utilities
+  - Email, required, number range, string length, date, phone, password validation
+  - `validateForm()` function for validating entire form objects
+  - Field-level error messages with icons
+- ✅ `validation.js` (mobile) - Mobile form validation utilities
+  - Email, required, string length validation
+  - `validateForm()` function for form validation
+- ✅ Enhanced API error handling (web and mobile)
+  - Network error handling (no response from server)
+  - Authentication error handling (401) with automatic logout
+  - Authorization error handling (403) with user-friendly messages
+  - Validation error handling (400) with error details
+  - Server error handling (500+) with user-friendly messages
+  - Error types attached to error objects for programmatic handling
+
+**Rationale**: Centralized error handling and validation improves user experience, security, and maintainability
+
+### 9. Testing & Documentation Pattern ✅ **IMPLEMENTED**
+**Pattern**: Comprehensive testing and documentation for maintainability and developer onboarding
+- Unit tests for all critical business logic
+- API route tests for endpoint validation
+- Comprehensive documentation (API, architecture, database)
+- Code comments and JSDoc for all services
+
+**Implementation:**
+- ✅ Jest test framework configured with Node test environment
+- ✅ Supertest installed for HTTP route testing
+- ✅ 65+ unit tests covering calculation engine, CSV export, user operations, API routes
+- ✅ API documentation (`docs/API.md`) with all endpoints, request/response examples
+- ✅ Architecture documentation (`docs/ARCHITECTURE.md`) with system diagrams and data flow
+- ✅ Database schema documentation (`docs/DATABASE.md`) with table structures and relationships
+- ✅ README updates with testing section, deployment info, project status
+- ✅ JSDoc comments in all service files
+- ✅ Enhanced code comments for complex business logic
+- ✅ Test fixes to match simplified calculation formula
+
+**Rationale**: Comprehensive testing and documentation ensures code quality, maintainability, and easier onboarding for new developers
+
+### 10. Payroll Processing Pattern ✅ **IMPLEMENTED**
 **Pattern**: Manual admin-triggered payroll processing (no automatic scheduling)
 - Two-button approach:
   - **Analyze Payroll**: Preview calculations without saving (safe to run multiple times)
@@ -126,7 +215,7 @@ Output: Payroll Record with flags
 - ✅ Execution logging integrated into `processPayroll()` with performance metrics
 - ✅ 3 execution history endpoints (list, get by ID, statistics) - admin only
 
-### 8. User Management Pattern ✅ **IMPLEMENTED**
+### 10. User Management Pattern ✅ **IMPLEMENTED**
 **Pattern**: Centralized user management with role-based access control
 - CRUD operations for users (create, read, update, delete)
 - Admin-only access for user creation, modification, and deletion
@@ -185,7 +274,7 @@ server.js
   │   ├── /api/payroll/*
   │   ├── /api/users/*
   │   ├── /api/notifications/*
-  │   ├── /api/upload/*
+  │   ├── /api/upload/* ✅
   │   └── /mock/* (development only)
   ├── Services
   │   ├── calculationService
@@ -195,7 +284,7 @@ server.js
   │   ├── userService
   │   └── cronService
   └── Utilities
-      ├── csvParser
+      ├── csvParser ✅
       ├── csvExporter
       └── mockDataGenerator
 ```
@@ -224,7 +313,7 @@ App.js
   │       ├── /foreman/schedule (Schedule page - date validation)
   │       └── /foreman/history (History page - simplified, dynamic data)
   └── Components
-      ├── Shared (NotificationBell, NotificationDropdown, Sidebar)
+      ├── Shared (NotificationBell, NotificationDropdown, Sidebar, FileUpload, CSVPreview)
       ├── Admin (AnalyzePayrollWidget, ProcessPayrollWidget, PayrollTable, etc.)
       ├── Manager (removed charts, simplified components)
       └── Foreman (MemberCard, ScheduleView, etc.)
@@ -284,12 +373,16 @@ App.js
 9. **Token Refresh**: `getToken()` refreshes token and updates localStorage
 10. **Logout**: Clears Firebase auth, removes tokens from localStorage, redirects to login
 
-### CSV Upload Flow
-1. **Upload**: Admin uploads CSV via web interface
-2. **Validation**: Backend validates file format and required columns
-3. **Parsing**: `csvParser` utility processes file
-4. **Storage**: Data stored temporarily or in database
-5. **Processing**: Used in next payroll processing run
+### CSV Upload Flow ✅ **IMPLEMENTED**
+1. **Upload**: Admin uploads CSV via web interface (drag-and-drop or file picker)
+2. **Validation**: Backend validates file format (CSV only), size (10MB limit), and required columns
+3. **Parsing**: `csvParser` utility processes file row-by-row with validation
+4. **Storage**: 
+   - Service Autopilot CSV → Data stored in `jobs` table
+   - Paychex CSV → Data stored in `timesheets` table, user `base_rate` updated if provided
+5. **Preview**: First 10 rows displayed to admin for verification
+6. **Error Reporting**: Invalid rows reported with row numbers and error messages
+7. **Processing**: Uploaded data used in next payroll processing run
 
 ## Database Schema Patterns
 
@@ -350,19 +443,22 @@ App.js
 
 ### Unit Tests ✅ **IMPLEMENTED**
 - **Test Framework**: Jest with Node test environment
-- **Total Tests**: 65 tests, all passing
+- **HTTP Testing**: Supertest for API route testing
+- **Total Tests**: 65+ tests, all passing
 - **Coverage**:
-  - ✅ Calculation service logic (26 tests - full coverage)
-  - ✅ CSV export utilities (23 tests - all formats)
+  - ✅ Calculation service logic (26 tests - full coverage, updated for simplified formula)
+  - ✅ CSV export utilities (23 tests - all formats, updated for current format)
   - ✅ User service operations (13 tests - basic CRUD)
   - ✅ Data service fallbacks (2 tests)
   - ✅ Notification service (1 test - module loading)
+  - ✅ API route tests (auth.test.js, payroll.test.js)
 - **Mock Strategy**: All external dependencies (Supabase, axios, Firebase) are mocked
 - **Console Suppression**: console.error and console.warn suppressed for cleaner test output
 - **Test Quality**: Focused on testable business logic, avoiding overly complex mocking
+- **Test Updates**: Tests updated to match simplified calculation formula (efficiency and performance bonus removed)
 
 ### Integration Tests
-- ⏳ API route testing (planned for PR #23)
+- ✅ API route testing (implemented in PR #23)
 - ⏳ Database operations (planned)
 - ⏳ Service interactions (planned)
 
