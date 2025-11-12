@@ -36,6 +36,9 @@
 - ✅ Foreman History Page (simplified, dynamic data, charts removed)
 - ✅ Foreman Schedule Page (date validation added)
 - ✅ MemberDetailModal (Chart.js removed, real data display)
+- ✅ CSV Upload Functionality (CSV parser, upload routes, FileUpload component, CSVPreview component)
+- ✅ Error Handling & Validation (error handler middleware, validation middleware, ErrorBoundary component, validation utilities, enhanced API error handling)
+- ✅ Testing & Documentation (API documentation, architecture documentation, README updates, API route tests, test fixes)
 
 ## What's Left to Build
 
@@ -54,8 +57,10 @@
 - [x] Notifications system ✅
 - [x] User management ✅
 - [x] Unit tests for critical services ✅
-- [ ] CSV upload functionality
-- [ ] Error handling and validation
+- [x] CSV upload functionality ✅
+- [x] Error handling and validation ✅
+- [x] API route tests ✅
+- [x] Comprehensive documentation ✅
 - [ ] Integration tests
 
 ### Web Frontend (80% Complete)
@@ -82,9 +87,11 @@
 - [x] Role-based access control (crew members restricted from web app) ✅
 - [x] Token management (Firebase token stored for axios interceptor) ✅
 - [x] Charts removed from Reports page (simplified UI) ✅
+- [x] CSV upload interface ✅
+- [x] Error handling and validation ✅
+- [x] ErrorBoundary component ✅
+- [x] Login page UI improvements ✅
 - [ ] Charts and data visualizations (enhancements) - if needed in future
-- [ ] CSV upload interface
-- [ ] Error handling and validation (enhancements)
 - [ ] Responsive design (polish)
 
 ### Mobile App (85% Complete)
@@ -171,9 +178,26 @@
 - **PR #17**: ✅ **COMPLETED** - Mobile App - History Screen
 - **PR #18**: ✅ **COMPLETED** - Mobile App - Profile & Settings Screen
 - **PR #19**: ✅ **COMPLETED** - Mobile App - Notifications (NotificationBanner, NotificationBadge)
-- **PR #17-23**: Not started
-- **PR #24**: ✅ **COMPLETED** - Deployment Setup (Backend deployed to Firebase Cloud Functions)
-- **PR #25**: Not started
+- **PR #20**: ⏳ **IN PROGRESS** - Web Dashboard - Charts & Analytics (chart components removed, focusing on data-driven analytics)
+- **PR #21**: ✅ **COMPLETED** - CSV Upload & Processing (CSV parser, upload routes, FileUpload component, CSVPreview component)
+- **PR #22**: ✅ **COMPLETED** - Error Handling & Validation (error handler middleware, validation middleware, ErrorBoundary component, validation utilities, enhanced API error handling)
+- **PR #23**: ✅ **COMPLETED** - Testing & Documentation (API documentation, architecture documentation, README updates, API route tests, test fixes, code comments)
+- **PR #24**: ✅ **COMPLETED** - Deployment Setup
+  - ✅ Backend deployed to Firebase Cloud Functions (`https://us-central1-fieldpay-pro.cloudfunctions.net/api`)
+  - ✅ Frontend deployed to Firebase Hosting (`https://fieldpay-pro.web.app`)
+  - ✅ Firebase project configured (firebase.json, .firebaserc)
+  - ✅ Deployment scripts created (deploy-all.sh, deploy-backend.sh, deploy-frontend.sh)
+  - ✅ Deployment documentation completed (DEPLOYMENT.md, QUICK_START_DEPLOYMENT.md)
+  - ✅ Production environment configured
+  - ✅ React Router redirects configured
+  - ✅ Mobile app configured for development (Expo Go)
+- **PR #25**: ⏳ **IN PROGRESS** - Final Polish & Bug Fixes
+  - ✅ Console.log cleanup completed (removed debug statements from frontend and backend)
+  - ⏳ Code review and refactoring (in progress)
+  - ⏳ UI/UX polish (pending)
+  - ⏳ Bug fixes and testing (pending)
+  - ⏳ Performance optimization (pending)
+  - ⏳ Final documentation (pending)
 
 ## Known Issues
 - ✅ **RESOLVED**: Admin login logout issue - Fixed by storing Firebase token as `authToken` in localStorage for axios interceptor
@@ -210,8 +234,12 @@
 22. ✅ **PR #18: Mobile App - Profile & Settings Screen** (user profile, language toggle, help screen, FAQ with collapsible sections)
 23. ✅ **PR #24: Deployment Setup** (Firebase config, Cloud Functions adaptation, deployment scripts, comprehensive documentation)
 24. ✅ **PR #19: Mobile App - Notifications** (NotificationBanner component, NotificationBadge in MainNavigator, notification polling, navigation integration)
-25. ✅ **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
-26. ✅ **Payroll Processing Fixes**: Fixed 400 error (user.id fallback), 0 records issue (mock data generation), response structure (recordsProcessed, notificationsSent), notification counting
+25. ✅ **PR #21: CSV Upload & Processing** (CSV parser utility, upload API routes, FileUpload component with drag-and-drop, CSVPreview component, Upload page integration, multer dependency)
+26. ✅ **PR #22: Error Handling & Validation** (error handler middleware with comprehensive error catching, validation middleware for request validation, ErrorBoundary component for React errors, validation utilities for web and mobile, enhanced API error handling with error types)
+27. ✅ **PR #23: Testing & Documentation** (comprehensive API documentation with all endpoints, architecture documentation with system diagrams, README updates with testing and deployment info, API route tests with supertest, test fixes for simplified formula, enhanced code comments)
+28. ✅ **Login Page UI Improvements** (animated background, gradient design, real-time validation, password visibility toggle, enhanced error display, loading states, professional styling)
+29. ✅ **Backend Deployment**: Successfully deployed to Firebase Cloud Functions
+27. ✅ **Payroll Processing Fixes**: Fixed 400 error (user.id fallback), 0 records issue (mock data generation), response structure (recordsProcessed, notificationsSent), notification counting
     - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
     - Fixed route paths (removed double `/api` prefix)
     - Environment variables configured (env.*, supabase.* namespaces)
@@ -219,19 +247,24 @@
     - Runtime: Node.js 20
 
 ## Next Milestones
-1. ⏳ PR #20-25: CSV upload, charts, testing, deployment, polish
+1. ⏳ PR #20: Analytics enhancements (data-driven insights)
+2. ⏳ PR #25: Final polish and optimization
 
 ## Testing Status
-- ✅ **Unit Tests**: 65 tests passing across 5 test files
-  - `calculationService.test.js` - 26 tests (full coverage of P4P engine)
-  - `csvExporter.test.js` - 23 tests (all CSV formats)
+- ✅ **Unit Tests**: 65+ tests passing across 7 test files
+  - `calculationService.test.js` - 26 tests (full coverage of P4P engine, updated for simplified formula)
+  - `csvExporter.test.js` - 23 tests (all CSV formats, updated for current format)
   - `userService.test.js` - 13 tests (basic operations)
   - `dataService.test.js` - 2 tests (fallback behavior)
   - `notificationService.test.js` - 1 test (module loading)
+  - `routes/auth.test.js` - Authentication route tests
+  - `routes/payroll.test.js` - Payroll route tests
 - ✅ Jest test framework configured
+- ✅ Supertest installed for HTTP route testing
 - ✅ Console output suppressed for cleaner test runs
-- ✅ Tests cover: efficiency calculations, bonuses, penalties, anomaly detection, CSV generation, user operations
-- ⏳ Integration tests planned for PR #23
+- ✅ Tests cover: efficiency calculations (utility functions), penalties, simplified formula (Base Pay - Penalties), anomaly detection, CSV generation, user operations, API routes
+- ✅ Tests updated to match simplified calculation formula (efficiency and performance bonus removed)
+- ⏳ Integration tests planned for future
 - ⏳ E2E tests planned for future
 
 ## Deployment Status
@@ -274,7 +307,15 @@
 - Authentication fully functional: JWT verification, role-based access, profile management
 - Mock APIs available at `/mock/service-autopilot/*` and `/mock/paychex/*` (10 endpoints total)
 - Data service (`dataService.js`) provides unified interface for fetching external data
-- Sample CSV files in `mock-data/` directory for testing CSV upload feature (PR #21)
+- **CSV Upload (PR #21)**: Complete CSV upload functionality implemented
+  - CSV parser utility (`backend/utils/csvParser.js`) for Service Autopilot and Paychex formats
+  - Upload API routes (`backend/routes/upload.js`) with multer for file handling
+  - POST `/api/upload/service-autopilot` - Uploads job data to `jobs` table
+  - POST `/api/upload/paychex` - Uploads timesheet data to `timesheets` table, updates user base_rate
+  - FileUpload component with drag-and-drop, file validation (CSV only, 10MB limit), visual feedback
+  - CSVPreview component to display first 10 rows of uploaded data
+  - Admin Upload page with full integration, error handling, data preview
+  - Sample CSV files in `mock-data/` directory for testing
 - Mock data generator creates realistic data with performance variations and penalty scenarios
 - **Calculation engine implemented**: Efficiency (budgeted/actual), bonuses (100% & 50%), penalties (5% late, 2% long lunch)
 - **Anomaly detection**: Flags efficiency < 60% or > 120%, missing data, negative pay

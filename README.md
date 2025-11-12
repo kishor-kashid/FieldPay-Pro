@@ -160,27 +160,55 @@ FieldPay-Pro/
 **Backend:**
 ```bash
 cd backend
+npm install
 npm run dev  # Uses nodemon for auto-reload
 ```
 
 **Web Frontend:**
 ```bash
 cd frontend-web
+npm install
 npm start  # Runs on http://localhost:3001
 ```
 
 **Mobile App:**
 ```bash
 cd mobile
+npm install
 npm start  # Opens Expo DevTools
 ```
 
+### Running Tests
+
+**Backend Tests:**
+```bash
+cd backend
+npm test  # Run all tests
+npm test -- --coverage  # Run with coverage report
+```
+
+**Test Coverage:**
+- 65 unit tests covering critical business logic
+- Calculation service: 26 tests
+- CSV exporter: 23 tests
+- User service: 13 tests
+- Data service: 2 tests
+- Notification service: 1 test
+
 ### Mock APIs
 
-During development, the system uses mock APIs for Service Autopilot and Paychex. Set `USE_MOCK=true` in backend `.env` to enable mock data.
+During development, the system uses mock APIs for Service Autopilot and Paychex. Set `USE_MOCK=true` in backend `.env.local` to enable mock data.
+
+Mock API endpoints:
+- `/mock/service-autopilot/*` - Mock Service Autopilot endpoints
+- `/mock/paychex/*` - Mock Paychex endpoints
 
 ## 📚 Documentation
 
+- **API Documentation**: `docs/API.md` - Complete API endpoint documentation
+- **Architecture Documentation**: `docs/ARCHITECTURE.md` - System architecture and data flow
+- **Database Schema**: `docs/DATABASE.md` - Database schema and relationships
+- **Deployment Guide**: `docs/DEPLOYMENT.md` - Deployment instructions
 - **Product Requirements**: `PRD_Clean_Scapes_Rebuild_PayforPerformance.md`
 - **Task List**: `p4p_task_list.md` (25 PRs breakdown)
 - **Architecture Diagram**: `p4p_architecture_diagram.mermaid`
@@ -211,12 +239,16 @@ During development, the system uses mock APIs for Service Autopilot and Paychex.
 
 ## 🧮 P4P Calculation
 
-The system calculates performance-based pay using:
+The system calculates performance-based pay using a simplified formula:
 
-- **Efficiency**: Budgeted Hours / Actual Hours
-- **Performance Bonus**: Based on efficiency thresholds
-- **Penalties**: Late clock-in (>7:00 AM) and long lunch (>30 min)
-- **Anomaly Detection**: Flags efficiency <60% or >120%
+- **Base Pay**: Hours Worked × Base Rate
+- **Penalties**: 
+  - Late clock-in (>7:00 AM): 5% of base pay
+  - Long lunch (>1 hour): 2% of base pay
+- **Total Pay**: Base Pay - Total Penalties
+- **Anomaly Detection**: Flags missing data, negative pay, unusual patterns
+
+**Note**: Efficiency bonuses have been removed. The formula is now: `Total Pay = Base Pay - Penalties`
 
 ## 📱 Mobile App Features
 
@@ -229,13 +261,36 @@ The system calculates performance-based pay using:
 
 ## 🚢 Deployment
 
-Deployment documentation will be added in PR #24. The system is designed to deploy on Firebase:
-- **Backend**: Firebase Cloud Functions (serverless)
-- **Web Frontend**: Firebase Hosting (static site)
+The system is deployed on Firebase:
+- **Backend**: Firebase Cloud Functions (serverless) ✅ **DEPLOYED**
+  - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
+  - Runtime: Node.js 20
+- **Web Frontend**: Firebase Hosting ✅ **DEPLOYED**
+  - Hosting URL: `https://fieldpay-pro.web.app` (or `https://fieldpay-pro.firebaseapp.com`)
+  - React Router configured with proper redirects
+  - Production build optimized and deployed
 - **Payroll Processing**: Manual trigger by admins via web dashboard (no automatic scheduling)
 - **Mobile**: Development only - tested on Expo Go (no production build needed)
 
-**Note**: Deployment will be done after full development and local testing are complete.
+**Deployment Commands:**
+```bash
+# Deploy backend
+cd backend
+npm run deploy
+
+# Deploy frontend
+cd frontend-web
+npm run build
+cd ..
+firebase deploy --only hosting
+
+# Or use deployment scripts
+bash scripts/deploy-all.sh      # Deploy both
+bash scripts/deploy-backend.sh  # Backend only
+bash scripts/deploy-frontend.sh # Frontend only
+```
+
+See `docs/DEPLOYMENT.md` for detailed deployment instructions.
 
 ## 📝 Development Roadmap
 
@@ -268,6 +323,29 @@ Built for Clean Scapes to automate their Pay-for-Performance system and improve 
 
 ---
 
-**Status**: In Development  
+## 📊 Project Status
+
+**Status**: Feature Completion & Polish  
 **Version**: 1.0.0  
 **Last Updated**: 2025
+
+### Completed Features
+- ✅ Backend API with all core services
+- ✅ Web dashboards (Admin, Manager, Foreman)
+- ✅ Mobile app (all core screens)
+- ✅ CSV upload functionality
+- ✅ Error handling and validation
+- ✅ Comprehensive documentation
+- ✅ Backend deployed to Firebase Cloud Functions
+- ✅ Frontend deployed to Firebase Hosting
+
+### In Progress
+- ⏳ Final polish and testing (PR #25)
+
+### Tech Stack
+- **Backend**: Node.js 20, Express.js, Firebase Cloud Functions, Supabase (PostgreSQL)
+- **Web Frontend**: React, Tailwind CSS, React Router
+- **Mobile**: React Native, Expo SDK 54, React Navigation
+- **Testing**: Jest (65 tests passing)
+- **Authentication**: Firebase Authentication
+- **Database**: Supabase PostgreSQL

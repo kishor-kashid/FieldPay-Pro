@@ -120,10 +120,9 @@ describe('Calculation Service', () => {
   describe('detectAnomalies', () => {
     test('should detect no anomalies for normal calculation', () => {
       const calculation = {
-        efficiency: 0.95,
         base_pay: 144.00,
         hours_worked: 8,
-        total_pay: 150.00,
+        total_pay: 144.00,
         clock_in: '2024-11-10T06:45:00Z',
         clock_out: '2024-11-10T15:00:00Z'
       };
@@ -134,41 +133,11 @@ describe('Calculation Service', () => {
       expect(result.anomaly_flags).toHaveLength(0);
     });
     
-    test('should detect low efficiency anomaly', () => {
-      const calculation = {
-        efficiency: 0.55,
-        base_pay: 144.00,
-        hours_worked: 8,
-        total_pay: 144.00,
-        clock_in: '2024-11-10T06:45:00Z',
-        clock_out: '2024-11-10T15:00:00Z'
-      };
-      
-      const result = detectAnomalies(calculation);
-      
-      expect(result.has_anomalies).toBe(true);
-      expect(result.anomaly_flags.some(f => f.includes('Low efficiency'))).toBe(true);
-    });
-    
-    test('should detect high efficiency anomaly', () => {
-      const calculation = {
-        efficiency: 1.25,
-        base_pay: 144.00,
-        hours_worked: 8,
-        total_pay: 180.00,
-        clock_in: '2024-11-10T06:45:00Z',
-        clock_out: '2024-11-10T15:00:00Z'
-      };
-      
-      const result = detectAnomalies(calculation);
-      
-      expect(result.has_anomalies).toBe(true);
-      expect(result.anomaly_flags.some(f => f.includes('High efficiency'))).toBe(true);
-    });
+    // Note: Efficiency anomaly detection was removed with the simplified formula
+    // Tests removed for low/high efficiency anomalies as they are no longer part of the system
     
     test('should detect negative total pay anomaly', () => {
       const calculation = {
-        efficiency: 0.8,
         base_pay: 144.00,
         hours_worked: 8,
         total_pay: -10.00,
@@ -184,10 +153,9 @@ describe('Calculation Service', () => {
     
     test('should detect missing clock data anomaly', () => {
       const calculation = {
-        efficiency: 0.95,
         base_pay: 144.00,
         hours_worked: 8,
-        total_pay: 150.00,
+        total_pay: 144.00,
         clock_in: null,
         clock_out: null
       };
@@ -225,24 +193,24 @@ describe('Calculation Service', () => {
       
       expect(result.success).toBe(true);
       expect(result.data.base_pay).toBe(144.00);
-      expect(result.data.efficiency).toBe(1.0);
-      expect(result.data.performance_bonus).toBe(0.00); // At 100%, no bonus (bonus starts above 100%)
+      // Efficiency and performance bonus removed - simplified formula: Total Pay = Base Pay - Penalties
       expect(result.data.late_penalty).toBe(0.00);
       expect(result.data.long_lunch_penalty).toBe(0.00);
-      expect(result.data.total_pay).toBe(144.00);
+      expect(result.data.total_penalties).toBe(0.00);
+      expect(result.data.total_pay).toBe(144.00); // Base pay - penalties = 144.00 - 0.00
     });
     
-    test('should calculate payroll with high performance bonus', () => {
+    test('should calculate payroll with no penalties (good performance)', () => {
       const employee = {
         employee_id: 'crew1',
         name: 'John Doe',
         timesheet: {
           hours_worked: 7,
           base_rate: 18.00,
-          clock_in: '2024-11-10T06:45:00Z',
+          clock_in: '2024-11-10T06:45:00Z', // Before 7:00 AM - no late penalty
           clock_out: '2024-11-10T14:00:00Z',
           lunch_start: '2024-11-10T12:00:00Z',
-          lunch_end: '2024-11-10T12:30:00Z',
+          lunch_end: '2024-11-10T12:30:00Z', // 30 min lunch - no penalty
           date: '2024-11-10',
           crew_id: 'foreman1'
         }
@@ -255,10 +223,12 @@ describe('Calculation Service', () => {
       const result = calculateEmployeePayroll(employee, jobs);
       
       expect(result.success).toBe(true);
-      expect(result.data.base_pay).toBe(126.00);
-      expect(result.data.efficiency).toBeCloseTo(1.1429, 4);
-      expect(result.data.performance_bonus).toBeGreaterThan(0);
-      expect(result.data.total_pay).toBeGreaterThan(126.00);
+      expect(result.data.base_pay).toBe(126.00); // 7 hours × $18.00
+      // No efficiency or performance bonus in simplified formula
+      expect(result.data.late_penalty).toBe(0.00);
+      expect(result.data.long_lunch_penalty).toBe(0.00);
+      expect(result.data.total_penalties).toBe(0.00);
+      expect(result.data.total_pay).toBe(126.00); // Base pay - penalties = 126.00 - 0.00
     });
     
     test('should calculate payroll with late penalty', () => {
@@ -334,8 +304,9 @@ describe('Calculation Service', () => {
       const result = calculateEmployeePayroll(employee, []);
       
       expect(result.success).toBe(true);
-      expect(result.data.efficiency).toBeNull();
-      expect(result.data.performance_bonus).toBe(0.00);
+      // Efficiency and performance bonus removed - simplified formula: Total Pay = Base Pay - Penalties
+      expect(result.data.base_pay).toBeGreaterThan(0);
+      expect(result.data.total_pay).toBeGreaterThanOrEqual(0);
     });
   });
   

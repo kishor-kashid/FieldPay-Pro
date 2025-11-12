@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { uploadAPI } from '../../services/api';
+import FileUpload from '../../components/FileUpload';
+import CSVPreview from '../../components/CSVPreview';
 
 const Upload = () => {
+  const navigate = useNavigate();
   const [saFile, setSaFile] = useState(null);
   const [paychexFile, setPaychexFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [saUploadResult, setSaUploadResult] = useState(null);
+  const [paychexUploadResult, setPaychexUploadResult] = useState(null);
+  const [uploading, setUploading] = useState({ sa: false, paychex: false });
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const handleFileChange = (e, type) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'text/csv') {
-      if (type === 'sa') {
-        setSaFile(file);
-      } else {
-        setPaychexFile(file);
-      }
-      setMessage({ type: '', text: '' });
+  const handleFileSelect = (type) => (file) => {
+    if (type === 'sa') {
+      setSaFile(file);
+      setSaUploadResult(null);
     } else {
-      setMessage({ type: 'error', text: 'Please select a valid CSV file' });
+      setPaychexFile(file);
+      setPaychexUploadResult(null);
+    }
+    setMessage({ type: '', text: '' });
+  };
+
+  const handleFileRemove = (type) => () => {
+    if (type === 'sa') {
+      setSaFile(null);
+      setSaUploadResult(null);
+    } else {
+      setPaychexFile(null);
+      setPaychexUploadResult(null);
     }
   };
 
@@ -24,36 +38,49 @@ const Upload = () => {
     const file = type === 'sa' ? saFile : paychexFile;
     if (!file) return;
 
-    setUploading(true);
+    setUploading({ ...uploading, [type]: true });
     setMessage({ type: '', text: '' });
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', type);
+      const response = type === 'sa' 
+        ? await uploadAPI.uploadServiceAutopilot(file)
+        : await uploadAPI.uploadPaychex(file);
 
-      // TODO: Implement upload API endpoint
-      // await api.post('/upload', formData);
-      
-      // Simulate upload for now
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setMessage({ 
-        type: 'success', 
-        text: `${type === 'sa' ? 'Service Autopilot' : 'Paychex'} data uploaded successfully!` 
-      });
-      
-      if (type === 'sa') {
-        setSaFile(null);
+      if (response.data.success) {
+        setMessage({
+          type: 'success',
+          text: `${type === 'sa' ? 'Service Autopilot' : 'Paychex'} data uploaded successfully! ${response.data.data.recordsStored} records stored.`
+        });
+
+        // Store upload result for preview
+        if (type === 'sa') {
+          setSaUploadResult(response.data.data);
+        } else {
+          setPaychexUploadResult(response.data.data);
+        }
+
+        // Show errors if any (errors are displayed in the UI)
+        if (response.data.data.errors && response.data.data.errors.length > 0) {
+          // Errors are handled and displayed in the UI
+        }
       } else {
-        setPaychexFile(null);
+        throw new Error(response.data.error || 'Upload failed');
       }
     } catch (error) {
-      setMessage({ type: 'error', text: 'Upload failed. Please try again.' });
+      const errorMessage = error.response?.data?.error || error.message || 'Upload failed. Please try again.';
+      setMessage({ type: 'error', text: errorMessage });
+      console.error('Upload error:', error);
     } finally {
-      setUploading(false);
+      setUploading({ ...uploading, [type]: false });
     }
   };
+
+  const handleProcessPayroll = () => {
+    // Navigate to Approve page where they can process payroll
+    navigate('/admin/approve');
+  };
+
+  const bothFilesUploaded = saUploadResult && paychexUploadResult;
 
   return (
     <div className="space-y-6">
@@ -78,43 +105,52 @@ const Upload = () => {
           <span className="text-2xl mr-2">🔧</span>
           Service Autopilot Job Data
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Upload CSV containing job assignments, budgeted hours, and crew assignments
-        </p>
         
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
-          <input
-            type="file"
-            id="sa-file"
-            accept=".csv"
-            onChange={(e) => handleFileChange(e, 'sa')}
-            className="hidden"
-          />
-          <label htmlFor="sa-file" className="cursor-pointer">
-            <div className="text-4xl mb-3">📄</div>
-            {saFile ? (
-              <div>
-                <p className="text-sm font-medium text-gray-800">{saFile.name}</p>
-                <p className="text-xs text-gray-500 mt-1">{(saFile.size / 1024).toFixed(2)} KB</p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm font-medium text-gray-800">Click to select CSV file</p>
-                <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
-              </div>
-            )}
-          </label>
-        </div>
+        <FileUpload
+          onFileSelect={handleFileSelect('sa')}
+          onFileRemove={handleFileRemove('sa')}
+          acceptedFile={saFile}
+          label="Upload Service Autopilot CSV"
+          description="Upload CSV containing job assignments, budgeted hours, and crew assignments"
+          accept=".csv"
+          maxSizeMB={10}
+          disabled={uploading.sa}
+        />
 
         {saFile && (
           <div className="mt-4 flex justify-end">
             <button
               onClick={() => handleUpload('sa')}
-              disabled={uploading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400"
+              disabled={uploading.sa}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-blue-400 disabled:cursor-not-allowed"
             >
-              {uploading ? 'Uploading...' : 'Upload Service Autopilot Data'}
+              {uploading.sa ? 'Uploading...' : 'Upload Service Autopilot Data'}
             </button>
+          </div>
+        )}
+
+        {saUploadResult && saUploadResult.preview && (
+          <div className="mt-6">
+            <CSVPreview
+              data={saUploadResult.preview}
+              title="Service Autopilot Data Preview"
+              maxRows={10}
+            />
+            {saUploadResult.errors && saUploadResult.errors.length > 0 && (
+              <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-yellow-800 mb-2">
+                  Parsing Warnings ({saUploadResult.errors.length})
+                </h4>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  {saUploadResult.errors.slice(0, 5).map((error, index) => (
+                    <li key={index}>Row {error.row}: {error.error}</li>
+                  ))}
+                  {saUploadResult.errors.length > 5 && (
+                    <li>... and {saUploadResult.errors.length - 5} more warnings</li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -125,66 +161,109 @@ const Upload = () => {
           <span className="text-2xl mr-2">⏰</span>
           Paychex Timesheet Data
         </h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Upload CSV containing employee timesheets, clock in/out times, and pay rates
-        </p>
         
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-500 transition-colors">
-          <input
-            type="file"
-            id="paychex-file"
-            accept=".csv"
-            onChange={(e) => handleFileChange(e, 'paychex')}
-            className="hidden"
-          />
-          <label htmlFor="paychex-file" className="cursor-pointer">
-            <div className="text-4xl mb-3">📄</div>
-            {paychexFile ? (
-              <div>
-                <p className="text-sm font-medium text-gray-800">{paychexFile.name}</p>
-                <p className="text-xs text-gray-500 mt-1">{(paychexFile.size / 1024).toFixed(2)} KB</p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-sm font-medium text-gray-800">Click to select CSV file</p>
-                <p className="text-xs text-gray-500 mt-1">or drag and drop</p>
-              </div>
-            )}
-          </label>
-        </div>
+        <FileUpload
+          onFileSelect={handleFileSelect('paychex')}
+          onFileRemove={handleFileRemove('paychex')}
+          acceptedFile={paychexFile}
+          label="Upload Paychex CSV"
+          description="Upload CSV containing employee timesheets, clock in/out times, and pay rates"
+          accept=".csv"
+          maxSizeMB={10}
+          disabled={uploading.paychex}
+        />
 
         {paychexFile && (
           <div className="mt-4 flex justify-end">
             <button
               onClick={() => handleUpload('paychex')}
-              disabled={uploading}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400"
+              disabled={uploading.paychex}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-green-400 disabled:cursor-not-allowed"
             >
-              {uploading ? 'Uploading...' : 'Upload Paychex Data'}
+              {uploading.paychex ? 'Uploading...' : 'Upload Paychex Data'}
             </button>
+          </div>
+        )}
+
+        {paychexUploadResult && paychexUploadResult.preview && (
+          <div className="mt-6">
+            <CSVPreview
+              data={paychexUploadResult.preview}
+              title="Paychex Data Preview"
+              maxRows={10}
+            />
+            {paychexUploadResult.errors && paychexUploadResult.errors.length > 0 && (
+              <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-yellow-800 mb-2">
+                  Parsing Warnings ({paychexUploadResult.errors.length})
+                </h4>
+                <ul className="text-sm text-yellow-700 space-y-1">
+                  {paychexUploadResult.errors.slice(0, 5).map((error, index) => (
+                    <li key={index}>Row {error.row}: {error.error}</li>
+                  ))}
+                  {paychexUploadResult.errors.length > 5 && (
+                    <li>... and {paychexUploadResult.errors.length - 5} more warnings</li>
+                  )}
+                </ul>
+              </div>
+            )}
+            {paychexUploadResult.missingEmployees && paychexUploadResult.missingEmployees.length > 0 && (
+              <div className="mt-4 bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-orange-800 mb-2">
+                  Missing Employees ({paychexUploadResult.missingEmployees.length})
+                </h4>
+                <p className="text-sm text-orange-700">
+                  The following employee IDs were not found in the system: {paychexUploadResult.missingEmployees.join(', ')}
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
 
+      {/* Process Payroll Button */}
+      {bothFilesUploaded && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-semibold text-blue-900 mb-1">Ready to Process Payroll</h4>
+              <p className="text-sm text-blue-800">
+                Both files have been uploaded successfully. You can now process payroll with the uploaded data.
+              </p>
+            </div>
+            <button
+              onClick={handleProcessPayroll}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Go to Process Payroll
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Upload Instructions */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h4 className="font-semibold text-blue-900 mb-3">Upload Instructions</h4>
-        <div className="space-y-2 text-sm text-blue-800">
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+        <h4 className="font-semibold text-gray-900 mb-3">Upload Instructions</h4>
+        <div className="space-y-2 text-sm text-gray-700">
           <div className="flex items-start">
-            <span className="mr-2">1.</span>
+            <span className="mr-2 font-semibold">1.</span>
             <span>Export data from Service Autopilot and Paychex in CSV format</span>
           </div>
           <div className="flex items-start">
-            <span className="mr-2">2.</span>
-            <span>Ensure CSV files contain all required columns</span>
+            <span className="mr-2 font-semibold">2.</span>
+            <span>Ensure CSV files contain all required columns (see sample files in mock-data directory)</span>
           </div>
           <div className="flex items-start">
-            <span className="mr-2">3.</span>
+            <span className="mr-2 font-semibold">3.</span>
             <span>Upload files for the same date range</span>
           </div>
           <div className="flex items-start">
-            <span className="mr-2">4.</span>
-            <span>After uploading, use "Analyze Payroll" to preview calculations</span>
+            <span className="mr-2 font-semibold">4.</span>
+            <span>After uploading both files, use "Process Payroll" to calculate payroll with uploaded data</span>
+          </div>
+          <div className="flex items-start">
+            <span className="mr-2 font-semibold">5.</span>
+            <span>Uploaded data will be stored in the database and used for payroll processing</span>
           </div>
         </div>
       </div>
@@ -193,4 +272,3 @@ const Upload = () => {
 };
 
 export default Upload;
-

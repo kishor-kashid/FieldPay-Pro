@@ -38,7 +38,9 @@ app.get('/', (req, res) => {
       'GET  /auth/profile',
       'GET  /payroll/records',
       'GET  /notifications',
-      'GET  /users'
+      'GET  /users',
+      'POST /upload/service-autopilot',
+      'POST /upload/paychex'
     ]
   });
 });
@@ -58,6 +60,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/payroll', require('./routes/payroll'));
 app.use('/notifications', require('./routes/notifications'));
 app.use('/users', require('./routes/users'));
+app.use('/upload', require('./routes/upload'));
 
 // Mock API routes (development only)
 if (process.env.USE_MOCK === 'true') {
@@ -67,14 +70,8 @@ if (process.env.USE_MOCK === 'true') {
 }
 
 // Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(err.status || 500).json({
-    success: false,
-    error: err.message || 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
-});
+const { errorHandler } = require('./middleware/errorHandler');
+app.use(errorHandler);
 
 // 404 handler
 app.use((req, res) => {
