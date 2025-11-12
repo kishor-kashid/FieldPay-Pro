@@ -68,9 +68,7 @@ const Login = () => {
 
     try {
       // Use AuthContext login which handles Firebase auth and fetches profile
-      console.log('Starting login process...');
       await login(email, password);
-      console.log('Login completed, waiting for profile...');
 
       // Poll for user profile with retries
       let retries = 0;
@@ -81,16 +79,12 @@ const Login = () => {
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         retries++;
         
-        console.log(`Profile check attempt ${retries}:`, storedUser);
-        
         // Check if user data is available
         if (storedUser && storedUser.role) {
           clearInterval(checkProfile);
-          console.log('Profile loaded successfully, role:', storedUser.role);
           
           // Check if crew member - they should not access web app
           if (storedUser.role === 'crew_member') {
-            console.log('Crew member detected, denying access');
             setError('Invalid email or password');
             setLoading(false);
             // Logout the user
@@ -99,7 +93,6 @@ const Login = () => {
           }
           
           // Redirect based on role
-          console.log('Redirecting user based on role:', storedUser.role);
           switch (storedUser.role) {
             case 'admin':
               navigate('/admin/dashboard');
@@ -111,14 +104,12 @@ const Login = () => {
               navigate('/foreman/dashboard');
               break;
             default:
-              console.error('Unknown role:', storedUser.role);
               setError('Invalid user role. Please contact your administrator.');
               setLoading(false);
           }
         } else if (retries >= maxRetries) {
           // Timeout after max retries
           clearInterval(checkProfile);
-          console.error('Profile load timeout after', maxRetries, 'attempts');
           setError('Failed to load user profile. Please try again.');
           setLoading(false);
           logout();
@@ -126,7 +117,6 @@ const Login = () => {
       }, checkInterval);
       
     } catch (err) {
-      console.error('Login error:', err);
       setError(err.message || 'Invalid email or password');
       setLoading(false);
     }

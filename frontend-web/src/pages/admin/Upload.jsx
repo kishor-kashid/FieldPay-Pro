@@ -59,9 +59,9 @@ const Upload = () => {
           setPaychexUploadResult(response.data.data);
         }
 
-        // Show errors if any
+        // Show errors if any (errors are displayed in the UI)
         if (response.data.data.errors && response.data.data.errors.length > 0) {
-          console.warn('CSV parsing errors:', response.data.data.errors);
+          // Errors are handled and displayed in the UI
         }
       } else {
         throw new Error(response.data.error || 'Upload failed');

@@ -265,7 +265,10 @@ The system is deployed on Firebase:
 - **Backend**: Firebase Cloud Functions (serverless) ✅ **DEPLOYED**
   - Function URL: `https://us-central1-fieldpay-pro.cloudfunctions.net/api`
   - Runtime: Node.js 20
-- **Web Frontend**: Firebase Hosting (planned)
+- **Web Frontend**: Firebase Hosting ✅ **DEPLOYED**
+  - Hosting URL: `https://fieldpay-pro.web.app` (or `https://fieldpay-pro.firebaseapp.com`)
+  - React Router configured with proper redirects
+  - Production build optimized and deployed
 - **Payroll Processing**: Manual trigger by admins via web dashboard (no automatic scheduling)
 - **Mobile**: Development only - tested on Expo Go (no production build needed)
 
@@ -275,10 +278,16 @@ The system is deployed on Firebase:
 cd backend
 npm run deploy
 
-# Deploy frontend (when ready)
+# Deploy frontend
 cd frontend-web
 npm run build
+cd ..
 firebase deploy --only hosting
+
+# Or use deployment scripts
+bash scripts/deploy-all.sh      # Deploy both
+bash scripts/deploy-backend.sh  # Backend only
+bash scripts/deploy-frontend.sh # Frontend only
 ```
 
 See `docs/DEPLOYMENT.md` for detailed deployment instructions.
@@ -328,10 +337,10 @@ Built for Clean Scapes to automate their Pay-for-Performance system and improve 
 - ✅ Error handling and validation
 - ✅ Comprehensive documentation
 - ✅ Backend deployed to Firebase Cloud Functions
+- ✅ Frontend deployed to Firebase Hosting
 
 ### In Progress
-- ⏳ Analytics enhancements
-- ⏳ Final polish and testing
+- ⏳ Final polish and testing (PR #25)
 
 ### Tech Stack
 - **Backend**: Node.js 20, Express.js, Firebase Cloud Functions, Supabase (PostgreSQL)

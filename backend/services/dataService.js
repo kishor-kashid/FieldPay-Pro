@@ -26,7 +26,6 @@ async function getJobData(date, crewId = null) {
   try {
     // If using mock APIs, generate mock data directly (works in any environment)
     if (isMockEnabled()) {
-      console.log('📦 Using mock job data');
       const dateObj = new Date(date);
       let jobs = generateMockJobs(dateObj, 12);
       
@@ -46,7 +45,6 @@ async function getJobData(date, crewId = null) {
       params.crew_id = crewId;
     }
 
-    console.log(`🔄 Fetching job data from: ${url}`);
     const response = await axios.get(url, {
       params,
       headers: config.headers,
@@ -70,7 +68,6 @@ async function getTimesheetData(date, employeeId = null) {
   try {
     // If using mock APIs, generate mock data directly (works in any environment)
     if (isMockEnabled()) {
-      console.log('📦 Using mock timesheet data');
       const dateObj = new Date(date);
       let timesheets = generateMockTimesheets(dateObj);
       
@@ -90,7 +87,6 @@ async function getTimesheetData(date, employeeId = null) {
       params.employee_id = employeeId;
     }
 
-    console.log(`🔄 Fetching timesheet data from: ${url}`);
     const response = await axios.get(url, {
       params,
       headers: config.headers,
@@ -113,7 +109,6 @@ async function getJobAssignments(date) {
   try {
     // If using mock APIs, generate mock data directly (works in any environment)
     if (isMockEnabled()) {
-      console.log('📦 Using mock assignment data');
       const dateObj = new Date(date);
       const jobs = generateMockJobs(dateObj, 12);
       const timesheets = generateMockTimesheets(dateObj);
@@ -127,7 +122,6 @@ async function getJobAssignments(date) {
     const url = `${config.baseUrl}/assignments`;
     const params = { date };
 
-    console.log(`🔄 Fetching assignment data from: ${url}`);
     const response = await axios.get(url, {
       params,
       headers: config.headers,
@@ -148,16 +142,12 @@ async function getJobAssignments(date) {
  */
 async function getPayrollData(date) {
   try {
-    console.log(`📊 Fetching payroll data for ${date}...`);
-    
     // Fetch all data in parallel
     const [jobs, timesheets, assignments] = await Promise.all([
       getJobData(date),
       getTimesheetData(date),
       getJobAssignments(date)
     ]);
-
-    console.log(`✅ Fetched ${jobs.length} jobs, ${timesheets.length} timesheets, ${assignments.length} assignments`);
 
     return {
       jobs,

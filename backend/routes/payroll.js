@@ -44,8 +44,6 @@ router.post('/analyze', authenticateToken, requireAdmin, async (req, res, next) 
       return yesterday.toISOString().split('T')[0];
     })();
     
-    console.log(`📊 Admin ${req.user.uid} analyzing payroll for ${targetDate}`);
-    
     const result = await analyzePayroll(targetDate);
     
     if (!result.success) {
@@ -76,16 +74,6 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
   try {
     const { date, reprocess } = req.body;
     
-    // Log request details for debugging
-    console.log('📥 Process payroll request:', {
-      date,
-      reprocess,
-      userEmail: req.user?.email,
-      userId: req.user?.id,
-      userUid: req.user?.uid,
-      userRole: req.user?.role
-    });
-    
     // Use database user ID (UUID) - the auth middleware spreads ...user which includes the database id field
     // The database user object from Supabase has an 'id' field (UUID)
     // Note: The spread order matters - ...user comes after uid/email, so user.id should be present
@@ -93,7 +81,6 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
     
     // Fallback: If id is not available, try to get it from the database using email
     if (!triggeredBy) {
-      console.warn('req.user.id not found, attempting to fetch from database...');
       try {
         const { data: user, error } = await supabase
           .from('users')
@@ -103,19 +90,10 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
         
         if (user && user.id) {
           triggeredBy = user.id;
-          console.log(`✅ Found user ID from database: ${triggeredBy}`);
         } else {
           throw new Error('User not found in database');
         }
       } catch (dbError) {
-        console.error('User ID not found in req.user:', {
-          hasId: !!req.user.id,
-          hasUid: !!req.user.uid,
-          userKeys: Object.keys(req.user),
-          email: req.user.email,
-          role: req.user.role,
-          dbError: dbError.message
-        });
         return res.status(400).json({
           success: false,
           error: 'User ID not found. Please ensure user exists in database. Authentication may have failed.'
@@ -129,8 +107,6 @@ router.post('/process', authenticateToken, requireAdmin, async (req, res, next) 
       yesterday.setDate(yesterday.getDate() - 1);
       return yesterday.toISOString().split('T')[0];
     })();
-    
-    console.log(`🚀 Admin ${req.user.email} (ID: ${triggeredBy}) processing payroll for ${targetDate} (reprocess: ${reprocess || false})`);
     
     const result = await processPayroll(targetDate, triggeredBy, { reprocess: reprocess || false });
     
@@ -357,7 +333,6 @@ router.patch('/records/:id/approve', authenticateToken, requireAdmin, async (req
     const { notes } = req.body;
     const adminId = req.user.uid;
     
-    console.log(`✅ Admin ${adminId} approving payroll record ${id}`);
     
     const result = await approvePayrollRecord(id, adminId, notes);
     
@@ -389,7 +364,6 @@ router.post('/approve-bulk', authenticateToken, requireAdmin, async (req, res, n
       });
     }
     
-    console.log(`✅ Admin ${adminId} bulk approving ${record_ids.length} records`);
     
     const result = await bulkApprovePayrollRecords(record_ids, adminId);
     

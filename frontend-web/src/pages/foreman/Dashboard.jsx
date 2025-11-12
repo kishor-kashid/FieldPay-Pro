@@ -84,19 +84,7 @@ const ForemanDashboard = () => {
         const usersResponse = await userAPI.getUsers({ crew_id: crewId, role: 'crew_member' });
         crewMembers = usersResponse.data?.data || usersResponse.data?.users || [];
       } catch (error) {
-        console.warn('Failed to fetch crew members:', error);
-      }
-      
-      // Debug: Log what we got
-      if (records.length === 0) {
-        console.log('No records found. Query params:', {
-          start_date: dateRange.start,
-          end_date: dateRange.end,
-          crew_id: crewId,
-          user_crew_id: user?.crew_id
-        });
-      } else {
-        console.log(`Found ${records.length} records for crew ${crewId}`);
+        // Silent fail - crew members optional
       }
       
       // Calculate compliance metrics
